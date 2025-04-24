@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FREEPORT: Modelo de Madurez IoT para PYMEs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logos-container">
+                <img src="UniversidadCauca.png" alt="Logo Universidad del Cauca" class="logo">
+                <img src="Idis.png" alt="Logo Grupo de Investigación IDIS" class="logo">
+            </div>
+            <h1>FREEPORT: Framework para estimar y mejorar la madurez tecnológica del IoT en PYMEs</h1>
+        </header>
+        </div>
+
+        <nav class="tabs">
+            <button onclick="openTab('presentation')" class="active">
+                <i class="fas fa-home"></i> Presentación
+            </button>
+            <button onclick="openTab('team')">
+                <i class="fas fa-users"></i> Equipo de Trabajo
+            </button>
+            <button onclick="openTab('registration')" id="registration-tab">
+                <i class="fas fa-user-plus"></i> Registrar Empresa
+            </button>
+            <button onclick="openTab('profiles')" id="profiles-tab" >
+                <i class="fas fa-sign-in-alt"></i> Ingresar
+            </button>
+            <button onclick="openTab('model')" id="model-tab" style="display:none;">
+                <i class="fas fa-chart-line"></i> Modelo de Madurez
+            </button>
+            <button onclick="openTab('publications')">
+                <i class="fas fa-book"></i> Publicaciones
+            </button>
+            <button onclick="openTab('admin')" id="admin-tab">
+                <i class="fas fa-user-shield"></i> Administrador
+            </button>
+        </nav>
+
+        <main>
+            <section id="presentation" class="tab-content active">
+                <div class="presentation-header">
+                    <h2>Presentación del Proyecto FREEPORT</h2>
+                    <p>FREEPORT es un marco de trabajo diseñado para evaluar y mejorar la madurez tecnológica del Internet de las Cosas (IoT) en las Pequeñas y Medianas Empresas (PYMEs) de Latinoamérica. Basado en la investigación y el modelo de madurez ATLANTIS, este <i>framework</i> ofrece una evaluación holística que considera las dimensiones tecnológicas, organizacionales y humanas, cruciales para la adopción exitosa del IoT en la organización.</p>
+                </div>
+
+                <div class="freeport-overview">
+                    <img src="Freeport.jpeg" alt="Descripción general de FREEPORT" class="freeport-image">
+                    <div class="freeport-description">
+                        <h3>Elementos clave de FREEPORT</h3>
+                        <p>FREEPORT se compone de tres elementos fundamentales que trabajan en conjunto para evaluar y mejorar la madurez tecnológica de IoT en las PYMEs:</p>
+                        <ul>
+                            <li>
+                                <b>Modelo de madurez - ATLANTIS:</b> Este enfoque estructurado sirve como punto de referencia para evaluar el estado actual de la tecnología IoT. Proporciona una serie de niveles por los cuales una PYME puede evolucionar, abarcando las dimensiones organizativa, tecnológica y humana. Define los requisitos que se deben cumplir para estar en un determinado nivel de madurez. Este modelo sirve como referencia para la medición y mejora de la madurez tecnológica del IoT.
+                            </li>
+                            <li>
+                                <b>Mecanismo de evaluación:</b> Un enfoque definido para medir y valorar la madurez tecnológica de la organización basado en ATLANTIS. Verifica qué requisitos cumple la organización con respecto al modelo de madurez. Este mecanismo permite valorar y recopilar la información necesaria del estado actual de la organización para proporcionar una valoración final del cumplimiento de los niveles de madurez.
+                            </li>
+                            <li>
+                                <b>Proceso de mejora:</b> Un conjunto de pautas que proporcionan orientación para mejorar la progresión en los niveles de cumplimiento de las organizaciones con respecto al modelo de madurez. Esto permite a las empresas tener una guía para adoptar mejor las tecnologías IoT.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-container">
+                    <h3>¿Por qué FREEPORT?</h3>
+                    <p>La adopción del IoT presenta importantes oportunidades para las PYMEs, pero su implementación efectiva sigue siendo un desafío. FREEPORT aborda esta brecha al proporcionar una herramienta práctica, robusta y validada para:</p>
+                    <ul>
+                        <li><b>Autoevaluación:</b> Permite a las PYMEs comprender su nivel actual de madurez en la adopción del IoT a través de un cuestionario en línea, dividido en perfiles específicos (Gerente, Ingeniero y Técnico).</li>
+                        <li><b>Identificación de áreas de mejora:</b> FREEPORT destaca las fortalezas y debilidades en cada componente del modelo, orientando a las empresas hacia las áreas que requieren atención para maximizar el potencial del IoT.</li>
+                        <li><b>Planificación estratégica:</b> Los resultados de FREEPORT sirven como base para el desarrollo de estrategias y hojas de ruta para la adopción e integración del IoT, alineadas con los objetivos de la empresa.</li>
+                    </ul>
+                </div>
+
+                <div class="section-container">
+                    <h3>¿Cómo funciona FREEPORT?</h3>
+                    <p>El <i>framework</i> está basado en siete componentes clave, derivados de una taxonomía establecida de tecnologías IoT:</p>
+                    <ol>
+                        <li><b>Gestión de Dispositivos:</b> Evalúa la capacidad de la empresa para implementar, configurar, administrar y mantener los dispositivos IoT.</li>
+                        <li><b>Gestión de Conectividad:</b> Analiza la infraestructura de red, protocolos y prácticas de gestión para asegurar una conectividad eficiente y segura.</li>
+                        <li><b>Gestión de Nube/Borde:</b> Evalúa la capacidad de la empresa para procesar, almacenar y analizar los datos generados por los dispositivos IoT.</li>
+                        <li><b>Integración Empresarial:</b> Examina la integración de los datos del IoT con los sistemas empresariales existentes, como ERP y CRM.</li>
+                        <li><b>Seguridad:</b> Evalúa las medidas de seguridad implementadas para proteger los dispositivos IoT, la transmisión de datos y la integridad del sistema.</li>
+                        <li><b>Cumplimiento:</b> Verifica el cumplimiento de las regulaciones y las consideraciones éticas relacionadas con la implementación del IoT.</li>
+                        <li><b>Contextualización:</b> Analiza la adaptación de las tecnologías IoT a las necesidades y desafíos específicos de la industria y la empresa.</li>
+                    </ol>
+                </div>
+
+                <div class="section-container how-to-use-guide">
+                    <div class="column">
+                      <h3>¿Cómo usar FREEPORT?</h3>
+                      <p>
+                        Bienvenido a FREEPORT, tu herramienta para evaluar la madurez digital de tu empresa. Sigue
+                        estos sencillos pasos para comenzar:
+                      </p>
+                      <ol>
+                        <li>
+                          <b>Registra tu Empresa:</b>
+                          <ul>
+                            <li>Ve a la pestaña "Registrar Empresa".</li>
+                            <li>Completa el formulario con los datos de tu empresa (nombre, país, actividad, tamaño,
+                              figura legal y correos electrónicos de contacto).</li>
+                            <li><b>Importante:</b> Necesitarás al menos un correo, e idealmente de los tres perfiles si aplica.</li>
+                            <li>Haz clic en "Registrar".</li>
+                            <li><b>Guarda tu ID único:</b> Lo necesitarás para acceder más tarde.</li>
+                            <li>Se enviarán correos con el ID a los contactos registrados para que puedan acceder a
+                              los cuestionarios.</li>
+                          </ul>
+                        </li>
+                        <li>
+                          <b>Accede con tu Perfil:</b>
+                          <ul>
+                            <li>Ve a la pestaña "Ingresar".</li>
+                            <li>Ingresa tu ID único.</li>
+                            <li>Haz clic en "Cargar Progreso".</li>
+                            <li>Selecciona tu perfil: Manager, Engineer o Technician. (Solo verás los perfiles para
+                              los que registraste correos en el paso 1).</li>
+                          </ul>
+                        </li>
+                      </ol>
+                    </div>
+                    <div class="column">
+                      <ol start="3">
+                        <li>
+                          <b>Responde el Cuestionario:</b>
+                          <ul>
+                            <li>Serás redirigido a la pestaña "Modelo de Madurez".</li>
+                            <li>Responde las preguntas de tu perfil. Están organizadas por componente y dimensión.</li>
+                            <li>Selecciona la respuesta que mejor describa la situación actual de tu empresa.</li>
+                            <li>Haz clic en "Guardar respuestas" (ej: "Guardar respuestas de Manager").
+                            </li>
+                          </ul>
+                        </li>
+                        <li>
+                          <b>Calcula tu Puntuación:</b>
+                          <ul>
+                            <li>Una vez que los perfiles Manager, Engineer y Technician hayan
+                              guardado sus respuestas, se activará el botón "Calcular Puntuación".</li>
+                            <li>Haz clic en "Calcular Puntuación".</li>
+                          </ul>
+                        </li>
+                        <li>
+                          <b>Visualiza tus Resultados:</b>
+                          <ul>
+                            <li>FREEPORT calculará tu puntuación en cada componente, dimensión y una puntuación
+                              general.</li>
+                            <li>Los resultados se mostrarán en la sección "Resultados" de la pestaña "Modelo de
+                              Madurez", incluyendo gráficos y tablas detalladas. Podrás visualizar:
+                              <ul>
+                                <li>Puntuaciones por componente (gráfico de barras).</li>
+                                <li>Puntuaciones por dimensión (gráfico de radar).</li>
+                                <li>Puntuación general (gráfico de dona).</li>
+                                <li>Tablas con el detalle de las puntuaciones.</li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </li>
+                      </ol>
+                      <p>
+                        <b>¡Empieza ahora y descubre el nivel de madurez del IoT de tu empresa con FREEPORT!</b>
+                      </p>
+                    </div>
+                  </div>
+            </section>
+
+            <section id="registration" class="tab-content">
+              <div class="form-header">
+                <h2>Registro de Empresa</h2>
+                <p class="form-description">
+                  Por favor, complete el siguiente formulario para registrar su empresa. Es
+                  <b>imprescindible</b> que proporcione al menos <b>un correo electrónico</b> de uno de los tres perfiles (Gerente, Ingeniero o Técnico) para poder enviar el ID único de su empresa. Si es posible, proporcione los correos de los tres perfiles para evitar la perdida del ID.
+                </p>
+              </div>
+                <form id="registration-form">
+                    <label for="company-name">¿Cuál es el nombre de la empresa?</label>
+                    <input type="text" id="company-name" name="companyName" required>
+
+                    <label for="country-type">¿Dónde se encuentra ubicada?</label>
+                    <select id="country-type" name="countryType" onchange="toggleCountryList()">
+                        <option value="latam">Latinoamérica</option>
+                        <option value="other">Otro</option>
+                    </select>
+
+                    <label for="country">País:</label>
+                    <select id="country" name="country" required>
+                        <option value="">Seleccionar País</option>
+                    </select>
+
+                    <label for="main-activity">¿Cuál es la actividad principal de la organización?</label>
+                    <select id="main-activity" name="mainActivity" required>
+                        <option value="">Actividad Principal</option>
+                    </select>
+
+                    <label for="company-size">¿Cuál es el tamaño de la empresa considerando la cantidad de empleados?</label>
+                    <select id="company-size" name="companySize" required>
+                        <option value="">Tamaño de la Empresa</option>
+                        <option value="micro">Micro (1-15 empleados)</option>
+                        <option value="small">Pequeña (16-60 empleados)</option>
+                        <option value="medium1">Mediana Tipo 1 (61-235 empleados)</option>
+                        <option value="medium2">Mediana Tipo 2 (236-655 empleados)</option>
+                        <option value="large">Grande (656 o más empleados)</option>
+                    </select>
+
+                    <label for="legal-figure">Figura Legal:</label>
+                    <select id="legal-figure" name="legalFigure" required>
+                    </select>
+                    <!-- Nuevos campos de correo electrónico -->
+                    <label for="manager-email">Correo electrónico del Gerente General o Dueño (CEO):</label>
+                    <input type="email" id="manager-email" name="managerEmail">
+
+                    <label for="engineer-email">Correo electrónico del Ingeniero:</label>
+                    <input type="email" id="engineer-email" name="engineerEmail">
+
+                    <label for="technician-email">Correo electrónico del Técnico de planta:</label>
+                    <input type="email" id="technician-email" name="technicianEmail">
+                    <button type="button" onclick="registerCompany()">Registrar</button>
+                </form>
+            </section>
+
+            <section id="profiles" class="tab-content">
+                <div class="form-header">
+                    <h2>Ingresar</h2>
+                    <p>Ingrese el ID único de su empresa para cargar el progreso y seleccionar su perfil.</p>
+                </div>
+                <input type="text" id="company-id" placeholder="Ingrese el ID de su empresa" class="form-input">
+                <button onclick="loadCompanyProgress()" class="form-button">Cargar Progreso</button>
+                <div id="company-progress" class="progress-info"></div>
+                <div class="profile-buttons">
+                    <button onclick="selectProfile('manager')" class="form-button">Manager</button>
+                    <button onclick="selectProfile('engineer')" class="form-button">Engineer</button>
+                    <button onclick="selectProfile('technician')" class="form-button">Technician</button>
+                </div>
+            </section>
+
+            <section id="model" class="tab-content">
+                <h2>Cuestionario de Madurez IoT</h2>
+                <div id="profile-info"></div>
+                <div id="questions-container"></div>
+                <div id="buttons-container"></div>
+                <button onclick="calculateScore()" disabled class="form-button">Calcular Puntuación</button>
+
+                <div id="results"></div>
+            </section>
+
+            <section id="publications" class="tab-content">
+              <h2>Publicaciones del Proyecto</h2>
+              <p>Aquí encontrará una lista de publicaciones relacionadas con el proyecto FREEPORT.</p>
+              <div class="publications-list">
+                    <article class="publication-item">
+                      <h3><a href="https://www.sciencedirect.com/science/article/abs/pii/S2542660524000246?via%3Dihub" target="_blank">Systematic literature review on mechanisms to measure the technological maturity of the Internet of Things in enterprises</a></h3>
+                      <p><b>Autores:</b> Andrés Felipe Solis Pino, Pablo H. Ruiz, Alicia Mon, Cesar Alberto Collazos</p>
+                      <p><b>Revista:</b> Internet of Things</p>
+                      <p><b>Año:</b> 2024</p>
+                      <p><b>Estado:</b> Publicado</p>
+                      <p><b>DOI:</b><a href=https://doi.org/10.1016/j.iot.2024.101082 target="_blank"> https://doi.org/10.1016/j.iot.2024.101082</a></p>
+                  </article>
+                  <article class="publication-item">
+                      <h3><a href="https://www.sciencedirect.com/science/article/pii/S2542660524000428" target="_blank">Mechanisms for Measuring Technology Maturity on the Internet of Things in Enterprises: A Systematic Literature Mapping</a></h3>
+                      <p><b>Autores:</b> Andrés Felipe Solis Pino, Pablo H. Ruiz, Alicia Mon, Cesar Alberto Collazos</p>
+                      <p><b>Revista:</b> Internet of Things</p>
+                      <p><b>Año:</b> 2024</p>
+                      <p><b>Estado:</b> Publicado</p>
+                      <p><b>DOI:</b><a href=https://doi.org/10.1016/j.iot.2024.101100 target="_blank"> https://doi.org/10.1016/j.iot.2024.101100</a></p>
+                  </article>
+                  <article class="publication-item">
+                      <h3><a href="https://www.sciencedirect.com/science/article/pii/S2542660524000246" target="_blank">A bibliometric analysis of the landscape of measuring technology maturity in the enterprise internet of things</a></h3>
+                      <p><b>Autores:</b> Andrés Felipe Solis Pino, Pablo H. Ruiz, Alicia Mon, Cesar Alberto Collazos</p>
+                      <p><b>Revista:</b> International Journal of Electrical and Computer Engineering (IJECE)</p>
+                      <p><b>Año:</b> 2024</p>
+                      <p><b>Estado:</b> Publicado</p>
+                      <p><b>DOI:</b> <a href="https://doi.org/10.11591/ijece.v14i4.pp4697-4713" target="_blank">https://doi.org/10.11591/ijece.v14i4.pp4697-4713</a></p>
+                  </article>
+                  <article class="publication-item">
+                      <h3><a href="https://www.mdpi.com/2076-3417/14/21/9859" target="_blank">Analysis of Enterprise Internet of Things Maturity Models: A Review</a></h3>
+                      <p><b>Autores:</b> Andrés Felipe Solis Pino, Pablo H. Ruiz, Alicia Mon, Cesar Alberto Collazos, Fernando Moreira</p>
+                      <p><b>Revista:</b> Applied Sciences</p>
+                      <p><b>Año:</b> 2024</p>
+                      <p><b>Estado:</b> Publicado</p>
+                      <p><b>DOI:</b> <a href="https://doi.org/10.3390/app14219859" target="_blank">https://doi.org/10.3390/app14219859</a></p>
+                  </article>
+                  <article class="publication-item">
+                    <h3><a href="https://www.sciencedirect.com/science/article/pii/S2542660524003986?via%3Dihub#da1" target="_blank">ATLANTIS: A multidimensional maturity model for evaluating the adoption of the internet of things in industrial SMEs</a></h3>
+                    <p><b>Autores:</b> Andrés Felipe Solis Pino, Pablo H. Ruiz, Alicia Mon, Cesar Alberto Collazos</p>
+                    <p><b>Revista:</b> Internet of Things</p>
+                    <p><b>Año:</b> 2024</p>
+                    <p><b>Estado:</b> Publicado</p>
+                    <p><b>DOI:</b><a href=https://doi.org/10.1016/j.iot.2024.101457 target="_blank"> https://doi.org/10.1016/j.iot.2024.101457</a></p>
+                </article>
+              </div>
+          </section>
+
+            <section id="team" class="tab-content">
+              <h2>Equipo de Trabajo</h2>
+              <div class="team-description">
+                  <p>Somos un equipo interdisciplinario de profesionales de <b>Colombia</b> y <b>Argentina</b>, dedicados a impulsar la adopción e implementación de las tecnologías de la <b>Industria 4.0</b> en <b>Latinoamérica</b>. Nuestra colaboración se desarrolla en el marco del <b>Grupo de Investigación y Desarrollo en Ingeniería de Software (IDIS)</b> de la <b>Universidad del Cauca</b> y el <b>Grupo GIS</b> de la <b>Universidad Nacional de La Matanza</b>.</p>
+                  <p>Este proyecto es posible gracias al apoyo del <b>Ministerio de Ciencia, Tecnología e Innovación de Colombia</b>, a través de su convocatoria de <i>"Formación de capital humano de alto nivel para promover el liderazgo social comunitario y afrontar la Cuarta Revolución Industrial en el departamento del Cauca"</i>. Esta valiosa iniciativa financia los estudios de doctorado de <b>Andrés Felipe Solís Pino</b>, bajo la tutela principal del <b>Dr. César Alberto Collazos</b> y la codirección de la <b>Dra. Alicia Mon</b> (Universidad Nacional de La Matanza, Argentina) y el <b>Dr. Pablo Ruiz</b> (Universidad del Cauca, Colombia).</p>
+                  <p>La investigación se enmarca en el trabajo doctoral de <b>Andrés Felipe Solís Pino</b>, titulado <i>"Marco de trabajo para la medición y mejora de la madurez tecnológica del Internet de las Cosas en pequeñas y medianas empresas de América Latina"</i>.</p>
+              </div>
+          
+              <div class="team-members">
+                  <div class="team-member">
+                      <img src="Asolis.png" alt="Foto de Andrés Solis" class="team-member-photo">
+                      <h3>Andrés Felipe Solis</h3>
+                      <p>Investigador</p>
+                      <p><a href="mailto:afsolis@unicauca.edu.co">afsolis@unicauca.edu.co</a></p>
+                  </div>
+          
+                  <div class="team-member">
+                      <img src="Amon.jpg" alt="Foto de Alicia Mon" class="team-member-photo">
+                      <h3>Alicia Mon</h3>
+                      <p>Investigadora</p>
+                      <p><a href="mailto:amon@unlam.edu.ar">amon@unlam.edu.ar</a></p>
+                  </div>
+          
+                  <div class="team-member">
+                      <img src="Pruiz.jpg" alt="Foto de Pablo Ruiz" class="team-member-photo">
+                      <h3>Pablo H. Ruiz</h3>
+                      <p>Investigador</p>
+                      <p><a href="mailto:pablohernando@unicauca.edu.co">pablohernando@unicauca.edu.co</a></p>
+                  </div>
+          
+                  <div class="team-member">
+                      <img src="Ccollazos.png" alt="Foto de Cesar Collazos" class="team-member-photo">
+                      <h3>César Alberto Collazos</h3>
+                      <p>Investigador</p>
+                      <p><a href="mailto:ccollazo@unicauca.edu.co">ccollazo@unicauca.edu.co</a></p>
+                  </div>
+              </div>
+          </section>
+
+            <section id="admin" class="tab-content">
+                <div class="admin-container">
+                  <h2>Panel de Administrador</h2>
+                  <div id="admin-login">
+                    <input type="password" id="admin-password" placeholder="Contraseña de administrador" class="form-input">
+                    <button onclick="loginAdmin()" class="form-button">Iniciar sesión</button>
+                  </div>
+                  <div id="admin-panel" style="display: none;">
+                    <h3>Bienvenido, Administrador</h3>
+                    <button onclick="exportToExcel()" class="form-button">Exportar a Excel</button>
+                    <button onclick="resetAllData()" class="form-button danger-button">Borrar todos los datos</button>
+                  </div>
+                </div>
+              </section>
+        </main>
+
+        <footer>
+            <p>Para cualquier consulta, por favor contacte a: <a href="mailto:afsolis@unicauca.edu.co">afsolis@unicauca.edu.co</a></p>
+        </footer>
+
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
