@@ -1,97 +1,97 @@
-# FREEPORT: IoT Maturity Model Framework for SMEs
+# FREEPORT: Framework de Modelo de Madurez IoT para PYMEs
 
-FREEPORT is a web-based framework designed to assess and improve the Internet of Things (IoT) technological maturity in Small and Medium Enterprises (SMEs), particularly focusing on the Latin American context. It utilizes the ATLANTIS maturity model, providing a holistic evaluation across technological, organizational, and human dimensions based on established research.
+FREEPORT es un marco de trabajo basado en la web diseñado para evaluar y mejorar la madurez tecnológica del Internet de las Cosas (IoT) en Pequeñas y Medianas Empresas (PYMEs), enfocándose particularmente en el contexto latinoamericano. Utiliza el modelo de madurez ATLANTIS, proporcionando una evaluación holística a través de las dimensiones tecnológica, organizacional y humana, basada en investigación establecida.
 
-This tool helps SMEs understand their current IoT capabilities, identify areas for improvement, and plan their strategic adoption of IoT technologies.
+Esta herramienta ayuda a las PYMEs a comprender sus capacidades actuales de IoT, identificar áreas de mejora y planificar su adopción estratégica de tecnologías IoT.
 
-**[Link to Live Demo]** (Replace with your GitHub Pages URL once deployed, if applicable)
+**[Enlace a la Demo en Vivo]** (Reemplaza con la URL de tu GitHub Pages una vez desplegado, si aplica)
 
-## Features
+## Características
 
-*   **Project Presentation:** Detailed overview of the FREEPORT framework, its components, and objectives.
-*   **Team Information:** Introduces the research team behind the project.
-*   **Company Registration:** A form to register company details (name, country, activity, size, legal figure, contact emails). Generates a unique ID.
-*   **Profile-Based Access:** Allows different user profiles (Manager, Engineer, Technician) to access and answer relevant parts of the questionnaire using the unique company ID.
-*   **IoT Maturity Questionnaire:** Comprehensive questionnaire derived from the ATLANTIS model, segmented by profile, component (Device Management, Connectivity, Cloud/Edge, etc.), and dimension (Technological, Human, Organizational).
-*   **Scoring Calculation:** Automatically calculates scores based on user responses for each component, dimension, and an overall maturity score (0-100).
-*   **Results Visualization:** Presents the calculated scores using interactive charts:
-    *   Component Scores (Bar Chart)
-    *   Dimension Scores (Radar Chart)
-    *   Overall Score (Doughnut Chart)
-*   **AI-Generated Feedback:** Utilizes the Google Gemini API to provide personalized analysis and actionable recommendations based on the company's scores and profile.
-*   **Email Notifications:** Sends emails via EmailJS for:
-    *   Company registration confirmation with the unique ID.
-    *   Results summary, including scores and AI feedback, upon completion.
-*   **Admin Panel:** A password-protected section for administrators to:
-    *   Export all registered company data and scores to an Excel file (`.xlsx`).
-    *   Reset/delete all stored data (requires confirmation).
-*   **Publications List:** Showcases related academic publications by the research team.
+*   **Presentación del Proyecto:** Visión general detallada del framework FREEPORT, sus componentes y objetivos.
+*   **Información del Equipo:** Presenta al equipo de investigación detrás del proyecto.
+*   **Registro de Empresa:** Un formulario para registrar detalles de la empresa (nombre, país, actividad, tamaño, figura legal, correos de contacto). Genera un ID único.
+*   **Acceso Basado en Perfil:** Permite que diferentes perfiles de usuario (Gerente, Ingeniero, Técnico) accedan y respondan las partes relevantes del cuestionario usando el ID único de la empresa.
+*   **Cuestionario de Madurez IoT:** Cuestionario completo derivado del modelo ATLANTIS, segmentado por perfil, componente (Gestión de Dispositivos, Conectividad, Nube/Borde, etc.) y dimensión (Tecnológica, Humana, Organizacional).
+*   **Cálculo de Puntuación:** Calcula automáticamente las puntuaciones basadas en las respuestas del usuario para cada componente, dimensión y una puntuación de madurez general (0-100).
+*   **Visualización de Resultados:** Presenta las puntuaciones calculadas usando gráficos interactivos:
+    *   Puntuaciones por Componente (Gráfico de Barras)
+    *   Puntuaciones por Dimensión (Gráfico de Radar)
+    *   Puntuación General (Gráfico de Dona)
+*   **Feedback Generado por IA:** Utiliza la API Google Gemini para proporcionar análisis personalizados y recomendaciones accionables basadas en las puntuaciones y el perfil de la empresa.
+*   **Notificaciones por Email:** Envía correos electrónicos a través de EmailJS para:
+    *   Confirmación de registro de la empresa con el ID único.
+    *   Resumen de resultados, incluyendo puntuaciones y feedback de IA, al completar el proceso.
+*   **Panel de Administrador:** Una sección protegida por contraseña para administradores para:
+    *   Exportar todos los datos de las empresas registradas y sus puntuaciones a un archivo Excel (`.xlsx`).
+    *   Restablecer/eliminar todos los datos almacenados (requiere confirmación).
+*   **Lista de Publicaciones:** Muestra publicaciones académicas relacionadas realizadas por el equipo de investigación.
 
-## How to Use FREEPORT (User Guide)
+## Cómo Usar FREEPORT (Guía de Usuario)
 
-1.  **Register Your Company:**
-    *   Navigate to the "Registrar Empresa" tab.
-    *   Fill in the required company details.
-    *   **Crucial:** Provide at least one valid email address (preferably for the Manager role) to receive the unique Company ID. Provide emails for other roles if they will participate.
-    *   Click "Registrar".
-    *   **Save the unique Company ID** displayed and sent via email. You'll need it to log in.
-2.  **Log In with Your Profile:**
-    *   Go to the "Ingresar" tab.
-    *   Enter the unique Company ID you received.
-    *   Click "Cargar Progreso".
-    *   Select your role (Manager, Engineer, or Technician). You will only see buttons for roles that had an email address registered.
-3.  **Answer the Questionnaire:**
-    *   You will be directed to the "Modelo de Madurez" tab.
-    *   Answer the questions corresponding to your profile. Select the option that best reflects your company's current state.
-    *   Click "Guardar respuestas de [Your Profile]".
-4.  **Calculate Score:**
-    *   Once *all* participating profiles (Manager, Engineer, Technician for whom emails were registered) have saved their answers, the "Calcular Puntuación" button will become active.
-    *   Any user profile can click this button.
-5.  **View Results:**
-    *   The application will calculate and display the scores in the "Resultados" section of the "Modelo de Madurez" tab.
-    *   This includes detailed charts, score breakdowns, and AI-generated feedback.
-    *   A summary email will also be sent to the registered email addresses.
+1.  **Registra tu Empresa:**
+    *   Navega a la pestaña "Registrar Empresa".
+    *   Completa los detalles requeridos de la empresa.
+    *   **Crucial:** Proporciona al menos una dirección de correo electrónico válida (preferiblemente para el rol de Gerente) para recibir el ID único de la Empresa. Proporciona correos para otros roles si van a participar.
+    *   Haz clic en "Registrar".
+    *   **Guarda el ID único de la Empresa** que se muestra y se envía por correo electrónico. Lo necesitarás para iniciar sesión.
+2.  **Ingresa con tu Perfil:**
+    *   Ve a la pestaña "Ingresar".
+    *   Introduce el ID único de la Empresa que recibiste.
+    *   Haz clic en "Cargar Progreso".
+    *   Selecciona tu rol (Manager, Engineer o Technician). Solo verás los botones para los roles que tuvieron una dirección de correo registrada.
+3.  **Responde el Cuestionario:**
+    *   Serás dirigido a la pestaña "Modelo de Madurez".
+    *   Responde las preguntas correspondientes a tu perfil. Selecciona la opción que mejor refleje el estado actual de tu empresa.
+    *   Haz clic en "Guardar respuestas de [Tu Perfil]".
+4.  **Calcula la Puntuación:**
+    *   Una vez que *todos* los perfiles participantes (Manager, Engineer, Technician para quienes se registraron correos) hayan guardado sus respuestas, el botón "Calcular Puntuación" se activará.
+    *   Cualquier perfil de usuario puede hacer clic en este botón.
+5.  **Visualiza los Resultados:**
+    *   La aplicación calculará y mostrará las puntuaciones en la sección "Resultados" de la pestaña "Modelo de Madurez".
+    *   Esto incluye gráficos detallados, desgloses de puntuaciones y feedback generado por IA.
+    *   También se enviará un correo electrónico de resumen a las direcciones de correo registradas.
 
-## Technology Stack
+## Pila Tecnológica (Stack)
 
 *   **Frontend:** HTML5, CSS3, JavaScript (ES6+)
-*   **Charting:** [Chart.js](https://www.chartjs.org/)
-*   **Excel Export:** [SheetJS (xlsx)](https://sheetjs.com/)
-*   **Email Sending:** [EmailJS](https://www.emailjs.com/)
-*   **AI Feedback:** [Google Gemini API](https://ai.google.dev/)
-*   **Data Persistence:** [Google Apps Script](https://developers.google.com/apps-script) (acting as a simple backend connected to Google Sheets via Fetch API)
-*   **Styling:** Basic CSS, [Font Awesome](https://fontawesome.com/) (Icons), [Google Fonts](https://fonts.google.com/) (Roboto)
+*   **Gráficos:** [Chart.js](https://www.chartjs.org/)
+*   **Exportación a Excel:** [SheetJS (xlsx)](https://sheetjs.com/)
+*   **Envío de Email:** [EmailJS](https://www.emailjs.com/)
+*   **Feedback de IA:** [Google Gemini API](https://ai.google.dev/)
+*   **Persistencia de Datos:** [Google Apps Script](https://developers.google.com/apps-script) (actuando como un backend simple conectado a Google Sheets mediante la Fetch API)
+*   **Estilos:** CSS Básico, [Font Awesome](https://fontawesome.com/) (Iconos), [Google Fonts](https://fonts.google.com/) (Roboto)
 
-## Configuration and Setup
+## Configuración e Instalación
 
-**IMPORTANT SECURITY NOTICE:**
+**AVISO IMPORTANTE DE SEGURIDAD:**
 
-This project utilizes external services requiring API keys and credentials:
+Este proyecto utiliza servicios externos que requieren claves API y credenciales:
 
-*   **Google Gemini API Key:** Found in `script.js` (variable `GEMINI_API_KEY`). Required for generating AI feedback.
-*   **EmailJS Service ID, Template IDs, and User ID (Public Key):** Used in `script.js` (within `emailjs.init` and `emailjs.send` calls). Required for sending emails.
+*   **Clave API de Google Gemini:** Se encuentra en `script.js` (variable `GEMINI_API_KEY`). Necesaria para generar el feedback de IA.
+*   **ID de Servicio, IDs de Plantilla y ID de Usuario (Clave Pública) de EmailJS:** Usados en `script.js` (dentro de las llamadas `emailjs.init` y `emailjs.send`). Necesarios para enviar correos electrónicos.
 
-**DO NOT commit these keys directly into the `script.js` file or any other file in the repository, especially if the repository is public.** Exposing these keys is a security risk.
+**NO incluyas ("commitees") estas claves directamente en el archivo `script.js` ni en ningún otro archivo del repositorio, especialmente si el repositorio es público.** Exponer estas claves es un riesgo de seguridad.
 
-**How to Handle Keys:**
+**Cómo Manejar las Claves:**
 
-1.  **(Recommended for Deployment)** Use environment variables provided by your hosting platform (like Netlify, Vercel, or others if not using GitHub Pages for private repos). Modify `script.js` to read keys from `process.env` or the platform's equivalent.
-2.  **(For Local Development)** Create a separate configuration file (e.g., `config.js`) that is *not* committed to Git (add it to `.gitignore`). Define your keys in `config.js` and import them into `script.js`.
-3.  **(Manual - Least Secure)** Manually insert the keys into your local copy of `script.js` *after* cloning/downloading and *before* running. **Be extremely careful not to commit them.**
+1.  **(Recomendado para Despliegue)** Usa variables de entorno proporcionadas por tu plataforma de hosting (como Netlify, Vercel u otras si no usas GitHub Pages para repositorios privados). Modifica `script.js` para leer las claves desde `process.env` o el equivalente de la plataforma.
+2.  **(Para Desarrollo Local)** Crea un archivo de configuración separado (p. ej., `config.js`) que *no* se incluya en Git (añádelo a `.gitignore`). Define tus claves en `config.js` e impórtalas en `script.js`.
+3.  **(Manual - Menos Seguro)** Inserta manualmente las claves en tu copia local de `script.js` *después* de clonar/descargar y *antes* de ejecutar. **Ten mucho cuidado de no enviarlas ("commitearlas") accidentalmente.**
 
-**Other Configuration:**
+**Otra Configuración:**
 
-*   **Google Apps Script URL:** The `urlbase` variable in `script.js` points to your deployed Google Apps Script web app URL, which handles data storage. You need to deploy your own instance of the associated Apps Script code.
-*   **HTML File:** The main HTML file is `Codigoo.txt`. For standard web serving and GitHub Pages, rename this file to `index.html`.
+*   **URL de Google Apps Script:** La variable `urlbase` en `script.js` apunta a la URL de tu aplicación web de Google Apps Script desplegada, que maneja el almacenamiento de datos. Necesitas desplegar tu propia instancia del código de Apps Script asociado.
+*   **Archivo HTML:** El archivo HTML principal es `Codigoo.txt`. Para el servicio web estándar y GitHub Pages, renombra este archivo a `index.html`.
 
-## Data Storage
+## Almacenamiento de Datos
 
-Company registration data, profile answers, and calculated scores are persisted using a Google Apps Script connected to a Google Sheet, acting as a simple database. The `script.js` file interacts with the deployed Apps Script web app URL via the Fetch API to save and retrieve data.
+Los datos de registro de la empresa, las respuestas de los perfiles y las puntuaciones calculadas se guardan utilizando un Google Apps Script conectado a una Hoja de Cálculo de Google (Google Sheet), que actúa como una base de datos simple. El archivo `script.js` interactúa con la URL de la aplicación web de Apps Script desplegada mediante la Fetch API para guardar y recuperar datos.
 
-## Team & Publications
+## Equipo y Publicaciones
 
-Information about the research team and related academic publications can be found directly on the website within the 'Equipo de Trabajo' and 'Publicaciones' tabs.
+La información sobre el equipo de investigación y las publicaciones académicas relacionadas se puede encontrar directamente en el sitio web, dentro de las pestañas 'Equipo de Trabajo' y 'Publicaciones'.
 
-## License
+## Licencia
 
-This project is licensed under the MIT License - see the `LICENSE` file for details (You should add a LICENSE file to your repository if you make it public, choosing a license like MIT).
+Este proyecto está bajo la Licencia MIT - consulta el archivo `LICENSE` para más detalles (Deberías añadir un archivo `LICENSE` a tu repositorio si lo haces público, eligiendo una licencia como MIT).
