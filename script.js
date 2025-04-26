@@ -265,80 +265,122 @@ function populateDropdowns () {
   });
 }
 
-function registerCompany () {
-  const companyName = document.getElementById ('company-name').value;
-  const country = document.getElementById ('country').value;
-  const mainActivity = document.getElementById ('main-activity').value;
-  const companySize = document.getElementById ('company-size').value;
-  const legalFigure = document.getElementById ('legal-figure').value;
-  const managerEmail = document.getElementById ('manager-email').value;
-  const engineerEmail = document.getElementById ('engineer-email').value;
-  const technicianEmail = document.getElementById ('technician-email').value;
+async function registerCompany () {
+  const registerButton = document.querySelector('#registration-form button');
 
-  if (
-    !companyName ||
-    !country ||
-    !mainActivity ||
-    !companySize ||
-    !legalFigure ||
-    !managerEmail
-  ) {
-    alert ('Por favor, complete todos los campos obligatorios correctamente.');
-    return;
+  if (registerButton) {
+      registerButton.disabled = true;
+      registerButton.textContent = 'Registrando...';
   }
 
-  const companyId = generateUniqueId ();
-  const companyData = {
-    id: companyId,
-    companyName,
-    country,
-    mainActivity,
-    companySize,
-    legalFigure,
-    managerEmail,
-    engineerEmail,
-    technicianEmail,
-  };
+  try {
+      const companyName = document.getElementById ('company-name').value;
+      const country = document.getElementById ('country').value;
+      const mainActivity = document.getElementById ('main-activity').value;
+      const companySize = document.getElementById ('company-size').value;
+      const legalFigure = document.getElementById ('legal-figure').value;
+      const managerEmail = document.getElementById ('manager-email').value;
+      const engineerEmail = document.getElementById ('engineer-email').value;
+      const technicianEmail = document.getElementById ('technician-email').value;
 
-  companyProfiles[companyId] = {
-    manager: {},
-    engineer: {},
-    technician: {},
-  };
+      // --- Input Validation ---
+      let missingFields = [];
+      if (!companyName) missingFields.push("Nombre de la empresa");
+      if (!country) missingFields.push("País");
+      if (!mainActivity) missingFields.push("Actividad principal");
+      if (!companySize) missingFields.push("Tamaño de la empresa");
+      if (!legalFigure) missingFields.push("Figura legal");
+      if (!managerEmail && !engineerEmail && !technicianEmail) missingFields.push("Al menos un correo electrónico");
 
-  // Guardar en localStorage
-  // localStorage.setItem ('companyProfiles', JSON.stringify (companyProfiles));
-  // llamado a función de almacenamient 1
+      if (missingFields.length > 0) {
+          alert (`Por favor, complete los siguientes campos obligatorios:\n- ${missingFields.join('\n- ')}`);
+          if (registerButton) { // Re-enable button before returning on validation fail
+              registerButton.disabled = false;
+              registerButton.textContent = 'Registrar';
+          }
+          return;
+      }
+      // --- End Validation ---
 
-  saveInfo (companyProfiles, 1)
-    .then (response => console.log ('Respuesta del servidor:', response))
-    .catch (error => console.error ('Error manejado:', error));
+      const companyId = generateUniqueId ();
+      const companyData = {
+        id: companyId,
+        companyName,
+        country,
+        mainActivity,
+        companySize,
+        legalFigure,
+        managerEmail,
+        engineerEmail,
+        technicianEmail,
+        componentScores: {},
+        dimensionScores: {},
+        overallScore: null
+      };
 
-  // Añadir la nueva empresa a allCompaniesData
+      // Prepare the data to be saved. Create copies to avoid potential modification issues.
+      const profilesToSave = JSON.parse(JSON.stringify(companyProfiles)); // Deep copy
+      if (!profilesToSave[companyId]) {
+          profilesToSave[companyId] = {
+            manager: {},
+            engineer: {},
+            technician: {},
+          };
+      }
 
-  allCompaniesData.push (companyData);
-  // localStorage.setItem ('allCompaniesData', JSON.stringify (allCompaniesData));
-  saveInfo (allCompaniesData, 2)
-    .then (response => console.log ('Respuesta del servidor:', response))
-    .catch (error => console.error ('Error manejado:', error));
+      const allDataToSave = JSON.parse(JSON.stringify(allCompaniesData)); // Deep copy
+      allDataToSave.push(companyData);
 
-  // Enviar correos electrónicos
-  sendRegistrationEmails (
-    companyId,
-    managerEmail,
-    engineerEmail,
-    technicianEmail
-  );
 
-  alert (`Empresa registrada con éxito! Su ID único es: ${companyId}`);
+      // --- Perform Saves Sequentially ---
+      console.log("Attempting to save companyProfiles structure (type 1)...");
+      await saveInfo (profilesToSave, 1); // Save profile structure
+      console.log("Profile structure save successful. Attempting to save company data (type 2)...");
+      await saveInfo (allDataToSave, 2); // Save company details array
+      console.log("Company data save successful.");
+      // --- End Saves ---
 
-  document.getElementById ('registration').style.display = 'none';
-  document.getElementById ('registration-tab').style.display = 'none';
-  document.getElementById ('profiles').style.display = 'block';
-  document.getElementById ('profiles-tab').style.display = 'inline';
+      // --- Fetch latest data AFTER saves are confirmed ---
+      console.log("Fetching latest data from backend...");
+      await fetchData();
+      console.log("Local data synchronized.");
+      // --- End Fetch ---
 
-  // Mostrar el ID en el campo de entrada
-  document.getElementById ('company-id').value = companyId;
+
+      // Send emails asynchronously
+      sendRegistrationEmails (
+        companyId,
+        managerEmail,
+        engineerEmail,
+        technicianEmail
+      );
+
+      alert (`Empresa registrada con éxito! Su ID único es: ${companyId}`);
+
+      // Switch UI
+      document.getElementById ('registration').style.display = 'none';
+      document.getElementById ('registration-tab').style.display = 'none';
+      document.getElementById ('profiles').style.display = 'block';
+      document.getElementById ('profiles-tab').style.display = 'inline';
+
+      // Pre-fill ID and clear form
+      document.getElementById ('company-id').value = companyId;
+      document.getElementById('registration-form').reset();
+
+      // Now loadCompanyProgress should work immediately because fetchData updated local state
+      loadCompanyProgress(); // Try calling this automatically
+
+  } catch (error) {
+      console.error("Error during company registration:", error);
+      // Provide a more user-friendly error message
+      alert(`Error al registrar la empresa: ${error.message || 'Ocurrió un problema de comunicación con el servidor.'}. Por favor, revise la consola para más detalles e intente de nuevo.`);
+  } finally {
+      // Ensure button is re-enabled
+      if (registerButton) {
+          registerButton.disabled = false;
+          registerButton.textContent = 'Registrar';
+      }
+  }
 }
 
 function generateUniqueId () {
@@ -422,38 +464,66 @@ function loadQuestions (profile, companyId) {
   updateCalculateButton (companyId);
 }
 
-function saveAnswers (profile, companyId) {
+async function saveAnswers (profile, companyId) { // Make the function async
   let allAnswered = true;
+  const saveButton = document.getElementById(`save-button-${profile}`); // Get the button
 
-  const questionDivs = document.querySelectorAll ('.question');
-  questionDivs.forEach ((questionDiv, index) => {
-    const radioButtonName = `${profile}-q${index}`;
-    const selectedAnswer = questionDiv.querySelector (
-      `input[name="${radioButtonName}"]:checked`
-    );
-    if (selectedAnswer) {
-      companyProfiles[companyId][profile][index] = parseInt (
-        selectedAnswer.value
-      );
-    } else {
-      allAnswered = false;
-    }
-  });
-
-  if (allAnswered) {
-    // Guardar en localStorage
-    // localStorage.setItem ('companyProfiles', JSON.stringify (companyProfiles));
-    saveInfo (companyProfiles, 1)
-      .then (response => console.log ('Respuesta del servidor:', response))
-      .catch (error => console.error ('Error manejado:', error));
-    alert (`Respuestas guardadas para ${profile} de la empresa ${companyId}!`);
-  } else {
-    alert (
-      `Por favor, responda todas las preguntas para ${profile} antes de guardar.`
-    );
+  // Disable button and show loading state immediately
+  if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = 'Guardando...'; // Visual feedback
   }
-  updateCalculateButton (companyId);
+
+  try {
+      const questionDivs = document.querySelectorAll ('#questions-container .question'); // Be more specific with selector
+      questionDivs.forEach ((questionDiv, index) => {
+        const radioButtonName = `${profile}-q${index}`;
+        const selectedAnswer = questionDiv.querySelector (
+          `input[name="${radioButtonName}"]:checked`
+        );
+        if (selectedAnswer) {
+          // Ensure the profile object exists before assigning
+          if (!companyProfiles[companyId]) companyProfiles[companyId] = {};
+          if (!companyProfiles[companyId][profile]) companyProfiles[companyId][profile] = {};
+          companyProfiles[companyId][profile][index] = parseInt (
+            selectedAnswer.value
+          );
+        } else {
+          allAnswered = false;
+        }
+      });
+
+      if (allAnswered) {
+        // --- Await the saveInfo operation ---
+        console.log(`Attempting to save answers for ${profile}...`);
+        // The local companyProfiles is already updated above
+        await saveInfo (companyProfiles, 1); // Wait for saveInfo to complete
+        console.log(`Answers saved successfully for ${profile}.`);
+        alert (`Respuestas guardadas para ${profile} de la empresa ${companyId}!`);
+        // Note: saveInfo internally calls fetchData on success, which updates the local state again.
+      } else {
+        alert (
+          `Por favor, responda todas las preguntas para ${profile} antes de guardar.`
+        );
+      }
+      // Update the calculate button state regardless of save success/failure,
+      // as the local answers might have changed.
+      updateCalculateButton (companyId);
+
+  } catch (error) {
+      console.error(`Error saving answers for ${profile}:`, error);
+      alert(`Error al guardar las respuestas para ${profile}. Por favor, intente de nuevo. Detalles: ${error.message}`);
+  } finally {
+      // Re-enable button and restore text AFTER the operation completes (success or failure)
+      if (saveButton) {
+          saveButton.disabled = false;
+          saveButton.textContent = `Guardar respuestas de ${profile
+            .charAt (0)
+            .toUpperCase () + profile.slice (1)}`;
+      }
+  }
 }
+
 
 function componentName (dimension) {
   for (const component in componentWeights) {
@@ -1120,11 +1190,13 @@ function exportToExcel() {
   }
 }
 
+// In showSaveButton, add an ID to the button for easier access
 function showSaveButton (profile, companyId) {
   const buttonsContainer = document.getElementById ('buttons-container');
-  buttonsContainer.innerHTML = '';
+  buttonsContainer.innerHTML = ''; // Clear previous buttons
 
   const saveButton = document.createElement ('button');
+  saveButton.id = `save-button-${profile}`; // Add a unique ID
   saveButton.textContent = `Guardar respuestas de ${profile
     .charAt (0)
     .toUpperCase () + profile.slice (1)}`;
@@ -1254,10 +1326,10 @@ function initializePage () {
 
 /* Implementacin de funcion asicronca que conecta con api encargada de almacenar infomracin en base de datos*/
 
+// In saveInfo, REMOVE the fetchData call
 async function saveInfo (dataToSave, tipo) {
   const url = urlbase; // Apps script URL handles routing via doPost
 
-  // The dataToSave needs to be stringified *before* putting it in the main JSON payload
   const jsonDataPayload = {
     json: JSON.stringify(dataToSave),
     tipo: tipo,
@@ -1267,44 +1339,42 @@ async function saveInfo (dataToSave, tipo) {
     console.log(`Sending data (type ${tipo}) to Apps Script...`);
     const response = await fetch (url, {
       method: 'POST',
-      // Apps Script doPost reads the raw body, so no 'Content-Type' header needed,
-      // but sending it doesn't hurt. It expects a stringified payload.
-      // Using redirect: 'follow' is important for Apps Script web apps.
-      mode: 'cors', // Necessary for cross-origin requests
+      mode: 'cors',
       redirect: 'follow',
       headers: {
-         // 'Content-Type': 'application/json', // Can be omitted or set to text/plain
-         'Content-Type': 'text/plain;charset=utf-8', // Often works better with Apps Script
+         'Content-Type': 'text/plain;charset=utf-8',
       },
-      body: JSON.stringify(jsonDataPayload), // Send the wrapper object stringified
+      body: JSON.stringify(jsonDataPayload),
     });
 
-    // Check if the response is ok (status in the range 200-299)
     if (!response.ok) {
-       // Try to get more details from the response body if possible
        let errorText = response.statusText;
        try {
           const errorBody = await response.text();
-          errorText += ` - ${errorBody}`;
+          // Avoid logging large HTML error pages if Apps Script returns one
+          if (errorBody && !errorBody.trim().startsWith('<')) {
+              errorText += ` - ${errorBody}`;
+          }
        } catch (e) { /* Ignore if cannot read body */ }
-       throw new Error(`Error in saving data: ${response.status} - ${errorText}`);
+       throw new Error(`Error saving data (type ${tipo}): ${response.status} - ${errorText}`);
     }
 
-
-    // Apps Script returns JSON text, parse it
     const result = await response.json();
-    console.log('Apps Script Response:', result);
+    console.log(`Apps Script Response for type ${tipo}:`, result);
 
-    // IMPORTANT: Refetch data after saving to update local variables
-    // This ensures companyProfiles and allCompaniesData are in sync with the Sheet
-    await fetchData(); // <--- Add this line
+    // --- REMOVED THIS LINE ---
+    // await fetchData(); // <-- REMOVE THIS FETCH FROM HERE
+
+    // Check if Apps Script explicitly signaled an error in its JSON response
+    if (result && result.status === 'error') {
+        throw new Error(`Apps Script reported error for type ${tipo}: ${result.message || 'Unknown error'}`);
+    }
 
     return result; // Return the parsed response from Apps Script
 
   } catch (error) {
-    console.error ('Error saving data via Apps Script:', error);
-    // Rethrow or handle as needed
-    throw error;
+    console.error (`Error in saveInfo for type ${tipo}:`, error);
+    throw error; // Re-throw the error to be caught by the calling function (registerCompany)
   }
 }
 
