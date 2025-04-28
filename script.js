@@ -203,35 +203,79 @@ function toggleCountryList () {
   });
 }
 
-function openTab (tabName) {
-  const tabContents = document.querySelectorAll ('.tab-content');
-  tabContents.forEach (content => (content.style.display = 'none'));
+function openTab(tabName) {
+  const tabContents = document.querySelectorAll('.tab-content');
+  tabContents.forEach(content => (content.style.display = 'none'));
 
-  document.getElementById (tabName).style.display = 'block';
-
-  if (tabName === 'profiles') { // Mantener 'profiles' como estaba originalmente
-    loadCompanyProgress ();
+  // Ensure the correct tab content is displayed
+  const targetTab = document.getElementById(tabName);
+  if (targetTab) {
+       targetTab.style.display = 'block';
+  } else {
+       console.error(`Tab content with ID '${tabName}' not found.`);
+       // Optionally display the presentation tab as a fallback
+       document.getElementById('presentation').style.display = 'block';
+       // Also update the active button state if needed
+       document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+       document.querySelector('.tabs button[onclick="openTab(\'presentation\')"]')?.classList.add('active');
+       return; // Stop further execution if tab not found
   }
+
+
+  // --- Update active button state ---
+  // Find the button corresponding to the tabName
+  const clickedButton = document.querySelector(`.tabs button[onclick="openTab('${tabName}')"]`);
+
+  // Remove active class from all buttons
+  document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+
+  // Add active class to the clicked button (if found)
+  if (clickedButton) {
+      clickedButton.classList.add('active');
+  } else {
+       // Handle case where button might not be found (e.g., if called programmatically)
+       // Maybe activate the presentation button as fallback
+       document.querySelector('.tabs button[onclick="openTab(\'presentation\')"]')?.classList.add('active');
+  }
+   // --- End update active button state ---
+
+  // No automatic loading here anymore
 }
 
 
-function loadCompanyProgress () {
-  const companyId = document.getElementById ('company-id').value;
+function loadCompanyProgress() {
+  const companyIdInput = document.getElementById('company-id'); // Get the input element
+  const companyId = companyIdInput.value.trim(); // Get the value and remove whitespace
+  const progressDiv = document.getElementById('company-progress'); // Get progress display div
+
+  // Clear previous progress display when trying to load
+  progressDiv.innerHTML = '';
+
+  // Check if the ID field is empty
+  if (!companyId) {
+      alert('Por favor, ingrese el ID de su empresa.'); // Ask user to enter ID
+      companyIdInput.focus(); // Optionally focus the input field
+      return; // Stop execution
+  }
+
+  // Proceed with existing logic only if an ID was entered
   if (companyProfiles[companyId]) {
-    const progress = checkCompanyProgress (companyId);
-    const progressDiv = document.getElementById ('company-progress');
-    progressDiv.innerHTML = `
-            <h3>Progreso de la empresa:</h3>
-            <p>Manager: ${progress.manager.toFixed (2)}%</p>
-            <p>Engineer: ${progress.engineer.toFixed (2)}%</p>
-            <p>Technician: ${progress.technician.toFixed (2)}%</p>
-        `;
-    document.getElementById ('profiles').style.display = 'block';
-    document.getElementById ('profiles-tab').style.display = 'inline';
+      const progress = checkCompanyProgress(companyId);
+      progressDiv.innerHTML = `
+          <h3>Progreso de la empresa:</h3>
+          <p>Manager: ${progress.manager.toFixed(2)}%</p>
+          <p>Engineer: ${progress.engineer.toFixed(2)}%</p>
+          <p>Technician: ${progress.technician.toFixed(2)}%</p>
+      `;
+      // This part might be redundant now, as the tab is already open
+      // document.getElementById('profiles').style.display = 'block';
+      // document.getElementById('profiles-tab').style.display = 'inline';
   } else {
-    alert (
-      'ID de empresa no encontrado. Por favor, verifique el ID o registre una nueva empresa.'
-    );
+      alert(
+          'ID de empresa no encontrado. Por favor, verifique el ID o registre una nueva empresa.'
+      );
+      // Clear progress display again in case of error after trying
+       progressDiv.innerHTML = '';
   }
 }
 
