@@ -579,15 +579,24 @@ function componentName (dimension) {
   return component;
 }
 
+
+
+// script.js
+
+// ... (keep all other code the same) ...
+
 async function calculateScore (companyId) { // Stays async
   const resultsDiv = document.getElementById ('results');
   resultsDiv.innerHTML = ''; // Clear previous results
+  resultsDiv.classList.remove('show'); // Hide results area initially
 
   // --- Add loading indicator ---
   const loadingDiv = document.createElement('div');
-  loadingDiv.id = 'loading-feedback';
-  loadingDiv.innerHTML = '<p>Calculating scores and generating feedback...</p>';
+  loadingDiv.id = 'loading-feedback'; // Use this ID to find and remove later
+  // You can add more styling or a spinner GIF/SVG here if desired
+  loadingDiv.innerHTML = '<p style="text-align: center; padding: 30px; font-style: italic; color: var(--secondary-color);">Calculando puntuaciones y generando comentarios personalizados, por favor espere...</p>';
   resultsDiv.appendChild(loadingDiv);
+  resultsDiv.classList.add('show'); // Show the loading message immediately
   // ---
 
   // --- Find Company Data (Crucial Step) ---
@@ -599,239 +608,236 @@ async function calculateScore (companyId) { // Stays async
       console.log("Found company info for feedback:", companyInfo.companyName);
   } else {
       console.error(`Error: Company data not found for ID ${companyId} when trying to calculate scores.`);
+      // Remove loading indicator before showing error
       const loadingElement = document.getElementById('loading-feedback');
       if (loadingElement) loadingElement.remove();
       alert("Error crítico: No se encontró la información de la empresa. No se pueden calcular los resultados ni generar feedback.");
+      resultsDiv.classList.remove('show'); // Hide results area again on error
       return; // Stop execution
   }
   // --- End Find Company Data ---
 
+  try { // Wrap the main processing in a try block to ensure loading removal even on error
 
-  // Crear el título principal (append later)
-  const titleDiv = document.createElement ('div');
-  titleDiv.innerHTML =
-    '<h2 class="results-main-title">Resultados obtenidos con FREEPORT</h2>';
+      // Crear el título principal (append later)
+      const titleDiv = document.createElement ('div');
+      titleDiv.innerHTML =
+      '<h2 class="results-main-title">Resultados obtenidos con FREEPORT</h2>';
 
-  const componentScores = {};
-  let overallScore = 0;
-  const dimensionScores = {technological: 0, human: 0, organizational: 0};
+      const componentScores = {};
+      let overallScore = 0;
+      const dimensionScores = {technological: 0, human: 0, organizational: 0};
 
-  // Initialize component scores
-  for (const component in componentWeights) {
-    componentScores[component] = 0;
-  }
+      // Initialize component scores
+      for (const component in componentWeights) {
+          componentScores[component] = 0;
+      }
 
-  // Calculate component and dimension scores (Your existing logic - ensure it's correct)
-  if (companyProfiles[companyId]) {
-      for (const profile in companyProfiles[companyId]) {
-        if (questions[profile]) { // Check if profile exists in questions definition
-            questions[profile].forEach ((question, index) => {
-              // Check if the specific answer exists for this question index
-              if (companyProfiles[companyId][profile] && companyProfiles[companyId][profile].hasOwnProperty(index)) {
-                  const score = companyProfiles[companyId][profile][index];
-                  const componentName = question.component;
-                  const dimensionName = question.dimension;
+      // Calculate component and dimension scores
+      if (companyProfiles[companyId]) {
+          // ... (Your existing score calculation logic - keep it as is) ...
+          for (const profile in companyProfiles[companyId]) {
+              if (questions[profile]) {
+                  questions[profile].forEach ((question, index) => {
+                  if (companyProfiles[companyId][profile] && companyProfiles[companyId][profile].hasOwnProperty(index)) {
+                      const score = companyProfiles[companyId][profile][index];
+                      const componentName = question.component;
+                      const dimensionName = question.dimension;
 
-                  if (componentName && componentWeights.hasOwnProperty(componentName)) {
-                      const maxPointsForQuestion = 15;
-                      let numQuestionsComponent = 0;
-                      // Recalculate numQuestionsComponent accurately
-                      for (const prof in questions) {
-                          if(questions[prof]) {
-                              numQuestionsComponent += questions[prof].filter(
-                                  q => q.component === componentName
-                              ).length;
+                      if (componentName && componentWeights.hasOwnProperty(componentName)) {
+                          const maxPointsForQuestion = 15;
+                          let numQuestionsComponent = 0;
+                          for (const prof in questions) {
+                              if(questions[prof]) {
+                                  numQuestionsComponent += questions[prof].filter(
+                                      q => q.component === componentName
+                                  ).length;
+                              }
                           }
+                          if (numQuestionsComponent > 0) {
+                              componentScores[componentName] +=
+                                  (score / maxPointsForQuestion) *
+                                  componentWeights[componentName] *
+                                  (1 / numQuestionsComponent);
+                          } else {
+                              console.warn(`Component ${componentName} seems to have no questions.`);
+                          }
+                      } else if (componentName) {
+                          console.warn(`Weight not found for component: ${componentName}`);
                       }
 
-                      if (numQuestionsComponent > 0) {
-                          componentScores[componentName] +=
-                              (score / maxPointsForQuestion) *
-                              componentWeights[componentName] *
-                              (1 / numQuestionsComponent);
-                      } else {
-                           console.warn(`Component ${componentName} seems to have no questions.`);
+                      if (dimensionName && dimensionScores.hasOwnProperty(dimensionName)) {
+                          dimensionScores[dimensionName] += score;
+                      } else if (dimensionName) {
+                          console.warn(`Dimension score object does not have key: ${dimensionName}`);
                       }
-                  } else if (componentName) {
-                      console.warn(`Weight not found for component: ${componentName}`);
-                  }
 
-                  // Sum dimension scores
-                  if (dimensionName && dimensionScores.hasOwnProperty(dimensionName)) {
-                      dimensionScores[dimensionName] += score;
-                  } else if (dimensionName) {
-                      console.warn(`Dimension score object does not have key: ${dimensionName}`);
                   }
-
+                  });
               } else {
-                  // This might happen if a profile exists but not all questions are answered yet
-                  // console.log(`No answer found for profile ${profile}, question index ${index}`);
+                  console.warn(`Profile "${profile}" not found in questions definition.`);
               }
-            });
-        } else {
-            console.warn(`Profile "${profile}" not found in questions definition.`);
-        }
-      }
-  } else {
-      console.error(`Error: Profile data for company ID ${companyId} not found.`);
-      const loadingElement = document.getElementById('loading-feedback');
-      if (loadingElement) loadingElement.remove();
-      alert("Error: No se encontraron los datos de los perfiles para esta empresa. No se pueden calcular los resultados.");
-      return; // Exit if no profile data
-  }
-
-
-  // Calculate overall score
-  overallScore = 0;
-  for (const component in componentScores) {
-      overallScore += componentScores[component];
-  }
-  overallScore = Math.min(overallScore, 100); // Cap at 100
-
-
-  // --- Update company data and Save ---
-  // This part needs to happen *before* sending the email with potentially updated data
-  const updatedCompanyData = {
-      ...companyInfo, // Keep existing info
-      componentScores,
-      dimensionScores,
-      overallScore,
-  };
-  allCompaniesData[companyIndex] = updatedCompanyData; // Update local array
-
-  try {
-      console.log("Attempting to save updated company data with scores...");
-      await saveInfo(allCompaniesData, 2); // Wait for save to complete
-      console.log('Company data with scores saved successfully.');
-  } catch (error) {
-      console.error('Error saving company data with scores:', error);
-      // Consider if you should stop or continue if saving fails
-      alert("Advertencia: Hubo un error al guardar los puntajes calculados. Los resultados se mostrarán, pero podrían no estar persistidos.");
-  }
-  // --- End Save ---
-
-
-  // --- Generate Feedback using Gemini ---
-  let feedbackText = "Feedback generation is currently unavailable."; // Default
-  const scoresForFeedback = { // Pass the calculated scores
-        overallScore: overallScore,
-        componentScores: componentScores,
-        dimensionScores: dimensionScores
-    };
-  try {
-      console.log("Generating AI feedback...");
-      // Pass scoresForFeedback and the updated companyInfo (which now includes scores if needed by the prompt, though the current prompt doesn't use scores *from* companyInfo)
-      feedbackText = await generateFeedbackWithGemini(scoresForFeedback, companyInfo);
-      console.log("AI feedback generated.");
-  } catch (error) {
-      console.error("Failed to generate feedback:", error);
-      // Use the default feedbackText. Optionally alert the user.
-      alert("Advertencia: No se pudo generar el feedback de la IA. Se mostrarán los puntajes básicos.");
-  }
-  // --- End Generate Feedback ---
-
-
-  // --- Remove loading indicator ---
-  const loadingElement = document.getElementById('loading-feedback');
-  if (loadingElement) {
-    loadingElement.remove();
-  }
-  // --- Now add the title ---
-  resultsDiv.appendChild(titleDiv);
-
-
-  // --- Display Charts and Scores (Keep your existing logic) ---
-  const chartsDiv = document.createElement ('div');
-  chartsDiv.className = 'charts-container';
-  for (let i = 0; i < 3; i++) {
-    const canvas = document.createElement ('canvas');
-    canvas.id = `chart${i}`;
-    chartsDiv.appendChild (canvas);
-  }
-  resultsDiv.appendChild (chartsDiv);
-
-  // Destroy existing charts if they exist, otherwise Chart.js might complain or reuse old instances
-  ['chart0', 'chart1', 'chart2'].forEach(id => {
-      const chartInstance = Chart.getChart(id);
-      if (chartInstance) {
-          chartInstance.destroy();
-      }
-  });
-
-  createComponentChart (componentScores);
-  createDimensionChart (dimensionScores);
-  createOverallScoreChart (overallScore);
-
-
-  // --- Display Scores Text (Keep your existing logic) ---
-  let scoresText = `
-    <div class="results-section">
-        <div class="scores-container">
-            <h3>Puntuación por Componentes</h3>
-            <ul>`;
-  // Added nullish coalescing for safety
-  for (const component in componentScores) {
-    scoresText += `<li><b>${component}:</b> ${componentScores[component]?.toFixed (2) ?? 'N/A'}</li>`;
-  }
-  scoresText += `</ul></div></div>
-    <div class="results-section">
-        <div class="scores-container">
-            <h3>Puntuación por Dimensiones (Puntaje Bruto)</h3>
-            <ul>`;
-  for (const dimension in dimensionScores) {
-    const dimensionCapitalized = dimension.charAt(0).toUpperCase() + dimension.slice(1);
-    scoresText += `<li><b>${dimensionCapitalized}:</b> ${dimensionScores[dimension]?.toFixed(2) ?? 'N/A'}</li>`;
-  }
-  scoresText += `
-            </ul>
-        </div>
-    </div>
-    <div class="results-section">
-        <div class="scores-container">
-            <h3>Puntuación General</h3>
-            <p><b>Puntuación total obtenida con FREEPORT:</b> ${overallScore.toFixed (2)} / 100</p>
-        </div>
-    </div>`;
-
-  const scoresDiv = document.createElement ('div');
-  scoresDiv.innerHTML = scoresText;
-  resultsDiv.appendChild (scoresDiv);
-
-
-  // --- Display AI Feedback ---
-  const feedbackDiv = document.createElement('div');
-  feedbackDiv.className = 'results-section ai-feedback-section';
-  feedbackDiv.innerHTML = `
-      <h3><i class="fas fa-lightbulb"></i> Análisis y Recomendaciones (IA)</h3>
-      <div class="ai-feedback-content">
-          ${// Basic Markdown conversion (improve if needed)
-           feedbackText
-            .replace(/\n\*\s/g, '<br>• ') // Handle Markdown list items '* '
-            .replace(/\n\-/g, '<br>• ') // Handle Markdown list items '- '
-            .replace(/\n/g, '<br>')    // New lines
-            .replace(/### (.*?)<br>/g, '<h4>$1</h4><br>') // Heading 3 -> h4
-            .replace(/## (.*?)<br>/g, '<h3>$1</h3><br>')   // Heading 2 -> h3
-            .replace(/# (.*?)<br>/g, '<h2>$1</h2><br>')    // Heading 1 -> h2
-            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // Bold
-            .replace(/\*(.*?)\*/g, '<i>$1</i>')   // Italic
           }
-      </div>
-      <small><i>Nota: Esta retroalimentación es generada por inteligencia artificial basada en sus puntuaciones y puede servir como guía inicial.</i></small>
-  `;
-  resultsDiv.appendChild(feedbackDiv);
-  // --- End Display AI Feedback ---
+      } else {
+          console.error(`Error: Profile data for company ID ${companyId} not found.`);
+          // Remove loading before alert
+          const loadingElement = document.getElementById('loading-feedback');
+          if (loadingElement) loadingElement.remove();
+          alert("Error: No se encontraron los datos de los perfiles para esta empresa. No se pueden calcular los resultados.");
+          resultsDiv.classList.remove('show');
+          return; // Exit if no profile data
+      }
 
 
-  resultsDiv.classList.add ('show'); // Make results visible
+      // Calculate overall score
+      overallScore = 0;
+      for (const component in componentScores) {
+          overallScore += componentScores[component];
+      }
+      overallScore = Math.min(overallScore, 100); // Cap at 100
 
 
-  // --- Send Email with Feedback ---
-  console.log("Preparing to send results email after display...");
-  // Pass the calculated scores and the generated feedback text
-  await sendResultsEmailWithFeedback(companyId, companyInfo, scoresForFeedback, feedbackText);
-  console.log("Email sending process initiated.");
+      // --- Update company data and Save ---
+      const updatedCompanyData = {
+          ...companyInfo,
+          componentScores,
+          dimensionScores,
+          overallScore,
+      };
+      allCompaniesData[companyIndex] = updatedCompanyData;
 
+      try {
+          console.log("Attempting to save updated company data with scores...");
+          await saveInfo(allCompaniesData, 2); // Wait for save to complete
+          console.log('Company data with scores saved successfully.');
+      } catch (error) {
+          console.error('Error saving company data with scores:', error);
+          alert("Advertencia: Hubo un error al guardar los puntajes calculados. Los resultados se mostrarán, pero podrían no estar persistidos.");
+          // Decide if you want to proceed or stop if saving fails. Currently proceeds.
+      }
+      // --- End Save ---
+
+
+      // --- Generate Feedback using Gemini ---
+      let feedbackText = "Feedback generation is currently unavailable."; // Default
+      const scoresForFeedback = {
+          overallScore: overallScore,
+          componentScores: componentScores,
+          dimensionScores: dimensionScores
+      };
+      try {
+          console.log("Generating AI feedback (this might take a moment)...");
+          feedbackText = await generateFeedbackWithGemini(scoresForFeedback, companyInfo);
+          console.log("AI feedback generated.");
+      } catch (error) {
+          console.error("Failed to generate feedback:", error);
+          alert("Advertencia: No se pudo generar el feedback de la IA. Se mostrarán los puntajes básicos.");
+          // Use the default feedbackText.
+      }
+      // --- End Generate Feedback ---
+
+
+      // --- Remove loading indicator ---
+      // IMPORTANT: Do this *after* the potentially slow operations (save, AI call)
+      // and *before* adding the final content.
+      const loadingElement = document.getElementById('loading-feedback');
+      if (loadingElement) {
+          loadingElement.remove();
+      }
+      // ---
+
+      // --- Now add the title and results ---
+      resultsDiv.appendChild(titleDiv); // Add the title first
+
+      // --- Display Charts and Scores ---
+      const chartsDiv = document.createElement ('div');
+      chartsDiv.className = 'charts-container';
+      for (let i = 0; i < 3; i++) {
+          const canvas = document.createElement ('canvas');
+          canvas.id = `chart${i}`;
+          chartsDiv.appendChild (canvas);
+      }
+      resultsDiv.appendChild (chartsDiv);
+
+      // Destroy existing charts if they exist
+      ['chart0', 'chart1', 'chart2'].forEach(id => {
+          const chartInstance = Chart.getChart(id);
+          if (chartInstance) {
+              chartInstance.destroy();
+          }
+      });
+
+      createComponentChart (componentScores);
+      createDimensionChart (dimensionScores);
+      createOverallScoreChart (overallScore);
+
+      // --- Display Scores Text ---
+      let scoresText = `
+          <div class="results-section"> <div class="scores-container"> <h3>Puntuación por Componentes</h3> <ul>`;
+      for (const component in componentScores) {
+          scoresText += `<li><b>${component}:</b> ${componentScores[component]?.toFixed (2) ?? 'N/A'}</li>`;
+      }
+      scoresText += `</ul></div></div> <div class="results-section"> <div class="scores-container"> <h3>Puntuación por Dimensiones (Puntaje Bruto)</h3> <ul>`;
+      for (const dimension in dimensionScores) {
+          const dimensionCapitalized = dimension.charAt(0).toUpperCase() + dimension.slice(1);
+          scoresText += `<li><b>${dimensionCapitalized}:</b> ${dimensionScores[dimension]?.toFixed(2) ?? 'N/A'}</li>`;
+      }
+      scoresText += `</ul> </div> </div> <div class="results-section"> <div class="scores-container"> <h3>Puntuación General</h3> <p><b>Puntuación total obtenida con FREEPORT:</b> ${overallScore.toFixed (2)} / 100</p> </div> </div>`;
+
+      const scoresDiv = document.createElement ('div');
+      scoresDiv.innerHTML = scoresText;
+      resultsDiv.appendChild (scoresDiv);
+
+
+      // --- Display AI Feedback ---
+      const feedbackDiv = document.createElement('div');
+      feedbackDiv.className = 'results-section ai-feedback-section'; // Add a specific class if you want to style it
+      feedbackDiv.innerHTML = `
+          <h3><i class="fas fa-lightbulb"></i> Análisis y Recomendaciones (IA)</h3>
+          <div class="ai-feedback-content">
+              ${feedbackText
+                  .replace(/\n\*\s/g, '<br>• ')
+                  .replace(/\n\-/g, '<br>• ')
+                  .replace(/\n/g, '<br>')
+                  .replace(/### (.*?)<br>/g, '<h4>$1</h4><br>')
+                  .replace(/## (.*?)<br>/g, '<h3>$1</h3><br>')
+                  .replace(/# (.*?)<br>/g, '<h2>$1</h2><br>')
+                  .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                  .replace(/\*(.*?)\*/g, '<i>$1</i>')
+              }
+          </div>
+          <small><i>Nota: Esta retroalimentación es generada por inteligencia artificial basada en sus puntuaciones y puede servir como guía inicial.</i></small>
+      `;
+      resultsDiv.appendChild(feedbackDiv);
+      // --- End Display AI Feedback ---
+
+      // Ensure results are visible (already done when adding loading, but safe to keep)
+      resultsDiv.classList.add ('show');
+
+      // --- Send Email with Feedback ---
+      // This happens after results are displayed, which is fine.
+      console.log("Preparing to send results email after display...");
+      await sendResultsEmailWithFeedback(companyId, companyInfo, scoresForFeedback, feedbackText);
+      console.log("Email sending process initiated.");
+
+
+  } catch (generalError) {
+      // Catch any unexpected errors during the main processing
+      console.error("An unexpected error occurred during score calculation:", generalError);
+
+      // Ensure loading indicator is removed even if a general error occurs
+      const loadingElement = document.getElementById('loading-feedback');
+      if (loadingElement) {
+          loadingElement.remove();
+      }
+
+      // Display an error message in the results area
+      resultsDiv.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">Ocurrió un error al calcular los resultados. Por favor, intente de nuevo o contacte al soporte.</p>`;
+      resultsDiv.classList.add('show'); // Make sure the error message is visible
+  }
 }
+
+
 
 
 
