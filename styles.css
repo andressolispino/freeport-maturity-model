@@ -895,3 +895,12 @@ button:hover {
     color: var(--secondary-color);
     padding: 20px;
 }
+
+/* Estilo específico para el logo de Unicomfacauca */
+.logo-unicomfa-small {
+    max-width: 100px; 
+}
+
+.logo-UNlaM-small{
+    max-width: 80px; 
+}

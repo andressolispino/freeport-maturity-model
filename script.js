@@ -263,9 +263,9 @@ function loadCompanyProgress() {
       const progress = checkCompanyProgress(companyId);
       progressDiv.innerHTML = `
           <h3>Progreso de la empresa:</h3>
-          <p>Manager: ${progress.manager.toFixed(2)}%</p>
-          <p>Engineer: ${progress.engineer.toFixed(2)}%</p>
-          <p>Technician: ${progress.technician.toFixed(2)}%</p>
+          <p>Gerente: ${progress.manager.toFixed(2)}%</p>
+          <p>Ingeniero: ${progress.engineer.toFixed(2)}%</p>
+          <p>Técnico: ${progress.technician.toFixed(2)}%</p>
       `;
       // This part might be redundant now, as the tab is already open
       // document.getElementById('profiles').style.display = 'block';
