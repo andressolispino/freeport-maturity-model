@@ -904,3 +904,99 @@ button:hover {
 .logo-UNlaM-small{
     max-width: 80px; 
 }
+
+
+/* Add this to your styles.css */
+
+.secondary-button {
+    background-color: #7f8c8d; /* A neutral grey color */
+    margin-left: 10px; /* Add some space between buttons */
+}
+
+.secondary-button:hover {
+    background-color: #95a5a6; /* Lighter grey on hover */
+}
+
+/* Optional: Adjust spacing in the buttons container if needed */
+#buttons-container {
+    margin-top: 20px; /* Ensure some space above the buttons */
+    display: flex; /* Align buttons nicely */
+    gap: 10px; /* Add space between buttons using gap */
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+/* Ensure form-button styles don't conflict badly */
+.form-button {
+    /* Keep your existing form-button styles */
+    padding: 10px 20px; /* Example */
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 16px;
+    color: white; /* Assuming text is white */
+}
+
+/* Override the default primary color for the secondary button */
+.form-button.secondary-button {
+    background-color: #7f8c8d;
+}
+
+.form-button.secondary-button:hover {
+    background-color: #95a5a6;
+}
+
+/* Make sure the primary save button still uses its original color */
+.form-button:not(.secondary-button) {
+    background-color: var(--primary-color); /* Or your specific save button color */
+}
+
+.form-button:not(.secondary-button):hover {
+    background-color: var(--primary-dark); /* Or your specific save button hover color */
+}
+
+/* styles.css */
+
+/* ... (keep all your existing styles) ... */
+
+/* Styling for the Component/Dimension text next to questions */
+.question-meta {
+    font-size: 0.8em; /* Make it smaller */
+    color: #555;      /* Use a grey color for less emphasis */
+    font-style: italic;
+    font-weight: normal; /* Ensure it's not bold like the h3 */
+    margin-left: 8px; /* Add a little space after the question text */
+    display: inline;  /* Keep it on the same line as the question heading */
+}
+
+/* Styling for the distinct "Calculate Score" button */
+.calculate-button {
+    background-color: #27ae60; /* A distinct green color */
+    font-weight: bold;
+    margin-top: 25px; /* Add some space above it, separating it slightly */
+    display: block;   /* Make it take its own line if desired, or keep inline-block */
+    margin-left: auto; /* Center the button if display is block */
+    margin-right: auto; /* Center the button if display is block */
+    width: fit-content; /* Adjust width if centered */
+}
+
+.calculate-button:hover {
+    background-color: #2ecc71; /* Lighter green on hover */
+}
+
+/* Ensure the disabled state also uses a distinct or consistent style */
+.calculate-button:disabled {
+    background-color: #95a5a6; /* Use a grey for disabled state */
+    border-color: #95a5a6;
+    color: #e0e0e0;
+    cursor: not-allowed;
+}
+
+/* Optional: Adjust spacing for the container holding Save/Clear if needed */
+#buttons-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center; /* Center Save/Clear buttons */
+    gap: 15px;
+    flex-wrap: wrap;
+}

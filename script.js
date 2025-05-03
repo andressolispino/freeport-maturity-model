@@ -491,7 +491,8 @@ function loadQuestions (profile, companyId) {
   questions[profile].forEach ((question, index) => {
     const questionDiv = document.createElement ('div');
     questionDiv.className = 'question';
-    questionDiv.innerHTML = `<h3>${question.text}</h3>`;
+    questionDiv.innerHTML = `<h3>${question.text} <span class="question-meta">(${question.component} / ${question.dimension})</span></h3>`;
+
 
     for (const answer in question.answers) {
       const answerValue = question.answers[answer];
@@ -1240,18 +1241,71 @@ function exportToExcel() {
   }
 }
 
-// In showSaveButton, add an ID to the button for easier access
-function showSaveButton (profile, companyId) {
-  const buttonsContainer = document.getElementById ('buttons-container');
+// In script.js
+
+function showSaveButton(profile, companyId) {
+  const buttonsContainer = document.getElementById('buttons-container');
   buttonsContainer.innerHTML = ''; // Clear previous buttons
 
-  const saveButton = document.createElement ('button');
-  saveButton.id = `save-button-${profile}`; // Add a unique ID
+  // --- Existing Save Button ---
+  const saveButton = document.createElement('button');
+  saveButton.id = `save-button-${profile}`; // Keep the existing ID
   saveButton.textContent = `Guardar respuestas de ${profile
-    .charAt (0)
-    .toUpperCase () + profile.slice (1)}`;
-  saveButton.onclick = () => saveAnswers (profile, companyId);
-  buttonsContainer.appendChild (saveButton);
+      .charAt(0)
+      .toUpperCase() + profile.slice(1)}`;
+  saveButton.onclick = () => saveAnswers(profile, companyId);
+  saveButton.classList.add('form-button'); // Add class for styling if needed
+  buttonsContainer.appendChild(saveButton);
+
+  // --- NEW Clear Answers Button ---
+  const clearButton = document.createElement('button');
+  clearButton.id = `clear-button-${profile}`; // Optional ID for the new button
+  clearButton.textContent = `Limpiar mis respuestas`;
+  // Call the new clear function, passing the current profile and companyId
+  clearButton.onclick = () => clearProfileAnswers(profile, companyId);
+  // Add classes for styling - maybe a secondary look
+  clearButton.classList.add('form-button', 'secondary-button');
+  buttonsContainer.appendChild(clearButton);
+  // --- End NEW ---
+}
+
+
+// Add this new function in script.js
+
+function clearProfileAnswers(profile, companyId) {
+  console.log(`Clearing answers for profile: ${profile}, companyId: ${companyId}`);
+
+  // 1. Confirm with the user
+  if (!confirm(`¿Está seguro de que desea borrar todas las respuestas seleccionadas para el perfil '${profile}'? Esta acción no se puede deshacer hasta que responda de nuevo.`)) {
+      return; // Stop if user cancels
+  }
+
+  // 2. Find all question divs currently displayed
+  const questionDivs = document.querySelectorAll('#questions-container .question');
+
+  // 3. Iterate through questions and deselect radio buttons for the current profile
+  questionDivs.forEach((questionDiv, index) => {
+      const radioButtonName = `${profile}-q${index}`;
+      const radioButtons = questionDiv.querySelectorAll(`input[type="radio"][name="${radioButtonName}"]`);
+      radioButtons.forEach(radio => {
+          radio.checked = false;
+      });
+  });
+
+  // 4. Clear the corresponding data in the local companyProfiles object
+  //    This is crucial so that if they save later without re-answering,
+  //    the cleared state is reflected.
+  if (companyProfiles[companyId] && companyProfiles[companyId][profile]) {
+      companyProfiles[companyId][profile] = {}; // Reset this profile's answers to an empty object
+      console.log(`Local data cleared for ${profile}`);
+  }
+
+  // 5. Provide feedback to the user
+  alert(`Las respuestas para el perfil '${profile}' han sido borradas. Por favor, selecciónelas de nuevo si desea guardarlas.`);
+
+  // 6. Update the "Calculate Score" button state
+  //    Since answers are now missing, the calculation should likely be disabled.
+  updateCalculateButton(companyId);
 }
 
 function loginAdmin () {
