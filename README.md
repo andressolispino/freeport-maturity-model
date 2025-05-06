@@ -62,32 +62,6 @@ Esta herramienta ayuda a las PYMEs a comprender sus capacidades actuales de IoT,
 *   **Persistencia de Datos:** [Google Apps Script](https://developers.google.com/apps-script) (actuando como un backend simple conectado a Google Sheets mediante la Fetch API)
 *   **Estilos:** CSS Básico, [Font Awesome](https://fontawesome.com/) (Iconos), [Google Fonts](https://fonts.google.com/) (Roboto)
 
-## Configuración e Instalación
-
-**AVISO IMPORTANTE DE SEGURIDAD:**
-
-Este proyecto utiliza servicios externos que requieren claves API y credenciales:
-
-*   **Clave API de Google Gemini:** Se encuentra en `script.js` (variable `GEMINI_API_KEY`). Necesaria para generar el feedback de IA.
-*   **ID de Servicio, IDs de Plantilla y ID de Usuario (Clave Pública) de EmailJS:** Usados en `script.js` (dentro de las llamadas `emailjs.init` y `emailjs.send`). Necesarios para enviar correos electrónicos.
-
-**NO incluyas ("commitees") estas claves directamente en el archivo `script.js` ni en ningún otro archivo del repositorio, especialmente si el repositorio es público.** Exponer estas claves es un riesgo de seguridad.
-
-**Cómo Manejar las Claves:**
-
-1.  **(Recomendado para Despliegue)** Usa variables de entorno proporcionadas por tu plataforma de hosting (como Netlify, Vercel u otras si no usas GitHub Pages para repositorios privados). Modifica `script.js` para leer las claves desde `process.env` o el equivalente de la plataforma.
-2.  **(Para Desarrollo Local)** Crea un archivo de configuración separado (p. ej., `config.js`) que *no* se incluya en Git (añádelo a `.gitignore`). Define tus claves en `config.js` e impórtalas en `script.js`.
-3.  **(Manual - Menos Seguro)** Inserta manualmente las claves en tu copia local de `script.js` *después* de clonar/descargar y *antes* de ejecutar. **Ten mucho cuidado de no enviarlas ("commitearlas") accidentalmente.**
-
-**Otra Configuración:**
-
-*   **URL de Google Apps Script:** La variable `urlbase` en `script.js` apunta a la URL de tu aplicación web de Google Apps Script desplegada, que maneja el almacenamiento de datos. Necesitas desplegar tu propia instancia del código de Apps Script asociado.
-*   **Archivo HTML:** El archivo HTML principal es `Codigoo.txt`. Para el servicio web estándar y GitHub Pages, renombra este archivo a `index.html`.
-
-## Almacenamiento de Datos
-
-Los datos de registro de la empresa, las respuestas de los perfiles y las puntuaciones calculadas se guardan utilizando un Google Apps Script conectado a una Hoja de Cálculo de Google (Google Sheet), que actúa como una base de datos simple. El archivo `script.js` interactúa con la URL de la aplicación web de Apps Script desplegada mediante la Fetch API para guardar y recuperar datos.
-
 ## Equipo y Publicaciones
 
 La información sobre el equipo de investigación y las publicaciones académicas relacionadas se puede encontrar directamente en el sitio web, dentro de las pestañas 'Equipo de Trabajo' y 'Publicaciones'.
