@@ -97,22 +97,58 @@ h1 {
     display: block;
 }
 
+/* styles.css */
+
+/* Ensure the main question container is the positioning reference */
 .question {
+    position: relative; /* Needed for absolute positioning of the child */
+    padding-right: 150px; /* Add padding to prevent long question text overlapping the meta info. Adjust value as needed based on testing. */
+    /* --- Keep your existing .question styles below --- */
     margin-bottom: 30px;
     background-color: #f9f9f9;
-    padding: 20px;
+    padding: 20px; /* Apply base padding */
+    padding-right: 150px; /* Re-declare specifically to override if needed */
     border-radius: var(--border-radius);
     transition: var(--transition);
 }
 
 .question:hover {
+    /* Keep existing hover styles */
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     transform: translateY(-2px);
 }
 
 .question h3 {
+     /* Keep existing h3 styles */
     margin-bottom: 15px;
     color: var(--secondary-color);
+    /* Ensure h3 doesn't manually push content too far right */
+    margin-right: 0; /* Remove any explicit right margin if present */
+}
+
+
+/* Styles for the Component/Dimension descriptor */
+.question-meta {
+    position: absolute; /* Position relative to the .question div */
+    top: 15px;          /* Adjust distance from top */
+    right: 15px;         /* Adjust distance from right */
+    font-size: 0.65em;   /* Make it smaller */
+    color: #555;        /* Use a grey color */
+    font-style: italic;
+    font-weight: normal; /* Ensure it's not bold */
+    text-align: right;   /* Align text to the right if it wraps */
+    line-height: 1.3;    /* Adjust line spacing if needed */
+    max-width: 130px;    /* Optional: prevent it becoming too wide */
+    z-index: 1;          /* Ensure it stays above other elements if needed */
+}
+
+/* Ensure radio button labels stack nicely below the heading */
+.question label {
+    display: block; /* Make each radio button + text take its own line */
+    margin-left: 5px; /* Optional: Indent radios slightly */
+    margin-top: 8px; /* Add some space between radio options */
+    /* Clear any floats if you were using them */
+    clear: both;
 }
 
 select, input[type="text"], input[type="radio"], input[type="email"] {

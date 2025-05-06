@@ -486,25 +486,71 @@ function selectProfile (profile) {
 
 function loadQuestions (profile, companyId) {
   const questionsContainer = document.getElementById ('questions-container');
-  questionsContainer.innerHTML = '';
+  questionsContainer.innerHTML = ''; // Clear previous questions
+
+  // Ensure company profile data structure exists (safer access)
+  const currentAnswers = companyProfiles[companyId]?.[profile] || {};
 
   questions[profile].forEach ((question, index) => {
     const questionDiv = document.createElement ('div');
-    questionDiv.className = 'question';
-    questionDiv.innerHTML = `<h3>${question.text} <span class="question-meta">(${question.component} / ${question.dimension})</span></h3>`;
+    questionDiv.className = 'question'; // This div needs "position: relative" in CSS
 
+    // --- Get Spanish Translations (with fallback to English) ---
+    const componentSpanish = componentTranslations[question.component] || question.component;
+    const dimensionSpanish = dimensionTranslations[question.dimension] || question.dimension;
+    // ---
 
-    for (const answer in question.answers) {
-      const answerValue = question.answers[answer];
-      const radioButtonName = `${profile}-q${index}`;
-      const checked = companyProfiles[companyId][profile][index] == answerValue
-        ? 'checked'
-        : '';
-      questionDiv.innerHTML += `<input type="radio" name="${radioButtonName}" value="${answerValue}" ${checked}> ${answer}<br>`;
+    // --- Build the HTML Structure ---
+    // 1. Add the heading
+    const heading = document.createElement('h3');
+    heading.textContent = question.text;
+    questionDiv.appendChild(heading);
+
+    // 2. Add the meta information span (positioned by CSS)
+    const metaSpan = document.createElement('span');
+    metaSpan.className = 'question-meta';
+    // Use innerHTML to allow the <br> for better wrapping
+    metaSpan.innerHTML = `${componentSpanish} /<br>${dimensionSpanish}`;
+    questionDiv.appendChild(metaSpan);
+
+    // 3. Add the radio buttons (append after heading and meta span)
+    const radioContainer = document.createElement('div'); // Container for radios
+    radioContainer.style.marginTop = '15px'; // Add space below heading
+
+    for (const answerText in question.answers) {
+        const answerValue = question.answers[answerText];
+        const radioButtonId = `${profile}-q${index}-ans${answerValue}`; // Unique ID for label
+        const radioButtonName = `${profile}-q${index}`;
+
+        // Check if this answer was previously selected
+        const isChecked = currentAnswers[index] == answerValue; // Use == for potential string/number comparison
+
+        const radioLabel = document.createElement('label');
+        radioLabel.htmlFor = radioButtonId; // Associate label with input
+        // radioLabel.style.display = 'block'; // Ensure radios stack (handled by CSS now)
+        // radioLabel.style.marginLeft = '5px'; // Indent slightly (handled by CSS now)
+
+        const radioButton = document.createElement('input');
+        radioButton.type = 'radio';
+        radioButton.name = radioButtonName;
+        radioButton.id = radioButtonId;
+        radioButton.value = answerValue;
+        if (isChecked) {
+            radioButton.checked = true;
+        }
+
+        radioLabel.appendChild(radioButton);
+        radioLabel.appendChild(document.createTextNode(` ${answerText}`)); // Add space before text
+
+        radioContainer.appendChild(radioLabel);
     }
+    questionDiv.appendChild(radioContainer); // Add the container with all radios
 
+    // --- Append the fully constructed question div ---
     questionsContainer.appendChild (questionDiv);
   });
+
+  // Show save/clear buttons and update calculate button status
   showSaveButton (profile, companyId);
   updateCalculateButton (companyId);
 }
@@ -1688,5 +1734,22 @@ Based ONLY on these scores and the company context provided:
     return "Error: Could not generate personalized feedback at this time.";
   }
 }
+
+
+const componentTranslations = {
+  'Device Management': 'Gestión Dispositivos',
+  'Connectivity Management': 'Gestión Conectividad',
+  'Cloud/Edge Management': 'Gestión Nube/Borde',
+  'Enterprise Integration': 'Integración Empresarial',
+  'Security': 'Seguridad',
+  'Compliance': 'Cumplimiento',
+  'Contextualization': 'Contextualización',
+};
+
+const dimensionTranslations = {
+  'technological': 'Tecnológica',
+  'human': 'Humana',
+  'organizational': 'Organizacional',
+};
 
 window.addEventListener ('DOMContentLoaded', initializePage);
