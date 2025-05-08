@@ -185,6 +185,13 @@ const legalFigures = [
   'Fundación',
 ];
 
+
+const profileTranslations = {
+  manager: 'Gerente',
+  engineer: 'Ingeniero',
+  technician: 'Técnico'
+};
+
 let companyData = {};
 
 function toggleCountryList () {
@@ -207,58 +214,55 @@ function openTab(tabName) {
   const tabContents = document.querySelectorAll('.tab-content');
   tabContents.forEach(content => (content.style.display = 'none'));
 
-  // Ensure the correct tab content is displayed
   const targetTab = document.getElementById(tabName);
   if (targetTab) {
        targetTab.style.display = 'block';
   } else {
        console.error(`Tab content with ID '${tabName}' not found.`);
-       // Optionally display the presentation tab as a fallback
-       document.getElementById('presentation').style.display = 'block';
-       // Also update the active button state if needed
+       document.getElementById('presentation').style.display = 'block'; // Fallback
        document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
        document.querySelector('.tabs button[onclick="openTab(\'presentation\')"]')?.classList.add('active');
-       return; // Stop further execution if tab not found
+       return;
   }
 
-
-  // --- Update active button state ---
-  // Find the button corresponding to the tabName
   const clickedButton = document.querySelector(`.tabs button[onclick="openTab('${tabName}')"]`);
-
-  // Remove active class from all buttons
   document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
 
-  // Add active class to the clicked button (if found)
   if (clickedButton) {
       clickedButton.classList.add('active');
   } else {
-       // Handle case where button might not be found (e.g., if called programmatically)
-       // Maybe activate the presentation button as fallback
-       document.querySelector('.tabs button[onclick="openTab(\'presentation\')"]')?.classList.add('active');
+       // Fallback if button not directly found (e.g. model tab initially hidden)
+       // For 'presentation', it should always be found.
+       // If 'model' tab was hidden and is now shown by selecting a profile,
+       // its button might need explicit activation if openTab is called indirectly.
+       // However, selecting a profile already calls openTab('model'), which should handle it.
+       const presentationButton = document.querySelector('.tabs button[onclick="openTab(\'presentation\')"]');
+       if (tabName === 'presentation' && presentationButton) {
+           presentationButton.classList.add('active');
+       }
   }
-   // --- End update active button state ---
-
-  // No automatic loading here anymore
 }
 
 
+
 function loadCompanyProgress() {
-  const companyIdInput = document.getElementById('company-id'); // Get the input element
-  const companyId = companyIdInput.value.trim(); // Get the value and remove whitespace
-  const progressDiv = document.getElementById('company-progress'); // Get progress display div
+  const companyIdInput = document.getElementById('company-id');
+  const companyId = companyIdInput.value.trim();
+  const progressDiv = document.getElementById('company-progress');
+  const profileButtonsDiv = document.querySelector('#profiles .profile-buttons'); // Get the buttons container
 
-  // Clear previous progress display when trying to load
+  // Clear previous progress display and hide buttons by default when trying to load
   progressDiv.innerHTML = '';
-
-  // Check if the ID field is empty
-  if (!companyId) {
-      alert('Por favor, ingrese el ID de su empresa.'); // Ask user to enter ID
-      companyIdInput.focus(); // Optionally focus the input field
-      return; // Stop execution
+  if (profileButtonsDiv) {
+      profileButtonsDiv.style.display = 'none'; // Hide buttons
   }
 
-  // Proceed with existing logic only if an ID was entered
+  if (!companyId) {
+      alert('Por favor, ingrese el ID de su empresa.');
+      companyIdInput.focus();
+      return; // Stop execution, buttons remain hidden
+  }
+
   if (companyProfiles[companyId]) {
       const progress = checkCompanyProgress(companyId);
       progressDiv.innerHTML = `
@@ -267,17 +271,64 @@ function loadCompanyProgress() {
           <p>Ingeniero: ${progress.engineer.toFixed(2)}%</p>
           <p>Técnico: ${progress.technician.toFixed(2)}%</p>
       `;
-      // This part might be redundant now, as the tab is already open
-      // document.getElementById('profiles').style.display = 'block';
-      // document.getElementById('profiles-tab').style.display = 'inline';
+      // SUCCESS: Show the profile buttons
+      if (profileButtonsDiv) {
+          profileButtonsDiv.style.display = 'flex'; // Or 'block' if you prefer them stacked
+                                                    // 'flex' will keep them in a row as they are
+      }
   } else {
       alert(
           'ID de empresa no encontrado. Por favor, verifique el ID o registre una nueva empresa.'
       );
-      // Clear progress display again in case of error after trying
-       progressDiv.innerHTML = '';
+      // FAILURE: Buttons remain hidden (already set at the start of the function)
   }
 }
+
+
+
+function areAllThreeProfilesComplete(companyId) {
+  if (!companyProfiles[companyId]) {
+      console.log("areAllThreeProfilesComplete: No company profile data for ID", companyId);
+      return false; // No data for this company yet
+  }
+
+  const requiredProfiles = ['manager', 'engineer', 'technician'];
+  for (const profile of requiredProfiles) {
+      // Check if this profile's questions are defined (should always be true with current setup)
+      if (!questions[profile]) {
+          console.warn(`areAllThreeProfilesComplete: Profile ${profile} not defined in questions object.`);
+          return false;
+      }
+
+      const profileAnswers = companyProfiles[companyId][profile];
+      // Check if answers exist for this profile
+      if (!profileAnswers) {
+          console.log(`areAllThreeProfilesComplete: No answers yet for profile ${profile} for company ${companyId}`);
+          return false; // This profile hasn't started answering or has no saved answers
+      }
+
+      // Check if all questions for this profile are answered (value is not null or undefined)
+      // questions[profile] is an array of question objects
+      // profileAnswers is an object like {0: score1, 1: score2, ...}
+      const totalQuestionsForProfile = questions[profile].length;
+      let answeredQuestionsCount = 0;
+      for(let i = 0; i < totalQuestionsForProfile; i++) {
+          if (profileAnswers.hasOwnProperty(i) && profileAnswers[i] != null) {
+              answeredQuestionsCount++;
+          }
+      }
+
+      if (answeredQuestionsCount < totalQuestionsForProfile) {
+          console.log(`areAllThreeProfilesComplete: Profile ${profile} for company ${companyId} has ${answeredQuestionsCount}/${totalQuestionsForProfile} questions answered.`);
+          return false; // Not all questions answered for this profile
+      }
+      console.log(`areAllThreeProfilesComplete: Profile ${profile} for company ${companyId} is complete.`);
+  }
+  console.log(`areAllThreeProfilesComplete: All three profiles complete for company ${companyId}.`);
+  return true; // All required profiles have answered all their questions
+}
+
+
 
 function populateDropdowns () {
   toggleCountryList (); // Initialize country list
@@ -484,136 +535,141 @@ function selectProfile (profile) {
   loadQuestions (profile, companyId);
 }
 
-function loadQuestions (profile, companyId) {
-  const questionsContainer = document.getElementById ('questions-container');
+function loadQuestions(profile, companyId) {
+  const questionsContainer = document.getElementById('questions-container');
+  const profileInfoDiv = document.getElementById('profile-info');
   questionsContainer.innerHTML = ''; // Clear previous questions
+
+  // --- START: MODIFIED CODE ---
+  // Get the Spanish translation from the mapping object
+  // Use the original profile key as a fallback if translation not found
+  const profileNameSpanish = profileTranslations[profile] || profile.charAt(0).toUpperCase() + profile.slice(1);
+
+  // Set the dynamic title inside the profile-info div using the Spanish name
+  profileInfoDiv.innerHTML = `<h2>Preguntas para el perfil de: <strong>${profileNameSpanish}</strong></h2>`;
+  // --- END: MODIFIED CODE ---
 
   // Ensure company profile data structure exists (safer access)
   const currentAnswers = companyProfiles[companyId]?.[profile] || {};
 
-  questions[profile].forEach ((question, index) => {
-    const questionDiv = document.createElement ('div');
-    questionDiv.className = 'question'; // This div needs "position: relative" in CSS
+  questions[profile].forEach((question, index) => {
+      // ... (el resto del código para crear las preguntas sigue igual) ...
+      const questionDiv = document.createElement('div');
+      questionDiv.className = 'question';
 
-    // --- Get Spanish Translations (with fallback to English) ---
-    const componentSpanish = componentTranslations[question.component] || question.component;
-    const dimensionSpanish = dimensionTranslations[question.dimension] || question.dimension;
-    // ---
+      const componentSpanish = componentTranslations[question.component] || question.component;
+      const dimensionSpanish = dimensionTranslations[question.dimension] || question.dimension;
 
-    // --- Build the HTML Structure ---
-    // 1. Add the heading
-    const heading = document.createElement('h3');
-    heading.textContent = question.text;
-    questionDiv.appendChild(heading);
+      const heading = document.createElement('h3');
+      heading.textContent = question.text;
+      questionDiv.appendChild(heading);
 
-    // 2. Add the meta information span (positioned by CSS)
-    const metaSpan = document.createElement('span');
-    metaSpan.className = 'question-meta';
-    // Use innerHTML to allow the <br> for better wrapping
-    metaSpan.innerHTML = `${componentSpanish} /<br>${dimensionSpanish}`;
-    questionDiv.appendChild(metaSpan);
+      const metaSpan = document.createElement('span');
+      metaSpan.className = 'question-meta';
+      metaSpan.innerHTML = `${componentSpanish} /<br>${dimensionSpanish}`;
+      questionDiv.appendChild(metaSpan);
 
-    // 3. Add the radio buttons (append after heading and meta span)
-    const radioContainer = document.createElement('div'); // Container for radios
-    radioContainer.style.marginTop = '15px'; // Add space below heading
+      const radioContainer = document.createElement('div');
+      radioContainer.style.marginTop = '15px';
 
-    for (const answerText in question.answers) {
-        const answerValue = question.answers[answerText];
-        const radioButtonId = `${profile}-q${index}-ans${answerValue}`; // Unique ID for label
-        const radioButtonName = `${profile}-q${index}`;
+      for (const answerText in question.answers) {
+          const answerValue = question.answers[answerText];
+          const radioButtonId = `${profile}-q${index}-ans${answerValue}`;
+          const radioButtonName = `${profile}-q${index}`;
+          const isChecked = currentAnswers[index] == answerValue;
 
-        // Check if this answer was previously selected
-        const isChecked = currentAnswers[index] == answerValue; // Use == for potential string/number comparison
+          const radioLabel = document.createElement('label');
+          radioLabel.htmlFor = radioButtonId;
 
-        const radioLabel = document.createElement('label');
-        radioLabel.htmlFor = radioButtonId; // Associate label with input
-        // radioLabel.style.display = 'block'; // Ensure radios stack (handled by CSS now)
-        // radioLabel.style.marginLeft = '5px'; // Indent slightly (handled by CSS now)
+          const radioButton = document.createElement('input');
+          radioButton.type = 'radio';
+          radioButton.name = radioButtonName;
+          radioButton.id = radioButtonId;
+          radioButton.value = answerValue;
+          if (isChecked) {
+              radioButton.checked = true;
+          }
 
-        const radioButton = document.createElement('input');
-        radioButton.type = 'radio';
-        radioButton.name = radioButtonName;
-        radioButton.id = radioButtonId;
-        radioButton.value = answerValue;
-        if (isChecked) {
-            radioButton.checked = true;
-        }
-
-        radioLabel.appendChild(radioButton);
-        radioLabel.appendChild(document.createTextNode(` ${answerText}`)); // Add space before text
-
-        radioContainer.appendChild(radioLabel);
-    }
-    questionDiv.appendChild(radioContainer); // Add the container with all radios
-
-    // --- Append the fully constructed question div ---
-    questionsContainer.appendChild (questionDiv);
+          radioLabel.appendChild(radioButton);
+          radioLabel.appendChild(document.createTextNode(` ${answerText}`));
+          radioContainer.appendChild(radioLabel);
+      }
+      questionDiv.appendChild(radioContainer);
+      questionsContainer.appendChild(questionDiv);
   });
 
   // Show save/clear buttons and update calculate button status
-  showSaveButton (profile, companyId);
-  updateCalculateButton (companyId);
+  showSaveButton(profile, companyId);
+  updateCalculateButton(companyId);
 }
 
 async function saveAnswers (profile, companyId) { // Make the function async
-  let allAnswered = true;
-  const saveButton = document.getElementById(`save-button-${profile}`); // Get the button
+  let allAnsweredThisProfile = true; // Renamed for clarity
+  const saveButton = document.getElementById(`save-button-${profile}`);
 
-  // Disable button and show loading state immediately
   if (saveButton) {
       saveButton.disabled = true;
-      saveButton.textContent = 'Guardando...'; // Visual feedback
+      saveButton.textContent = 'Guardando...';
   }
 
   try {
-      const questionDivs = document.querySelectorAll ('#questions-container .question'); // Be more specific with selector
+      const questionDivs = document.querySelectorAll ('#questions-container .question');
       questionDivs.forEach ((questionDiv, index) => {
         const radioButtonName = `${profile}-q${index}`;
         const selectedAnswer = questionDiv.querySelector (
           `input[name="${radioButtonName}"]:checked`
         );
         if (selectedAnswer) {
-          // Ensure the profile object exists before assigning
           if (!companyProfiles[companyId]) companyProfiles[companyId] = {};
           if (!companyProfiles[companyId][profile]) companyProfiles[companyId][profile] = {};
           companyProfiles[companyId][profile][index] = parseInt (
             selectedAnswer.value
           );
         } else {
-          allAnswered = false;
+          allAnsweredThisProfile = false; // Check if all questions for *this specific profile* are answered
         }
       });
 
-      if (allAnswered) {
-        // --- Await the saveInfo operation ---
+      if (allAnsweredThisProfile) {
         console.log(`Attempting to save answers for ${profile}...`);
-        // The local companyProfiles is already updated above
-        await saveInfo (companyProfiles, 1); // Wait for saveInfo to complete
+        await saveInfo (companyProfiles, 1);
         console.log(`Answers saved successfully for ${profile}.`);
         alert (`Respuestas guardadas para ${profile} de la empresa ${companyId}!`);
-        // Note: saveInfo internally calls fetchData on success, which updates the local state again.
+
+        // ---- NEW REDIRECTION LOGIC ----
+        if (!areAllThreeProfilesComplete(companyId)) {
+            // If not all three profiles (manager, engineer, technician) are complete
+            alert("Volviendo a la página de presentación. Por favor, complete los cuestionarios de los perfiles restantes para poder calcular la puntuación general.");
+            openTab('presentation'); // Go to presentation tab
+        } else {
+            // All three profiles are now complete, stay on the model tab.
+            // The "Calculate Score" button will be enabled by updateCalculateButton.
+            console.log("Todos los perfiles requeridos están completos. Permaneciendo en la pestaña del modelo.");
+            // Optionally, you could add a specific message here if needed
+            // alert("¡Todos los perfiles han completado sus respuestas! Ya puede calcular la puntuación.");
+        }
+        // ---- END NEW REDIRECTION LOGIC ----
+
       } else {
         alert (
-          `Por favor, responda todas las preguntas para ${profile} antes de guardar.`
+          `Por favor, responda todas las preguntas para el perfil de ${profileTranslations[profile] || profile} antes de guardar.`
         );
       }
-      // Update the calculate button state regardless of save success/failure,
-      // as the local answers might have changed.
-      updateCalculateButton (companyId);
+      updateCalculateButton (companyId); // This is important to enable the calculate button if all are done
 
   } catch (error) {
       console.error(`Error saving answers for ${profile}:`, error);
       alert(`Error al guardar las respuestas para ${profile}. Por favor, intente de nuevo. Detalles: ${error.message}`);
   } finally {
-      // Re-enable button and restore text AFTER the operation completes (success or failure)
       if (saveButton) {
           saveButton.disabled = false;
-          saveButton.textContent = `Guardar respuestas de ${profile
+          saveButton.textContent = `Guardar respuestas de ${profileTranslations[profile] || profile
             .charAt (0)
             .toUpperCase () + profile.slice (1)}`;
       }
   }
 }
+
 
 
 function componentName (dimension) {
@@ -630,62 +686,76 @@ function componentName (dimension) {
 
 // script.js
 
-// ... (keep all other code the same) ...
-
-async function calculateScore (companyId) { // Stays async
+async function calculateScore (companyId) { // companyId se pasa desde el botón
   const resultsDiv = document.getElementById ('results');
-  resultsDiv.innerHTML = ''; // Clear previous results
-  resultsDiv.classList.remove('show'); // Hide results area initially
+  resultsDiv.innerHTML = '';
+  resultsDiv.classList.remove('show');
 
-  // --- Add loading indicator ---
+  // --- NUEVA VERIFICACIÓN INICIAL ---
+  if (!companyId) {
+      alert("Error: No se ha especificado un ID de empresa para calcular la puntuación.");
+      return;
+  }
+
+  // Verificar si allCompaniesData y companyProfiles están poblados
+  // Esto es crucial después de una recarga de página.
+  if (!allCompaniesData || allCompaniesData.length === 0 || !companyProfiles || Object.keys(companyProfiles).length === 0) {
+      console.warn("calculateScore: Datos no cargados. Intentando recargar datos...");
+      alert("Los datos de la empresa aún no están completamente cargados. Por favor, espere un momento e intente de nuevo. Si el problema persiste, recargue la página.");
+      // Opcionalmente, podrías intentar llamar a fetchData() aquí y luego reintentar,
+      // pero eso puede complicar el flujo. Es mejor que el usuario reintente.
+      // await fetchData(); // Descomentar con precaución, podría llevar a bucles si hay otros problemas.
+      return;
+  }
+  // --- FIN NUEVA VERIFICACIÓN ---
+
+
   const loadingDiv = document.createElement('div');
-  loadingDiv.id = 'loading-feedback'; // Use this ID to find and remove later
-  // You can add more styling or a spinner GIF/SVG here if desired
+  loadingDiv.id = 'loading-feedback';
   loadingDiv.innerHTML = '<p style="text-align: center; padding: 30px; font-style: italic; color: var(--secondary-color);">Calculando puntuaciones y generando comentarios personalizados, por favor espere...</p>';
   resultsDiv.appendChild(loadingDiv);
-  resultsDiv.classList.add('show'); // Show the loading message immediately
-  // ---
+  resultsDiv.classList.add('show');
 
   // --- Find Company Data (Crucial Step) ---
+  // Asegurarse de que companyId es el que se usará para buscar
+  console.log(`calculateScore: Buscando empresa con ID: ${companyId}`);
   const companyIndex = allCompaniesData.findIndex(company => company.id === companyId);
   let companyInfo = null;
 
   if (companyIndex !== -1) {
       companyInfo = allCompaniesData[companyIndex];
-      console.log("Found company info for feedback:", companyInfo.companyName);
+      console.log("calculateScore: Información de la empresa encontrada para feedback:", companyInfo.companyName);
   } else {
-      console.error(`Error: Company data not found for ID ${companyId} when trying to calculate scores.`);
-      // Remove loading indicator before showing error
+      console.error(`Error crítico: No se encontró la información de la empresa con ID ${companyId} en allCompaniesData. No se pueden calcular los resultados ni generar feedback.`);
+      console.log("allCompaniesData actual:", JSON.stringify(allCompaniesData)); // Log para depuración
+      console.log("companyProfiles actual:", JSON.stringify(companyProfiles)); // Log para depuración
+
       const loadingElement = document.getElementById('loading-feedback');
       if (loadingElement) loadingElement.remove();
-      alert("Error crítico: No se encontró la información de la empresa. No se pueden calcular los resultados ni generar feedback.");
-      resultsDiv.classList.remove('show'); // Hide results area again on error
-      return; // Stop execution
+      alert(`Error crítico: No se encontró la información de la empresa (ID: ${companyId}). Verifique el ID o que la empresa esté registrada correctamente. No se pueden calcular los resultados.`);
+      resultsDiv.classList.remove('show');
+      return;
   }
   // --- End Find Company Data ---
 
-  try { // Wrap the main processing in a try block to ensure loading removal even on error
-
-      // Crear el título principal (append later)
+  try {
       const titleDiv = document.createElement ('div');
-      titleDiv.innerHTML =
-      '<h2 class="results-main-title">Resultados obtenidos con FREEPORT</h2>';
+      titleDiv.innerHTML = '<h2 class="results-main-title">Resultados obtenidos con FREEPORT</h2>';
 
       const componentScores = {};
       let overallScore = 0;
       const dimensionScores = {technological: 0, human: 0, organizational: 0};
 
-      // Initialize component scores
       for (const component in componentWeights) {
           componentScores[component] = 0;
       }
 
-      // Calculate component and dimension scores
+      // --- MODIFICACIÓN AQUÍ para usar el companyId pasado como argumento ---
       if (companyProfiles[companyId]) {
-          // ... (Your existing score calculation logic - keep it as is) ...
           for (const profile in companyProfiles[companyId]) {
               if (questions[profile]) {
                   questions[profile].forEach ((question, index) => {
+                  // Asegurarse de que el perfil y el índice de la pregunta existen en los datos
                   if (companyProfiles[companyId][profile] && companyProfiles[companyId][profile].hasOwnProperty(index)) {
                       const score = companyProfiles[companyId][profile][index];
                       const componentName = question.component;
@@ -707,46 +777,47 @@ async function calculateScore (companyId) { // Stays async
                                   componentWeights[componentName] *
                                   (1 / numQuestionsComponent);
                           } else {
-                              console.warn(`Component ${componentName} seems to have no questions.`);
+                              console.warn(`calculateScore: El componente ${componentName} parece no tener preguntas.`);
                           }
                       } else if (componentName) {
-                          console.warn(`Weight not found for component: ${componentName}`);
+                          console.warn(`calculateScore: No se encontró peso para el componente: ${componentName}`);
                       }
 
                       if (dimensionName && dimensionScores.hasOwnProperty(dimensionName)) {
                           dimensionScores[dimensionName] += score;
                       } else if (dimensionName) {
-                          console.warn(`Dimension score object does not have key: ${dimensionName}`);
+                          console.warn(`calculateScore: El objeto de puntuaciones de dimensión no tiene la clave: ${dimensionName}`);
                       }
 
+                  } else {
+                      // Esto puede pasar si un perfil no ha respondido todas las preguntas
+                      // pero se intenta calcular. updateCalculateButton debería prevenir esto.
+                      console.log(`calculateScore: No hay respuesta para la pregunta ${index} del perfil ${profile} para la empresa ${companyId}.`);
                   }
                   });
               } else {
-                  console.warn(`Profile "${profile}" not found in questions definition.`);
+                  console.warn(`calculateScore: El perfil "${profile}" no se encontró en la definición de preguntas.`);
               }
           }
       } else {
-          console.error(`Error: Profile data for company ID ${companyId} not found.`);
-          // Remove loading before alert
+          console.error(`Error: Datos del perfil para la empresa con ID ${companyId} no encontrados en companyProfiles.`);
           const loadingElement = document.getElementById('loading-feedback');
           if (loadingElement) loadingElement.remove();
           alert("Error: No se encontraron los datos de los perfiles para esta empresa. No se pueden calcular los resultados.");
           resultsDiv.classList.remove('show');
-          return; // Exit if no profile data
+          return;
       }
+      // --- FIN MODIFICACIÓN ---
 
 
-      // Calculate overall score
       overallScore = 0;
       for (const component in componentScores) {
           overallScore += componentScores[component];
       }
-      overallScore = Math.min(overallScore, 100); // Cap at 100
+      overallScore = Math.min(overallScore, 100);
 
-
-      // --- Update company data and Save ---
       const updatedCompanyData = {
-          ...companyInfo,
+          ...companyInfo, // companyInfo ya fue encontrado usando el companyId correcto
           componentScores,
           dimensionScores,
           overallScore,
@@ -754,49 +825,36 @@ async function calculateScore (companyId) { // Stays async
       allCompaniesData[companyIndex] = updatedCompanyData;
 
       try {
-          console.log("Attempting to save updated company data with scores...");
-          await saveInfo(allCompaniesData, 2); // Wait for save to complete
-          console.log('Company data with scores saved successfully.');
+          console.log("calculateScore: Intentando guardar datos actualizados de la empresa con puntuaciones...");
+          await saveInfo(allCompaniesData, 2);
+          console.log('calculateScore: Datos de la empresa con puntuaciones guardados exitosamente.');
       } catch (error) {
-          console.error('Error saving company data with scores:', error);
+          console.error('calculateScore: Error al guardar datos de la empresa con puntuaciones:', error);
           alert("Advertencia: Hubo un error al guardar los puntajes calculados. Los resultados se mostrarán, pero podrían no estar persistidos.");
-          // Decide if you want to proceed or stop if saving fails. Currently proceeds.
       }
-      // --- End Save ---
 
-
-      // --- Generate Feedback using Gemini ---
-      let feedbackText = "Feedback generation is currently unavailable."; // Default
+      let feedbackText = "La generación de feedback está actualmente no disponible.";
       const scoresForFeedback = {
           overallScore: overallScore,
           componentScores: componentScores,
           dimensionScores: dimensionScores
       };
       try {
-          console.log("Generating AI feedback (this might take a moment)...");
-          feedbackText = await generateFeedbackWithGemini(scoresForFeedback, companyInfo);
-          console.log("AI feedback generated.");
+          console.log("calculateScore: Generando feedback IA (esto podría tomar un momento)...");
+          feedbackText = await generateFeedbackWithGemini(scoresForFeedback, companyInfo); // companyInfo es correcto
+          console.log("calculateScore: Feedback IA generado.");
       } catch (error) {
-          console.error("Failed to generate feedback:", error);
+          console.error("calculateScore: Falló la generación de feedback:", error);
           alert("Advertencia: No se pudo generar el feedback de la IA. Se mostrarán los puntajes básicos.");
-          // Use the default feedbackText.
       }
-      // --- End Generate Feedback ---
 
-
-      // --- Remove loading indicator ---
-      // IMPORTANT: Do this *after* the potentially slow operations (save, AI call)
-      // and *before* adding the final content.
       const loadingElement = document.getElementById('loading-feedback');
       if (loadingElement) {
           loadingElement.remove();
       }
-      // ---
 
-      // --- Now add the title and results ---
-      resultsDiv.appendChild(titleDiv); // Add the title first
+      resultsDiv.appendChild(titleDiv);
 
-      // --- Display Charts and Scores ---
       const chartsDiv = document.createElement ('div');
       chartsDiv.className = 'charts-container';
       for (let i = 0; i < 3; i++) {
@@ -806,7 +864,6 @@ async function calculateScore (companyId) { // Stays async
       }
       resultsDiv.appendChild (chartsDiv);
 
-      // Destroy existing charts if they exist
       ['chart0', 'chart1', 'chart2'].forEach(id => {
           const chartInstance = Chart.getChart(id);
           if (chartInstance) {
@@ -818,7 +875,6 @@ async function calculateScore (companyId) { // Stays async
       createDimensionChart (dimensionScores);
       createOverallScoreChart (overallScore);
 
-      // --- Display Scores Text ---
       let scoresText = `
           <div class="results-section"> <div class="scores-container"> <h3>Puntuación por Componentes</h3> <ul>`;
       for (const component in componentScores) {
@@ -835,10 +891,8 @@ async function calculateScore (companyId) { // Stays async
       scoresDiv.innerHTML = scoresText;
       resultsDiv.appendChild (scoresDiv);
 
-
-      // --- Display AI Feedback ---
       const feedbackDiv = document.createElement('div');
-      feedbackDiv.className = 'results-section ai-feedback-section'; // Add a specific class if you want to style it
+      feedbackDiv.className = 'results-section ai-feedback-section';
       feedbackDiv.innerHTML = `
           <h3><i class="fas fa-lightbulb"></i> Análisis y Recomendaciones (IA)</h3>
           <div class="ai-feedback-content">
@@ -856,36 +910,23 @@ async function calculateScore (companyId) { // Stays async
           <small><i>Nota: Esta retroalimentación es generada por inteligencia artificial basada en sus puntuaciones y puede servir como guía inicial.</i></small>
       `;
       resultsDiv.appendChild(feedbackDiv);
-      // --- End Display AI Feedback ---
-
-      // Ensure results are visible (already done when adding loading, but safe to keep)
       resultsDiv.classList.add ('show');
 
-      // --- Send Email with Feedback ---
-      // This happens after results are displayed, which is fine.
-      console.log("Preparing to send results email after display...");
+      console.log("calculateScore: Preparando para enviar email de resultados después de mostrar...");
+      // Pasar el companyId correcto a sendResultsEmailWithFeedback
       await sendResultsEmailWithFeedback(companyId, companyInfo, scoresForFeedback, feedbackText);
-      console.log("Email sending process initiated.");
-
+      console.log("calculateScore: Proceso de envío de email iniciado.");
 
   } catch (generalError) {
-      // Catch any unexpected errors during the main processing
-      console.error("An unexpected error occurred during score calculation:", generalError);
-
-      // Ensure loading indicator is removed even if a general error occurs
+      console.error("calculateScore: Un error inesperado ocurrió durante el cálculo de la puntuación:", generalError);
       const loadingElement = document.getElementById('loading-feedback');
       if (loadingElement) {
           loadingElement.remove();
       }
-
-      // Display an error message in the results area
       resultsDiv.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">Ocurrió un error al calcular los resultados. Por favor, intente de nuevo o contacte al soporte.</p>`;
-      resultsDiv.classList.add('show'); // Make sure the error message is visible
+      resultsDiv.classList.add('show');
   }
 }
-
-
-
 
 
 async function sendResultsEmailWithFeedback(companyId, companyInfo, scores, feedbackText) {
@@ -1395,27 +1436,53 @@ async function resetAllData() { // Make async
 }
 
 function updateCalculateButton(companyId) {
-  let allProfilesAnswered = true;
-  
-  for (const profile in companyProfiles[companyId]) {
-    if (
-      !questions[profile].every(
-        (_, index) => companyProfiles[companyId][profile][index] != null
-      )
-    ) {
-      allProfilesAnswered = false;
-      break;
+  let allProfilesRegisteredAndAnswered = true; // Assume true initially
+
+  // Check if data for the companyId exists
+  if (!companyProfiles[companyId]) {
+    allProfilesRegisteredAndAnswered = false;
+  } else {
+    // Iterate through the standard profiles to see if they've all answered
+    const standardProfiles = ['manager', 'engineer', 'technician'];
+    for (const profile of standardProfiles) {
+      // Check if question definitions exist for this profile (should always be true)
+      if (!questions[profile]) {
+        allProfilesRegisteredAndAnswered = false;
+        break;
+      }
+      // Check if this company has this profile's answers
+      if (!companyProfiles[companyId][profile]) {
+        allProfilesRegisteredAndAnswered = false;
+        break;
+      }
+      // Check if all questions for this profile are answered
+      if (
+        !questions[profile].every(
+          (_, index) => companyProfiles[companyId][profile].hasOwnProperty(index) &&
+                         companyProfiles[companyId][profile][index] != null
+        )
+      ) {
+        allProfilesRegisteredAndAnswered = false;
+        break;
+      }
     }
   }
 
   const calculateButton = document.querySelector(
-    'button[onclick="calculateScore()"]'
-  );
-  if (calculateButton) {
-    calculateButton.disabled = !allProfilesAnswered;
-    calculateButton.onclick = () => calculateScore(companyId);
-  }
+    'button[onclick^="calculateScore"]' // o el selector más específico que uses
+);
+if (calculateButton) {
+    calculateButton.disabled = !allProfilesRegisteredAndAnswered;
+    // ASIGNAR EL ONCLICK AQUÍ ASEGURA QUE EL COMPANYID ES EL CORRECTO
+    // CUANDO EL BOTÓN SE VUELVE A HABILITAR
+    if (!calculateButton.disabled) {
+        calculateButton.onclick = () => calculateScore(companyId);
+    } else {
+        calculateButton.onclick = null; // O una función que diga "aún no listo"
+    }
 }
+}
+
 
 
 /* function updateCalculateButton (companyId) {

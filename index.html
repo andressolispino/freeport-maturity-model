@@ -125,7 +125,7 @@
                             <li>Ve a la pestaña "Ingresar".</li>
                             <li>Ingresa tu ID único.</li>
                             <li>Haz clic en "Cargar Progreso".</li>
-                            <li>Selecciona tu perfil: Manager, Engineer o Technician. (Solo verás los perfiles para
+                            <li>Selecciona tu perfil: Gerente, Ingeniero o Técnico. (Solo verás los perfiles para
                               los que registraste correos en el paso 1).</li>
                           </ul>
                         </li>
@@ -179,31 +179,33 @@
               <div class="form-header">
                 <h2>Registro de Empresa</h2>
                 <p class="form-description">
-                  Por favor, complete el siguiente formulario para registrar su empresa. Es
-                  <b>imprescindible</b> que proporcione al menos <b>un correo electrónico</b> de uno de los tres perfiles (Gerente, Ingeniero o Técnico) para poder enviar el ID único de su empresa. Si es posible, proporcione los correos de los tres perfiles para evitar la perdida del ID.
+                  Por favor, complete el siguiente formulario para registrar su empresa.
+                  El correo electrónico del <b>Gerente (CEO) es requerido<span class="required-asterisk">*</span></b>.
+                  Los correos de Ingeniero y Técnico son opcionales, pero se recomienda proporcionarlos si están disponibles.
+                  <br><b>Importante:</b> Aunque el campo de Gerente está marcado como requerido visualmente, para el registro funcional de la empresa y el envío del ID, se necesita al menos <b>un correo electrónico válido</b> de cualquiera de los tres perfiles.
                 </p>
               </div>
                 <form id="registration-form">
-                    <label for="company-name">¿Cuál es el nombre de la empresa?</label>
+                    <label for="company-name">¿Cuál es el nombre de la empresa?<span class="required-asterisk">*</span></label>
                     <input type="text" id="company-name" name="companyName" required>
 
-                    <label for="country-type">¿Dónde se encuentra ubicada?</label>
+                    <label for="country-type">¿Dónde se encuentra ubicada?<span class="required-asterisk">*</span></label>
                     <select id="country-type" name="countryType" onchange="toggleCountryList()">
                         <option value="latam">Latinoamérica</option>
                         <option value="other">Otro</option>
                     </select>
 
-                    <label for="country">País:</label>
+                    <label for="country">País <span class="required-asterisk">*</span></label>
                     <select id="country" name="country" required>
                         <option value="">Seleccionar País</option>
                     </select>
 
-                    <label for="main-activity">¿Cuál es la actividad principal de la organización?</label>
+                    <label for="main-activity">¿Cuál es la actividad principal de la organización?<span class="required-asterisk">*</span></label>
                     <select id="main-activity" name="mainActivity" required>
                         <option value="">Actividad Principal</option>
                     </select>
 
-                    <label for="company-size">¿Cuál es el tamaño de la empresa considerando la cantidad de empleados?</label>
+                    <label for="company-size">¿Cuál es el tamaño de la empresa considerando la cantidad de empleados?<span class="required-asterisk">*</span></label>
                     <select id="company-size" name="companySize" required>
                         <option value="">Tamaño de la Empresa</option>
                         <option value="micro">Micro (1-15 empleados)</option>
@@ -213,39 +215,49 @@
                         <option value="large">Grande (656 o más empleados)</option>
                     </select>
 
-                    <label for="legal-figure">Figura Legal:</label>
+                    <label for="legal-figure">Figura Legal<span class="required-asterisk">*</span></label>
                     <select id="legal-figure" name="legalFigure" required>
                     </select>
                     <!-- Nuevos campos de correo electrónico -->
-                    <label for="manager-email">Correo electrónico del Gerente General o Dueño (CEO):</label>
+                    <label for="manager-email">Correo electrónico del Gerente General o Dueño (CEO)<span class="required-asterisk">*</span></label>
                     <input type="email" id="manager-email" name="managerEmail">
 
-                    <label for="engineer-email">Correo electrónico del Ingeniero:</label>
+                    <label for="engineer-email">Correo electrónico del Ingeniero: <span class="optional-text">(Opcional)</span></label>
                     <input type="email" id="engineer-email" name="engineerEmail">
 
-                    <label for="technician-email">Correo electrónico del Técnico de planta:</label>
+                    <label for="technician-email">Correo electrónico del Técnico de planta: <span class="optional-text">(Opcional)</span></label>
                     <input type="email" id="technician-email" name="technicianEmail">
                     <button type="button" onclick="registerCompany()">Registrar</button>
                 </form>
             </section>
 
             <section id="profiles" class="tab-content">
-                <div class="form-header">
-                    <h2>Ingresar</h2>
-                    <p>Ingrese el ID único de su empresa para cargar el progreso y seleccionar su perfil.</p>
-                </div>
-                <input type="text" id="company-id" placeholder="Ingrese el ID de su empresa" class="form-input">
-                <button onclick="loadCompanyProgress()" class="form-button">Cargar Progreso</button>
-                <div id="company-progress" class="progress-info"></div>
-                <div class="profile-buttons">
-                    <button onclick="selectProfile('manager')" class="form-button">Gerente</button> 
-                    <button onclick="selectProfile('engineer')" class="form-button">Ingeniero</button>
-                    <button onclick="selectProfile('technician')" class="form-button">Técnico</button>
-                </div>
-            </section>
+              <div class="form-header">
+                  <h2>Ingresar a la Evaluación</h2>
+                  <p>
+                      Para continuar con la evaluación de madurez IoT de su empresa, por favor siga estos pasos:
+                  </p>
+                  <ol style="text-align: left; margin-left: 20px; margin-bottom: 20px;">
+                      <li>Ingrese el <strong>ID único</strong> que recibió su empresa al momento del registro.</li>
+                      <li>Haga clic en el botón "<strong>Acceder con ID</strong>".</li>
+                      <li>Una vez validado el ID, aparecerán los perfiles (Gerente, Ingeniero, Técnico) disponibles para su empresa.</li>
+                      <li>Seleccione su perfil para comenzar o continuar respondiendo el cuestionario.</li>
+                  </ol>
+                  <p>
+                      Si su empresa aún no está registrada, por favor diríjase a la pestaña "Registrar Empresa".
+                  </p>
+              </div>
+              <input type="text" id="company-id" placeholder="Ingrese el ID único de su empresa" class="form-input">
+              <button onclick="loadCompanyProgress()" class="form-button">Acceder con ID</button>
+              <div id="company-progress" class="progress-info"></div>
+              <div class="profile-buttons">
+                  <button onclick="selectProfile('manager')" class="form-button">Gerente</button>
+                  <button onclick="selectProfile('engineer')" class="form-button">Ingeniero</button>
+                  <button onclick="selectProfile('technician')" class="form-button">Técnico</button>
+              </div>
+          </section>
 
             <section id="model" class="tab-content">
-                <h2>Cuestionario de Madurez IoT</h2>
                 <div id="profile-info"></div>
                 <div id="questions-container"></div>
                 <div id="buttons-container"></div>
