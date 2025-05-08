@@ -1328,32 +1328,28 @@ function exportToExcel() {
   }
 }
 
-// In script.js
+
 
 function showSaveButton(profile, companyId) {
   const buttonsContainer = document.getElementById('buttons-container');
   buttonsContainer.innerHTML = ''; // Clear previous buttons
 
-  // --- Existing Save Button ---
   const saveButton = document.createElement('button');
   saveButton.id = `save-button-${profile}`; // Keep the existing ID
-  saveButton.textContent = `Guardar respuestas de ${profile
-      .charAt(0)
-      .toUpperCase() + profile.slice(1)}`;
+
+  const profileNameDisplay = profileTranslations[profile] || profile.charAt(0).toUpperCase() + profile.slice(1);
+  saveButton.textContent = `Guardar respuestas de ${profileNameDisplay}`;
+
   saveButton.onclick = () => saveAnswers(profile, companyId);
   saveButton.classList.add('form-button'); // Add class for styling if needed
   buttonsContainer.appendChild(saveButton);
 
-  // --- NEW Clear Answers Button ---
   const clearButton = document.createElement('button');
-  clearButton.id = `clear-button-${profile}`; // Optional ID for the new button
+  clearButton.id = `clear-button-${profile}`;
   clearButton.textContent = `Limpiar mis respuestas`;
-  // Call the new clear function, passing the current profile and companyId
   clearButton.onclick = () => clearProfileAnswers(profile, companyId);
-  // Add classes for styling - maybe a secondary look
   clearButton.classList.add('form-button', 'secondary-button');
   buttonsContainer.appendChild(clearButton);
-  // --- End NEW ---
 }
 
 
