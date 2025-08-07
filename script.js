@@ -1,14 +1,13 @@
 // script.js
 
 const GEMINI_API_KEY = 'AIzaSyCXeBmyXuw69lLPNUBizk6MAc1mtPqK7N0'; // <-- PASTE YOUR KEY HERE
-const GEMINI_MODEL = 'gemini-1.5-flash-latest'; // Or 'gemini-pro', etc.
+const GEMINI_MODEL = 'gemini-2.5-flash'; // Or 'gemini-pro', etc.
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 
 let companyProfiles = {};
 let allCompaniesData = [];
-//let urlbase="http://localhost:8090/model/api/infoModel"
-let urlbase = 'https://script.google.com/macros/s/AKfycbza2OlcW97PcPo5_ySLm8oiRMYwOhT5FtvChG73zz-AvaGU_iDRXZaYgcZdpXkhWUQn/exec';
+let urlbase = 'https://script.google.com/macros/s/AKfycbyE2-lgyoQPBuIOpzd129JPPnDA0nUmeYFj80mzvIvp3hRf82pkZCrmBDH-1PCDxAI7PQ/exec';
 
 const questions = {
   manager: [
@@ -361,108 +360,114 @@ function populateDropdowns () {
 }
 
 async function registerCompany() {
-    const registerButton = document.querySelector('#registration-form button');
-
+  const registerButton = document.querySelector('#registration-form button');
+  if (registerButton) {
+    registerButton.disabled = true;
+    registerButton.textContent = 'Registrando...';
+  }
+  try {
+    const companyName = document.getElementById('company-name').value;
+    const country = document.getElementById('country').value;
+    const mainActivity = document.getElementById('main-activity').value;
+    const companySize = document.getElementById('company-size').value;
+    const legalFigure = document.getElementById('legal-figure').value;
+    const managerEmail = document.getElementById('manager-email').value;
+    const engineerEmail = document.getElementById('engineer-email').value;
+    const technicianEmail = document.getElementById('technician-email').value;
+    // --- Input Validation ---
+    let missingFields = [];
+    if (!companyName) missingFields.push("Nombre de la empresa");
+    if (!country) missingFields.push("País");
+    if (!mainActivity) missingFields.push("Actividad principal");
+    if (!companySize) missingFields.push("Tamaño de la empresa");
+    if (!legalFigure) missingFields.push("Figura legal");
+    if (!managerEmail && !engineerEmail && !technicianEmail) missingFields.push("Al menos un correo electrónico");
+    if (missingFields.length > 0) {
+      alert(`Por favor, complete los siguientes campos obligatorios:\n- ${missingFields.join('\n- ')}`);
+      if (registerButton) { // Re-enable button before returning on validation fail
+        registerButton.disabled = false;
+        registerButton.textContent = 'Registrar';
+      }
+      return;
+    }
+    // --- End Validation ---
+    const companyId = generateUniqueId();
+    const companyData = {
+      id: companyId,
+      companyName,
+      country,
+      mainActivity,
+      companySize,
+      legalFigure,
+      managerEmail,
+      engineerEmail,
+      technicianEmail,
+      componentScores: {},
+      dimensionScores: {},
+      overallScore: null
+    };
+    // Prepare the data to be saved. Create copies to avoid potential modification issues.
+    const profilesToSave = JSON.parse(JSON.stringify(companyProfiles)); // Deep copy
+    if (!profilesToSave[companyId]) {
+      profilesToSave[companyId] = {
+        manager: {},
+        engineer: {},
+        technician: {},
+      };
+    }
+    const allDataToSave = JSON.parse(JSON.stringify(allCompaniesData)); // Deep copy
+    allDataToSave.push(companyData);
+    
+    // --- Perform Saves in PARALLEL (major optimization) ---
+    console.log("Attempting to save companyProfiles structure (type 1) and company data (type 2)...");
+    const [profilesResult, companiesResult] = await Promise.all([
+      saveInfo(profilesToSave, 1).catch(error => {
+        console.error("Profile save failed:", error);
+        throw error;
+      }),
+      saveInfo(allDataToSave, 2).catch(error => {
+        console.error("Company data save failed:", error);
+        throw error;
+      })
+    ]);
+    console.log("Both saves completed successfully.");
+    // --- End Saves ---
+    
+    // --- Update Local Data DIRECTLY (no need for network request) ---
+    console.log("Updating local data directly without network request...");
+    companyProfiles = profilesToSave;
+    allCompaniesData = allDataToSave;
+    console.log("Local data updated directly.");
+    
+    // Send emails asynchronously
+    sendRegistrationEmails(
+      companyId,
+      managerEmail,
+      engineerEmail,
+      technicianEmail
+    );
+    alert(`Empresa registrada con éxito! Su ID único es: ${companyId}`);
+    // Switch UI
+    document.getElementById('registration').style.display = 'none';
+    document.getElementById('registration-tab').style.display = 'none';
+    document.getElementById('profiles').style.display = 'block';
+    document.getElementById('profiles-tab').style.display = 'inline';
+    // Pre-fill ID and clear form
+    document.getElementById('company-id').value = companyId;
+    document.getElementById('registration-form').reset();
+    // Now loadCompanyProgress should work immediately because we updated local state
+    loadCompanyProgress(); // Try calling this automatically
+  } catch (error) {
+    console.error("Error during company registration:", error);
+    // Provide a more user-friendly error message
+    alert(`Error al registrar la empresa: ${error.message || 'Ocurrió un problema de comunicación con el servidor.'}. Por favor, revise la consola para más detalles e intente de nuevo.`);
+  } finally {
+    // Ensure button is re-enabled
     if (registerButton) {
-        registerButton.disabled = true;
-        registerButton.textContent = 'Registrando...';
+      registerButton.disabled = false;
+      registerButton.textContent = 'Registrar';
     }
-
-    try {
-        const companyName = document.getElementById('company-name').value;
-        const country = document.getElementById('country').value;
-        const mainActivity = document.getElementById('main-activity').value;
-        const companySize = document.getElementById('company-size').value;
-        const legalFigure = document.getElementById('legal-figure').value;
-        const managerEmail = document.getElementById('manager-email').value;
-        const engineerEmail = document.getElementById('engineer-email').value;
-        const technicianEmail = document.getElementById('technician-email').value;
-
-        let missingFields = [];
-        if (!companyName) missingFields.push("Nombre de la empresa");
-        if (!country) missingFields.push("País");
-        if (!mainActivity) missingFields.push("Actividad principal");
-        if (!companySize) missingFields.push("Tamaño de la empresa");
-        if (!legalFigure) missingFields.push("Figura legal");
-        if (!managerEmail && !engineerEmail && !technicianEmail) missingFields.push("Al menos un correo electrónico");
-
-        if (missingFields.length > 0) {
-            alert(`Por favor, complete los siguientes campos obligatorios:\n- ${missingFields.join('\n- ')}`);
-            if (registerButton) {
-                registerButton.disabled = false;
-                registerButton.textContent = 'Registrar';
-            }
-            return;
-        }
-
-        const companyId = generateUniqueId();
-        const companyData = {
-            id: companyId,
-            companyName,
-            country,
-            mainActivity,
-            companySize,
-            legalFigure,
-            managerEmail,
-            engineerEmail,
-            technicianEmail,
-            componentScores: {},
-            dimensionScores: {},
-            overallScore: null
-        };
-
-        const profilesToSave = JSON.parse(JSON.stringify(companyProfiles));
-        if (!profilesToSave[companyId]) {
-            profilesToSave[companyId] = {
-                manager: {},
-                engineer: {},
-                technician: {},
-            };
-        }
-        
-        // --- INICIO DE CAMBIO ---
-        // Preparamos el array de datos para enviar, que solo contiene la nueva compañía
-        const newCompanyDataArray = [companyData];
-
-        console.log("Attempting to save companyProfiles structure (type 1) - ASYNC");
-        // El guardado del perfil vacío inicial puede ser asíncrono y no bloqueante
-        await saveInfo(profilesToSave, 1);
-
-        console.log("Attempting to save NEW company data (type 2) - SYNC");
-        // ¡CAMBIO CLAVE! Pasamos el array con solo la nueva compañía y el flag `true`.
-        await saveInfo(newCompanyDataArray, 2, true); 
-
-        console.log("Company registration successful.");
-        // --- FIN DE CAMBIO ---
-
-        await fetchData();
-        console.log("Local data synchronized.");
-
-        sendRegistrationEmails(
-            companyId,
-            managerEmail,
-            engineerEmail,
-            technicianEmail
-        );
-
-        alert(`Empresa registrada con éxito! Su ID único es: ${companyId}`);
-        document.getElementById('registration').style.display = 'none';
-        document.getElementById('registration-tab').style.display = 'none';
-        document.getElementById('profiles').style.display = 'block';
-        document.getElementById('profiles-tab').style.display = 'inline';
-        document.getElementById('company-id').value = companyId;
-        document.getElementById('registration-form').reset();
-        loadCompanyProgress();
-
-    } catch (error) {
-        console.error("Error during company registration:", error);
-        alert(`Error al registrar la empresa: ${error.message || 'Ocurrió un problema de comunicación con el servidor.'}. Por favor, revise la consola para más detalles e intente de nuevo.`);
-    } finally {
-        if (registerButton) {
-            registerButton.disabled = false;
-            registerButton.textContent = 'Registrar';
-        }
-    }
+  }
 }
 
 
@@ -1528,54 +1533,47 @@ function initializePage () {
 /* Implementacin de funcion asicronca que conecta con api encargada de almacenar infomracin en base de datos*/
 
 // In saveInfo, REMOVE the fetchData call
-async function saveInfo(dataToSave, tipo, esRegistroNuevo = false) {
-    const url = urlbase;
-
-    // --- INICIO DE CAMBIO ---
-    // El payload ahora incluye el nuevo flag
-    const jsonDataPayload = {
-        json: JSON.stringify(dataToSave),
-        tipo: tipo,
-        esRegistroNuevo: esRegistroNuevo,
-    };
-    // --- FIN DE CAMBIO ---
-
-    try {
-        console.log(`Sending data (type ${tipo}, new: ${esRegistroNuevo}) to Apps Script...`);
-        const response = await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            redirect: 'follow',
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8',
-            },
-            body: JSON.stringify(jsonDataPayload),
-        });
-
-        if (!response.ok) {
-            let errorText = response.statusText;
-            try {
-                const errorBody = await response.text();
-                if (errorBody && !errorBody.trim().startsWith('<')) {
-                    errorText += ` - ${errorBody}`;
-                }
-            } catch (e) { /* Ignore if cannot read body */ }
-            throw new Error(`Error saving data (type ${tipo}): ${response.status} - ${errorText}`);
+// In saveInfo, REMOVED fetchData call and added parallel processing capability
+async function saveInfo(dataToSave, tipo) {
+  const url = urlbase; // Apps script URL handles routing via doPost
+  const jsonDataPayload = {
+    json: JSON.stringify(dataToSave),
+    tipo: tipo,
+  };
+  try {
+    console.log(`Sending data (type ${tipo}) to Apps Script...`);
+    const response = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify(jsonDataPayload),
+    });
+    if (!response.ok) {
+      let errorText = response.statusText;
+      try {
+        const errorBody = await response.text();
+        // Avoid logging large HTML error pages if Apps Script returns one
+        if (errorBody && !errorBody.trim().startsWith('<')) {
+          errorText += ` - ${errorBody}`;
         }
-
-        const result = await response.json();
-        console.log(`Apps Script Response for type ${tipo}:`, result);
-
-        if (result && result.status === 'error') {
-            throw new Error(`Apps Script reported error for type ${tipo}: ${result.message || 'Unknown error'}`);
-        }
-
-        return result;
-
-    } catch (error) {
-        console.error(`Error in saveInfo for type ${tipo}:`, error);
-        throw error;
+      } catch (e) { /* Ignore if cannot read body */ }
+      throw new Error(`Error saving data (type ${tipo}): ${response.status} - ${errorText}`);
     }
+    const result = await response.json();
+    console.log(`Apps Script Response for type ${tipo}:`, result);
+    
+    // Check if Apps Script explicitly signaled an error in its JSON response
+    if (result && result.status === 'error') {
+      throw new Error(`Apps Script reported error for type ${tipo}: ${result.message || 'Unknown error'}`);
+    }
+    return result; // Return the parsed response from Apps Script
+  } catch (error) {
+    console.error(`Error in saveInfo for type ${tipo}:`, error);
+    throw error; // Re-throw the error to be caught by the calling function
+  }
 }
 
 
