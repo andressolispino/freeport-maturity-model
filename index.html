@@ -25,28 +25,26 @@
         </div>
 
         <nav class="tabs">
-            <button onclick="openTab('presentation')" class="active">
-                <i class="fas fa-home"></i> Presentación
-            </button>
-            <button onclick="openTab('team')">
-                <i class="fas fa-users"></i> Equipo de Trabajo
-            </button>
-            <button onclick="openTab('registration')" id="registration-tab">
-                <i class="fas fa-user-plus"></i> Registrar Empresa
-            </button>
-            <button onclick="openTab('profiles')" id="profiles-tab" >
-                <i class="fas fa-sign-in-alt"></i> Ingresar
-            </button>
-            <button onclick="openTab('model')" id="model-tab" style="display:none;">
-                <i class="fas fa-chart-line"></i> Modelo de Madurez
-            </button>
-            <button onclick="openTab('publications')">
-                <i class="fas fa-book"></i> Publicaciones
-            </button>
-            <button onclick="openTab('admin')" id="admin-tab">
-                <i class="fas fa-user-shield"></i> Administrador
-            </button>
-        </nav>
+    <button onclick="openTab('presentation')" class="active">
+        <i class="fas fa-home"></i> Presentación
+    </button>
+    <button onclick="openTab('team')">
+        <i class="fas fa-users"></i> Equipo de Trabajo
+    </button>
+    <button onclick="openTab('registration')" id="registration-tab">
+        <i class="fas fa-user-plus"></i> Registrar Empresa
+    </button>
+    <!-- MODIFICADO: La pestaña "Modelo de Madurez" ahora está visible desde el principio y reemplaza a "Ingresar" -->
+    <button onclick="openTab('model')" id="model-tab">
+        <i class="fas fa-chart-line"></i> Modelo de Madurez
+    </button>
+    <button onclick="openTab('publications')">
+        <i class="fas fa-book"></i> Publicaciones
+    </button>
+    <button onclick="openTab('admin')" id="admin-tab">
+        <i class="fas fa-user-shield"></i> Administrador
+    </button>
+</nav>
 
         <main>
             <section id="presentation" class="tab-content active">
@@ -231,39 +229,43 @@
                 </form>
             </section>
 
-            <section id="profiles" class="tab-content">
-              <div class="form-header">
-                  <h2>Ingresar a la Evaluación</h2>
-                  <p>
-                      Para continuar con la evaluación de madurez IoT de su empresa, por favor siga estos pasos:
-                  </p>
-                  <ol style="text-align: left; margin-left: 20px; margin-bottom: 20px;">
-                      <li>Ingrese el <strong>ID único</strong> que recibió su empresa al momento del registro.</li>
-                      <li>Haga clic en el botón "<strong>Acceder con ID</strong>".</li>
-                      <li>Una vez validado el ID, aparecerán los perfiles (Gerente, Ingeniero, Técnico) disponibles para su empresa.</li>
-                      <li>Seleccione su perfil para comenzar o continuar respondiendo el cuestionario.</li>
-                  </ol>
-                  <p>
-                      Si su empresa aún no está registrada, por favor diríjase a la pestaña "Registrar Empresa".
-                  </p>
-              </div>
-              <input type="text" id="company-id" placeholder="Ingrese el ID único de su empresa" class="form-input">
-              <button onclick="loadCompanyProgress()" class="form-button">Acceder con ID</button>
-              <div id="company-progress" class="progress-info"></div>
-              <div class="profile-buttons">
-                  <button onclick="selectProfile('manager')" class="form-button">Gerente</button>
-                  <button onclick="selectProfile('engineer')" class="form-button">Ingeniero</button>
-                  <button onclick="selectProfile('technician')" class="form-button">Técnico</button>
-              </div>
-          </section>
 
-            <section id="model" class="tab-content">
-                <div id="profile-info"></div>
-                <div id="questions-container"></div>
-                <div id="buttons-container"></div>
-                <button onclick="calculateScore()" disabled class="form-button calculate-button">Calcular Puntuación</button>
-                <div id="results"></div>
-            </section>
+<section id="model" class="tab-content">
+        <!-- Contenedor para el ingreso de ID (antes en la pestaña 'Ingresar') -->
+        <div id="model-login-container">
+            <div class="form-header">
+                <h2>Acceder a la Evaluación</h2>
+                <p>Para continuar con la evaluación de madurez IoT de su empresa, por favor siga estos pasos:</p>
+                <ol style="text-align: left; margin-left: 20px; margin-bottom: 20px;">
+                    <li>Ingrese el <strong>ID único</strong> que recibió su empresa al momento del registro.</li>
+                    <li>Haga clic en el botón "<strong>Acceder con ID</strong>".</li>
+                    <li>Una vez validado el ID, aparecerán los perfiles (Gerente, Ingeniero, Técnico) disponibles para su empresa.</li>
+                    <li>Seleccione su perfil para comenzar o continuar respondiendo el cuestionario.</li>
+                </ol>
+                <p>Si su empresa aún no está registrada, por favor diríjase a la pestaña "Registrar Empresa".</p>
+            </div>
+            <input type="text" id="company-id" placeholder="Ingrese el ID único de su empresa" class="form-input">
+            <button onclick="loadCompanyProgress()" class="form-button">Acceder con ID</button>
+            <div id="company-progress" class="progress-info"></div>
+            <!-- Los botones de perfil ahora están aquí, pero ocultos inicialmente -->
+            <div class="profile-buttons">
+                <button onclick="selectProfile('manager')" class="form-button">Gerente</button>
+                <button onclick="selectProfile('engineer')" class="form-button">Ingeniero</button>
+                <button onclick="selectProfile('technician')" class="form-button">Técnico</button>
+            </div>
+        </div>
+
+        <!-- Contenedor para las preguntas y resultados (inicialmente oculto) -->
+        <div id="model-content-container" style="display:none;">
+            <div id="profile-info"></div>
+            <div id="questions-container"></div>
+            <div id="buttons-container"></div>
+            <!-- El botón de calcular ahora vive aquí -->
+            <button onclick="calculateScore(document.getElementById('company-id').value)" disabled class="form-button calculate-button">Calcular Puntuación</button>
+            <div id="results"></div>
+        </div>
+    </section>
+
 
             <section id="publications" class="tab-content">
               <h2>Publicaciones del Proyecto</h2>

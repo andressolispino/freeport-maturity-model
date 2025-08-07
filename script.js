@@ -244,43 +244,49 @@ function openTab(tabName) {
 
 
 
+// REEMPLAZA LA FUNCIÓN ANTIGUA CON ESTA VERSIÓN CORREGIDA
+
 function loadCompanyProgress() {
-  const companyIdInput = document.getElementById('company-id');
-  const companyId = companyIdInput.value.trim();
-  const progressDiv = document.getElementById('company-progress');
-  const profileButtonsDiv = document.querySelector('#profiles .profile-buttons'); // Get the buttons container
+    // Busca el input y los botones DENTRO del contenedor de login de la pestaña "model"
+    // Esto evita conflictos si existen otros elementos con el mismo ID en otra parte.
+    const loginContainer = document.getElementById('model-login-container');
+    const companyIdInput = loginContainer.querySelector('#company-id');
+    const progressDiv = loginContainer.querySelector('#company-progress');
+    const profileButtonsDiv = loginContainer.querySelector('.profile-buttons');
 
-  // Clear previous progress display and hide buttons by default when trying to load
-  progressDiv.innerHTML = '';
-  if (profileButtonsDiv) {
-      profileButtonsDiv.style.display = 'none'; // Hide buttons
-  }
+    const companyId = companyIdInput.value.trim();
 
-  if (!companyId) {
-      alert('Por favor, ingrese el ID de su empresa.');
-      companyIdInput.focus();
-      return; // Stop execution, buttons remain hidden
-  }
+    // Limpia el progreso anterior y oculta los botones
+    progressDiv.innerHTML = '';
+    if (profileButtonsDiv) {
+        profileButtonsDiv.style.display = 'none';
+    }
 
-  if (companyProfiles[companyId]) {
-      const progress = checkCompanyProgress(companyId);
-      progressDiv.innerHTML = `
-          <h3>Progreso de la empresa:</h3>
-          <p>Gerente: ${progress.manager.toFixed(2)}%</p>
-          <p>Ingeniero: ${progress.engineer.toFixed(2)}%</p>
-          <p>Técnico: ${progress.technician.toFixed(2)}%</p>
-      `;
-      // SUCCESS: Show the profile buttons
-      if (profileButtonsDiv) {
-          profileButtonsDiv.style.display = 'flex'; // Or 'block' if you prefer them stacked
-                                                    // 'flex' will keep them in a row as they are
-      }
-  } else {
-      alert(
-          'ID de empresa no encontrado. Por favor, verifique el ID o registre una nueva empresa.'
-      );
-      // FAILURE: Buttons remain hidden (already set at the start of the function)
-  }
+    if (!companyId) {
+        alert('Por favor, ingrese el ID de su empresa.');
+        companyIdInput.focus();
+        return;
+    }
+
+    // El resto de la lógica permanece igual
+    if (companyProfiles[companyId]) {
+        const progress = checkCompanyProgress(companyId);
+        progressDiv.innerHTML = `
+            <h3>Progreso de la empresa:</h3>
+            <p>Gerente: ${progress.manager.toFixed(2)}%</p>
+            <p>Ingeniero: ${progress.engineer.toFixed(2)}%</p>
+            <p>Técnico: ${progress.technician.toFixed(2)}%</p>
+        `;
+        // ÉXITO: Muestra los botones de perfil
+        if (profileButtonsDiv) {
+            profileButtonsDiv.style.display = 'flex';
+        }
+    } else {
+        alert(
+            'ID de empresa no encontrado. Por favor, verifique el ID o registre una nueva empresa.'
+        );
+        // FALLO: Los botones permanecen ocultos
+    }
 }
 
 
@@ -514,19 +520,22 @@ function sendRegistrationEmails (
   }
 }
 
-function selectProfile (profile) {
-  const companyId = document.getElementById ('company-id').value;
-  if (!companyId || !companyProfiles[companyId]) {
-    alert ('Por favor, ingrese un ID de empresa válido.');
-    return;
-  }
+function selectProfile(profile) {
+    const companyId = document.getElementById('company-id').value;
+    if (!companyId || !companyProfiles[companyId]) {
+        alert('Por favor, ingrese un ID de empresa válido.');
+        return;
+    }
 
-  document.getElementById ('profiles').style.display = 'none';
-  document.getElementById ('model').style.display = 'block';
-  document.getElementById ('model-tab').style.display = 'inline';
+    // Oculta el contenedor de login y muestra el contenedor del cuestionario.
+    // Todo sucede dentro de la misma pestaña "Modelo de Madurez".
+    document.getElementById('model-login-container').style.display = 'none';
+    document.getElementById('model-content-container').style.display = 'block';
 
-  loadQuestions (profile, companyId);
+    // Carga las preguntas para el perfil seleccionado.
+    loadQuestions(profile, companyId);
 }
+
 
 function loadQuestions(profile, companyId) {
   const questionsContainer = document.getElementById('questions-container');
@@ -1424,6 +1433,7 @@ async function resetAllData() { // Make async
   }
 }
 
+// Reemplaza esta función completa
 function updateCalculateButton(companyId) {
   let allProfilesRegisteredAndAnswered = true; // Assume true initially
 
@@ -1457,46 +1467,20 @@ function updateCalculateButton(companyId) {
     }
   }
 
-  const calculateButton = document.querySelector(
-    'button[onclick^="calculateScore"]' // o el selector más específico que uses
-);
-if (calculateButton) {
-    calculateButton.disabled = !allProfilesRegisteredAndAnswered;
-    // ASIGNAR EL ONCLICK AQUÍ ASEGURA QUE EL COMPANYID ES EL CORRECTO
-    // CUANDO EL BOTÓN SE VUELVE A HABILITAR
-    if (!calculateButton.disabled) {
-        calculateButton.onclick = () => calculateScore(companyId);
-    } else {
-        calculateButton.onclick = null; // O una función que diga "aún no listo"
-    }
-}
-}
-
-
-
-/* function updateCalculateButton (companyId) {
-  let allProfilesAnswered = true;
-  for (const profile in companyProfiles[companyId]) {
-    console.log(profile)
-    if (
-      !questions[profile].every (
-        (_, index) => companyProfiles[companyId][profile][index]
-      )
-    ) {
-      console.log(companyProfiles) 
-      allProfilesAnswered = false;
-      break;
-    }
-  }
-
-  const calculateButton = document.querySelector (
-    'button[onclick="calculateScore()"]'
-  );
+  // Se busca el botón por su clase única para mayor robustez
+  const calculateButton = document.querySelector('.calculate-button');
   if (calculateButton) {
-    calculateButton.disabled = !allProfilesAnswered;
-    calculateButton.onclick = () => calculateScore (companyId);
+      calculateButton.disabled = !allProfilesRegisteredAndAnswered;
+      
+      // Asigna o remueve el evento onclick para asegurar que el companyId es el correcto
+      if (!calculateButton.disabled) {
+          calculateButton.onclick = () => calculateScore(companyId);
+      } else {
+          // Si está deshabilitado, quita el evento para evitar ejecuciones accidentales
+          calculateButton.onclick = null; 
+      }
   }
-} */
+}
 
 function checkCompanyProgress (companyId) {
   const progress = {
