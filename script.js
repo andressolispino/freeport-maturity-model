@@ -124,64 +124,51 @@ const otherCountries = [
 ];
 
 const industrialActivities = [
-  'Agroindustria y Producción de Alimentos',
-  'Artesanías y Productos Artesanales',
-  'Autopartes y Componentes',
-  'Avicultura',
-  'Biotecnología',
-  'Construcción y Materiales de Construcción',
-  'Cuero y Calzado',
-  'Electrónica y Electrodomésticos',
-  'Energía Renovable',
-  'Equipos Médicos y Dispositivos de Salud',
-  'Explotación Forestal Sostenible',
-  'Fabricación de Muebles',
-  'Floricultura',
-  'Ganadería',
-  'Industria Aeroespacial',
-  'Industria Automotriz (ensamblaje de vehículos)',
-  'Industria de la Impresión y Gráfica',
-  'Industria del Vidrio',
-  'Industria Láctea',
-  'Industria Naval',
-  'Industria Química y Farmacéutica',
-  'Mantenimiento de maquinaria',
-  'Manufactura Textil y Confección',
-  'Metalmecánica',
-  'Minería y Procesamiento de Minerales',
-  'Petroquímica',
-  'Plásticos y Materiales Sintéticos',
-  'Procesamiento de Bebidas (alcohólicas y no alcohólicas)',
-  'Procesamiento de Carne y Productos Cárnicos',
-  'Producción de Cemento y Concreto',
-  'Producción de Pulpa de Celulosa',
-  'Productos Agrícolas',
-  'Productos de Madera',
-  'Productos de Papel y Cartón',
-  'Reciclaje y Gestión de Residuos',
-  'Servicios de Ingeniería y Consultoría para la Industria',
-  'Tecnologías de la Información y Software',
-  'Textiles de Fibras Naturales',
+'Elaboración de bebidas',
+'Elaboración de productos alimenticios',
+'Elaboración de productos de tabaco',
+'Fabricación de coque y productos de la refinación del petróleo',
+'Fabricación de equipo eléctrico y electrónico',
+'Fabricación de maquinaria y equipo',
+'Fabricación de metales comunes (minería y metalmecánica)',
+'Fabricación de muebles',
+'Fabricación de otros tipos de equipo de transporte (barcos, trenes, aviones)',
+'Fabricación de papel y productos de papel',
+'Fabricación de partes y accesorios para vehículos (autopartes)',
+'Fabricación de prendas de vestir',
+'Fabricación de productos de caucho, materiales sintéticos y plástico',
+'Fabricación de productos de cuero y calzado',
+'Fabricación de productos elaborados de metal',
+'Fabricación de productos farmacéuticos',
+'Fabricación de productos farmacéuticos, sustancias químicas medicinales y productos botánicos de uso farmacéutico',
+'Fabricación de productos minerales no metálicos',
+'Fabricación de productos químicos',
+'Fabricación de productos textiles',
+'Fabricación de vehículos automotores, remolques y semirremolques',
+'Impresión y reproducción de grabaciones',
+'Otras industrias',
+'Producción de madera y fabricación de productos de madera y corcho',
+'Reparación e instalación de maquinaria y equipo',
 ];
 
 const legalFigures = [
-  'Persona Física',
-  'Sociedad Anónima',
-  'Sociedad Anónima Cerrada',
-  'Sociedad de Responsabilidad Limitada',
-  'Sociedad Cooperativa',
-  'Sociedad en Comandita Simple',
-  'Empresa Individual de Responsabilidad Limitada',
-  'Sociedad por Acciones Simplificada',
-  'Sociedad Colectiva',
-  'Sociedad en Comandita por Acciones',
-  'Sociedad de Hecho',
-  'Cooperativa',
-  'Sucursal de Empresa Extranjera',
-  'Empresa Unipersonal',
-  'Sociedad Civil',
   'Asociación Civil',
+  'Cooperativa',
+  'Empresa Individual de Responsabilidad Limitada',
+  'Empresa Unipersonal',
   'Fundación',
+  'Persona Física',
+  'Sociedad Anónima Cerrada',
+  'Sociedad Anónima',
+  'Sociedad Civil',
+  'Sociedad Colectiva',
+  'Sociedad Cooperativa',
+  'Sociedad de Hecho',
+  'Sociedad de Responsabilidad Limitada',
+  'Sociedad en Comandita por Acciones',
+  'Sociedad en Comandita Simple',
+  'Sociedad por Acciones Simplificada',
+  'Sucursal de Empresa Extranjera',
 ];
 
 
@@ -335,18 +322,14 @@ function areAllThreeProfilesComplete(companyId) {
 
 
 
+// CÓDIGO CORREGIDO
 function populateDropdowns () {
-  toggleCountryList (); // Initialize country list
-  // Populate country dropdown
-  const countrySelect = document.getElementById ('country');
-  latinAmericanCountries.forEach (country => {
-    const option = document.createElement ('option');
-    option.value = country;
-    option.text = country;
-    countrySelect.add (option);
-  });
+  // 1. Llama a esta función, que ya se encarga de poblar la lista de países.
+  toggleCountryList (); 
 
-  // Populate main activity dropdown
+  // (El bloque que poblaba la lista por segunda vez se ha eliminado)
+
+  // 2. Continúa poblando las otras listas desplegables como antes.
   const activitySelect = document.getElementById ('main-activity');
   industrialActivities.forEach (activity => {
     const option = document.createElement ('option');
@@ -355,7 +338,6 @@ function populateDropdowns () {
     activitySelect.add (option);
   });
 
-  // Populate legal figure dropdown (keep this part as it was)
   const legalFigureSelect = document.getElementById ('legal-figure');
   legalFigures.forEach (figure => {
     const option = document.createElement ('option');
@@ -366,114 +348,87 @@ function populateDropdowns () {
 }
 
 async function registerCompany() {
-  const registerButton = document.querySelector('#registration-form button');
-  if (registerButton) {
-    registerButton.disabled = true;
-    registerButton.textContent = 'Registrando...';
-  }
-  try {
-    const companyName = document.getElementById('company-name').value;
-    const country = document.getElementById('country').value;
-    const mainActivity = document.getElementById('main-activity').value;
-    const companySize = document.getElementById('company-size').value;
-    const legalFigure = document.getElementById('legal-figure').value;
-    const managerEmail = document.getElementById('manager-email').value;
-    const engineerEmail = document.getElementById('engineer-email').value;
-    const technicianEmail = document.getElementById('technician-email').value;
-    // --- Input Validation ---
-    let missingFields = [];
-    if (!companyName) missingFields.push("Nombre de la empresa");
-    if (!country) missingFields.push("País");
-    if (!mainActivity) missingFields.push("Actividad principal");
-    if (!companySize) missingFields.push("Tamaño de la empresa");
-    if (!legalFigure) missingFields.push("Figura legal");
-    if (!managerEmail && !engineerEmail && !technicianEmail) missingFields.push("Al menos un correo electrónico");
-    if (missingFields.length > 0) {
-      alert(`Por favor, complete los siguientes campos obligatorios:\n- ${missingFields.join('\n- ')}`);
-      if (registerButton) { // Re-enable button before returning on validation fail
-        registerButton.disabled = false;
-        registerButton.textContent = 'Registrar';
-      }
-      return;
-    }
-    // --- End Validation ---
-    const companyId = generateUniqueId();
-    const companyData = {
-      id: companyId,
-      companyName,
-      country,
-      mainActivity,
-      companySize,
-      legalFigure,
-      managerEmail,
-      engineerEmail,
-      technicianEmail,
-      componentScores: {},
-      dimensionScores: {},
-      overallScore: null
-    };
-    // Prepare the data to be saved. Create copies to avoid potential modification issues.
-    const profilesToSave = JSON.parse(JSON.stringify(companyProfiles)); // Deep copy
-    if (!profilesToSave[companyId]) {
-      profilesToSave[companyId] = {
-        manager: {},
-        engineer: {},
-        technician: {},
-      };
-    }
-    const allDataToSave = JSON.parse(JSON.stringify(allCompaniesData)); // Deep copy
-    allDataToSave.push(companyData);
-    
-    // --- Perform Saves in PARALLEL (major optimization) ---
-    console.log("Attempting to save companyProfiles structure (type 1) and company data (type 2)...");
-    const [profilesResult, companiesResult] = await Promise.all([
-      saveInfo(profilesToSave, 1).catch(error => {
-        console.error("Profile save failed:", error);
-        throw error;
-      }),
-      saveInfo(allDataToSave, 2).catch(error => {
-        console.error("Company data save failed:", error);
-        throw error;
-      })
-    ]);
-    console.log("Both saves completed successfully.");
-    // --- End Saves ---
-    
-    // --- Update Local Data DIRECTLY (no need for network request) ---
-    console.log("Updating local data directly without network request...");
-    companyProfiles = profilesToSave;
-    allCompaniesData = allDataToSave;
-    console.log("Local data updated directly.");
-    
-    // Send emails asynchronously
-    sendRegistrationEmails(
-      companyId,
-      managerEmail,
-      engineerEmail,
-      technicianEmail
-    );
-    alert(`Empresa registrada con éxito! Su ID único es: ${companyId}`);
-    // Switch UI
-    document.getElementById('registration').style.display = 'none';
-    document.getElementById('registration-tab').style.display = 'none';
-    document.getElementById('profiles').style.display = 'block';
-    document.getElementById('profiles-tab').style.display = 'inline';
-    // Pre-fill ID and clear form
-    document.getElementById('company-id').value = companyId;
-    document.getElementById('registration-form').reset();
-    // Now loadCompanyProgress should work immediately because we updated local state
-    loadCompanyProgress(); // Try calling this automatically
-  } catch (error) {
-    console.error("Error during company registration:", error);
-    // Provide a more user-friendly error message
-    alert(`Error al registrar la empresa: ${error.message || 'Ocurrió un problema de comunicación con el servidor.'}. Por favor, revise la consola para más detalles e intente de nuevo.`);
-  } finally {
-    // Ensure button is re-enabled
+    const registerButton = document.querySelector('#registration-form button');
     if (registerButton) {
-      registerButton.disabled = false;
-      registerButton.textContent = 'Registrar';
+        registerButton.disabled = true;
+        registerButton.textContent = 'Registrando...';
     }
-  }
+
+    try {
+        const companyName = document.getElementById('company-name').value;
+        const country = document.getElementById('country').value;
+        const mainActivity = document.getElementById('main-activity').value;
+        const companySize = document.getElementById('company-size').value;
+        const legalFigure = document.getElementById('legal-figure').value;
+        const managerEmail = document.getElementById('manager-email').value;
+        const engineerEmail = document.getElementById('engineer-email').value;
+        const technicianEmail = document.getElementById('technician-email').value;
+        
+        let missingFields = [];
+        if (!companyName) missingFields.push("Nombre de la empresa");
+        if (!country) missingFields.push("País");
+        if (!mainActivity) missingFields.push("Actividad principal");
+        if (!companySize) missingFields.push("Tamaño de la empresa");
+        if (!legalFigure) missingFields.push("Figura legal");
+        if (!managerEmail && !engineerEmail && !technicianEmail) missingFields.push("Al menos un correo electrónico");
+
+        if (missingFields.length > 0) {
+            alert(`Por favor, complete los siguientes campos obligatorios:\n- ${missingFields.join('\n- ')}`);
+            if (registerButton) {
+                registerButton.disabled = false;
+                registerButton.textContent = 'Registrar';
+            }
+            return;
+        }
+
+        const companyId = generateUniqueId();
+        const companyData = {
+            id: companyId, companyName, country, mainActivity, companySize, legalFigure, managerEmail, engineerEmail, technicianEmail,
+            componentScores: {}, dimensionScores: {}, overallScore: null
+        };
+
+        const profilesToSave = JSON.parse(JSON.stringify(companyProfiles));
+        if (!profilesToSave[companyId]) {
+            profilesToSave[companyId] = { manager: {}, engineer: {}, technician: {} };
+        }
+        
+        const allDataToSave = JSON.parse(JSON.stringify(allCompaniesData));
+        allDataToSave.push(companyData);
+
+        await Promise.all([
+            saveInfo(profilesToSave, 1),
+            saveInfo(allDataToSave, 2)
+        ]);
+
+        companyProfiles = profilesToSave;
+        allCompaniesData = allDataToSave;
+
+        sendRegistrationEmails(companyId, managerEmail, engineerEmail, technicianEmail);
+
+        alert(`¡Empresa registrada con éxito! Su ID único es: ${companyId}\n\nSerá redirigido para comenzar a responder los cuestionarios.`);
+
+        // --- LÓGICA DE NAVEGACIÓN CORREGIDA ---
+        // 1. Cambiamos a la pestaña "Modelo de Madurez".
+        openTab('model');
+
+        // 2. Pre-rellenamos el campo de ID en esa pestaña.
+        document.getElementById('company-id').value = companyId;
+        
+        // 3. Limpiamos el formulario de registro.
+        document.getElementById('registration-form').reset();
+        
+        // 4. Cargamos el progreso, lo que mostrará los botones de perfil listos para usar.
+        loadCompanyProgress();
+
+    } catch (error) {
+        console.error("Error durante el registro:", error);
+        alert(`Error al registrar la empresa: ${error.message}. Intente de nuevo.`);
+    } finally {
+        if (registerButton) {
+            registerButton.disabled = false;
+            registerButton.textContent = 'Registrar';
+        }
+    }
 }
 
 
@@ -1330,6 +1285,19 @@ function exportToExcel() {
   }
 }
 
+function returnToProfileSelection() {
+    // Muestra la pantalla de login/selección de perfil
+    document.getElementById('model-login-container').style.display = 'block';
+
+    // Oculta la pantalla de preguntas/resultados
+    document.getElementById('model-content-container').style.display = 'none';
+
+    // Limpia el contenido dinámico para evitar que se muestre brevemente la próxima vez
+    document.getElementById('questions-container').innerHTML = '';
+    document.getElementById('buttons-container').innerHTML = '';
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('profile-info').innerHTML = '';
+}
 
 
 function showSaveButton(profile, companyId) {
@@ -1352,6 +1320,13 @@ function showSaveButton(profile, companyId) {
   clearButton.onclick = () => clearProfileAnswers(profile, companyId);
   clearButton.classList.add('form-button', 'secondary-button');
   buttonsContainer.appendChild(clearButton);
+
+  const backButton = document.createElement('button');
+  backButton.textContent = 'Volver';
+  backButton.onclick = returnToProfileSelection; // Asigna la nueva función
+  backButton.classList.add('form-button', 'secondary-button'); // Usa la clase de estilo
+  buttonsContainer.appendChild(backButton);
+
 }
 
 

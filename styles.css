@@ -10,15 +10,22 @@
     --active-color: #e74c3c;
 }
 
+/* Replace current Roboto with this modern stack */
 body {
-    font-family: 'Roboto', 'Arial', sans-serif;
-    line-height: 1.6;
-    color: var(--text-color);
-    background-color: var(--background-color);
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    margin: 0;
-    padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--text);
 }
+
+h1, h2, h3, h4 {
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+}
+
 
 .container {
     max-width: 1200px;
@@ -33,6 +40,15 @@ header {
     padding: 40px 0;
     margin-bottom: 40px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* === NUEVO ESTILO PARA EL BOTÓN 'VOLVER' === */
+.secondary-button {
+    background-color: #7f8c8d; /* Un gris neutral */
+}
+
+.secondary-button:hover {
+    background-color: #95a5a6; /* Un gris más claro al pasar el mouse */
 }
 
 h1 {
@@ -794,7 +810,7 @@ header {
     margin-bottom: 40px;
     border-radius: var(--border-radius);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .logos-container {
@@ -871,7 +887,7 @@ header {
 /* General Styling Adjustments */
 body {
     background-color: var(--background-color);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .container {
@@ -937,33 +953,67 @@ button:hover {
 }
 
 
-.ai-feedback-content {
-    line-height: 1.7;
+.ai-feedback-section {
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.03) 0%, rgba(114, 9, 183, 0.03) 100%);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
 }
 
- .ai-feedback-content h4 { /* Style subheadings from AI */
-    margin-top: 15px;
-    margin-bottom: 5px;
-    color: var(--primary-dark);
- }
+.ai-feedback-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--primary), var(--secondary));
+}
+
+.ai-feedback-content {
+  line-height: 1.7;
+}
+
+.ai-feedback-content h4 {
+  color: var(--primary-dark);
+  margin: 1.5rem 0 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.ai-feedback-content h4::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin-right: 10px;
+}
 
 .ai-feedback-content ul {
-    margin-left: 20px;
-    list-style-type: disc;
+  padding-left: 24px;
+  margin: 1rem 0;
 }
 
- .ai-feedback-section small {
-    display: block;
-    margin-top: 15px;
-    color: #666;
-    font-style: italic;
- }
+.ai-feedback-content li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 8px;
+}
 
-#loading-feedback p {
-    text-align: center;
-    font-style: italic;
-    color: var(--secondary-color);
-    padding: 20px;
+.ai-feedback-content li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
 }
 
 /* Estilo específico para el logo de Unicomfacauca */
