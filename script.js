@@ -1,7 +1,7 @@
 // script.js
 
 const GEMINI_API_KEY = 'AIzaSyCXeBmyXuw69lLPNUBizk6MAc1mtPqK7N0'; // <-- PASTE YOUR KEY HERE
-const GEMINI_MODEL = 'gemini-2.5-flash'; // Or 'gemini-pro', etc.
+const GEMINI_MODEL = 'gemini-2.5-pro'; // Or 'gemini-pro', etc.
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 
@@ -11,63 +11,553 @@ let urlbase = 'https://script.google.com/macros/s/AKfycbyE2-lgyoQPBuIOpzd129JPPn
 
 const questions = {
   manager: [
-      { text: '¿Se implementan anualmente estrategias de formación para la gestión de dispositivos IoT en la organización?', component: 'Device Management', dimension: 'human', answers: { 'No hay cursos de actualizaciones y actividades de mantenimiento de dispositivos IoT': 1, 'Formación ad hoc limitada para dispositivos IoT o casos de uso específicos': 5, '1-5 cursos disponibles anualmente': 10, 'Más de 5 cursos disponibles anualmente': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿En qué áreas funcionales de la empresa se aplican las tecnologías IoT?', component: 'Enterprise Integration', dimension: 'organizational', answers: { 'En ningún área funcional de la empresa': 1, 'En 1 a 2 áreas funcionales de la empresa': 5, 'En 3 a 4 áreas funcionales de la empresa': 10, 'En 5 o más áreas funcionales de la empresa': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Cómo se integran las tecnologías IoT en los procesos empresariales existentes?', component: 'Enterprise Integration', dimension: 'organizational', answers: { 'Sin procesos empresariales integrados con tecnologías IoT': 1, '0-2 procesos empresariales integrados con tecnologías IoT': 5, '3-5 procesos empresariales integrados con tecnologías IoT': 10, '6 o más procesos empresariales integrados con tecnologías IoT': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Se utilizan las tecnologías IoT para implicar a los clientes en la organización?', component: 'Enterprise Integration', dimension: 'human', answers: { 'No se utilizan': 1, 'Se utilizan': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Se generan informes o cuadros de mando basados en datos del IoT en la organización?', component: 'Enterprise Integration', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Ha implantado la empresa procesos para garantizar el cumplimiento de la normativa pertinente sobre el IoT (por ejemplo, soberanía de los datos, seguridad de los dispositivos, certificación)?', component: 'Compliance', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Colabora su organización con organismos reguladores o asociaciones del sector para mantenerse informada sobre los cambios en la normativa relacionada con IoT?', component: 'Compliance', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Sus soluciones IoT en la organización responden a sus necesidades específicas del sector o son genéricas?', component: 'Contextualization', dimension: 'organizational', answers: { 'Son genéricas': 1, 'Son específicos del sector o la empresa': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Existen recursos (financieros, humanos, técnicos) para explorar nuevas implementaciones de IoT en la organización?', component: 'Contextualization', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Ha evaluado la organización el posible retorno de la inversión (ROI) de las implementaciones de IoT?', component: 'Contextualization', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Cuáles son los obstáculos o retos (financieros, culturales o tecnológicos) que la organización percibe para la adopción de IoT?', component: 'Contextualization', dimension: 'organizational', answers: { 'No se han identificado los obstáculos ni los retos': 1, 'Se identifican algunos obstáculos y retos, pero no se proponen soluciones': 5, 'Barreras y retos identificados y soluciones propuestas': 10, 'Barreras y retos identificados proactivamente y soluciones implementadas': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Existen iniciativas para colaborar con instituciones de investigación, universidades o consorcios industriales sobre IoT?', component: 'Contextualization', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Existe un mecanismo de colaboración con el cliente para comprender sus retos específicos y crear soluciones conjuntas de IoT?', component: 'Contextualization', dimension: 'human', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
+    {
+      text: '¿Se implementan anualmente estrategias de formación para la gestión de dispositivos IoT en la organización?',
+      component: 'Device Management',
+      dimension: 'human',
+      answers: [
+        { text: 'No hay cursos de actualizaciones y actividades de mantenimiento de dispositivos IoT', level: 'Estático', score: 1 },
+        { text: 'Formación ad hoc limitada para dispositivos IoT o casos de uso específicos', level: 'Reactivo', score: 5 },
+        { text: '1-5 cursos disponibles anualmente', level: 'Proactivo', score: 10 },
+        { text: 'Más de 5 cursos disponibles anualmente', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿En qué áreas funcionales de la empresa se aplican las tecnologías IoT?',
+      component: 'Enterprise Integration',
+      dimension: 'organizational',
+      answers: [
+        { text: 'En ningún área funcional de la empresa', level: 'Estático', score: 1 },
+        { text: 'En 1 a 2 áreas funcionales de la empresa', level: 'Reactivo', score: 5 },
+        { text: 'En 3 a 4 áreas funcionales de la empresa', level: 'Proactivo', score: 10 },
+        { text: 'En 5 o más áreas funcionales de la empresa', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cómo se integran las tecnologías IoT en los procesos empresariales existentes?',
+      component: 'Enterprise Integration',
+      dimension: 'organizational',
+      answers: [
+        { text: 'Sin procesos empresariales integrados con tecnologías IoT', level: 'Estático', score: 1 },
+        { text: '0-2 procesos empresariales integrados con tecnologías IoT', level: 'Reactivo', score: 5 },
+        { text: '3-5 procesos empresariales integrados con tecnologías IoT', level: 'Proactivo', score: 10 },
+        { text: '6 o más procesos empresariales integrados con tecnologías IoT', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Se utilizan las tecnologías IoT para implicar a los clientes en la organización?',
+      component: 'Enterprise Integration',
+      dimension: 'human',
+      answers: [
+        { text: 'No se utilizan', level: 'Estático', score: 1 },
+        { text: 'Se utilizan', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Se generan informes o cuadros de mando basados en datos del IoT en la organización?',
+      component: 'Enterprise Integration',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Ha implantado la empresa procesos para garantizar el cumplimiento de la normativa pertinente sobre el IoT (por ejemplo, soberanía de los datos, seguridad de los dispositivos, certificación)?',
+      component: 'Compliance',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Colabora su organización con organismos reguladores o asociaciones del sector para mantenerse informada sobre los cambios en la normativa relacionada con IoT?',
+      component: 'Compliance',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Sus soluciones IoT en la organización responden a sus necesidades específicas del sector o son genéricas?',
+      component: 'Contextualization',
+      dimension: 'organizational',
+      answers: [
+        { text: 'Son genéricas', level: 'Estático', score: 1 },
+        { text: 'Son específicos del sector o la empresa', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existen recursos (financieros, humanos, técnicos) para explorar nuevas implementaciones de IoT en la organización?',
+      component: 'Contextualization',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Ha evaluado la organización el posible retorno de la inversión (ROI) de las implementaciones de IoT?',
+      component: 'Contextualization',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cuáles son los obstáculos o retos (financieros, culturales o tecnológicos) que la organización percibe para la adopción de IoT?',
+      component: 'Contextualization',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No se han identificado los obstáculos ni los retos', level: 'Estático', score: 1 },
+        { text: 'Se identifican algunos obstáculos y retos, pero no se proponen soluciones', level: 'Reactivo', score: 5 },
+        { text: 'Barreras y retos identificados y soluciones propuestas', level: 'Proactivo', score: 10 },
+        { text: 'Barreras y retos identificados proactivamente y soluciones implementadas', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existen iniciativas para colaborar con instituciones de investigación, universidades o consorcios industriales sobre IoT?',
+      component: 'Contextualization',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existe un mecanismo de colaboración con el cliente para comprender sus retos específicos y crear soluciones conjuntas de IoT?',
+      component: 'Contextualization',
+      dimension: 'human',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
   ],
 
-  engineer: [ 
-      { text: '¿Cómo se gestiona el ciclo de vida de los dispositivos IoT en la organización?', component: 'Device Management', dimension: 'technological', answers: { 'Gestión ad hoc del ciclo de vida de los dispositivos IoT, con sustituciones o actualizaciones no planificadas': 1, 'La duración media del ciclo de vida de los dispositivos IoT es inferior a 1 año': 5, 'La duración media del ciclo de vida de los dispositivos IoT es de 1-3 años': 10, 'La duración media del ciclo de vida de los dispositivos IoT es superior a 3 años': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Cómo se mide el rendimiento de las tecnologías IoT en la organización?', component: 'Device Management', dimension: 'organizational', answers: { 'No hay métricas de rendimiento definidas ni procesos de supervisión establecidos': 1, '1-2 métricas de rendimiento': 5, '3-5 métricas de rendimiento': 10, '6 o más métricas de rendimiento definidas': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Utiliza su empresa alguna tecnología de virtualización para gestionar dispositivos u operaciones de IoT?', component: 'Connectivity Management', dimension: 'technological', answers: { 'No existe una red central virtualizada': 1, 'Existe una red central virtualizada dedicada a las operaciones de IoT': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Dispone la empresa de una plataforma de gestión de la conectividad o de un sistema de supervisión de red?', component: 'Connectivity Management', dimension: 'technological', answers: { 'No existe ninguna plataforma de gestión de la conectividad': 1, 'Existe y se utiliza una plataforma de gestión de la conectividad': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Dispone la empresa de análisis de datos basados en la información de red de los dispositivos IoT de la organización?', component: 'Connectivity Management', dimension: 'technological', answers: { 'La empresa no realiza análisis basados en información de la red IoT': 1, 'La empresa realiza análisis basados en información de la red IoT': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Como se procesan los datos de los dispositivos IoT en la organización?', component: 'Cloud/Edge Management', dimension: 'organizational', answers: { 'Los datos de IoT no se recopilan o se almacenan para procesar sin ningún tipo de análisis': 1, 'El análisis de los datos de IoT se realiza ad hoc': 5, 'El análisis de datos IoT es un proceso regular y estructurado': 10, 'El análisis de datos de IoT está automatizado e integrado con los procesos empresariales': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Existen equipos o recursos dedicados al análisis de datos de IoT en la organización?', component: 'Cloud/Edge Management', dimension: 'human', answers: { 'No hay equipos ni recursos dedicados al análisis de datos de IoT': 1, 'El análisis de datos de IoT lo realiza el personal operativo o de TI existente como responsabilidad adicional': 5, 'Existe un equipo o recursos dedicados al análisis de datos de IoT, con un tamaño de equipo moderado (de 1 a 3 personas)': 10, 'Hay un equipo de personal dedicado al análisis de datos de IoT (4 o más individuos)': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Qué servicios en la nube se utilizan para operaciones con el IoT?', component: 'Cloud/Edge Management', dimension: 'technological', answers: { 'No se utilizan servicios en la nube para las operaciones de IoT': 1, 'Los servicios en la nube básicos, como el almacenamiento en la nube o las copias de seguridad, se utilizan para el almacenamiento de datos de IoT.': 5, 'Se utilizan múltiples servicios en la nube para las operaciones de IoT, incluyendo computación en la nube, análisis de datos y herramientas de visualización': 10, 'Existe una estrategia en la nube completa y avanzada, que aprovecha una amplia gama de servicios en la nube para las operaciones de IoT': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Emplea la empresa edge computing para procesar y almacenar datos más cerca de los dispositivos IoT?', component: 'Cloud/Edge Management', dimension: 'technological', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Dispone la empresa de capacidad para gestionar con Inteligencia Artificial (IA) los conjuntos de datos producidos por dispositivos IoT y la nube?', component: 'Cloud/Edge Management', dimension: 'technological', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Utiliza los hiperescaladores de la nube (por ejemplo, AWS, Microsoft Azure)?', component: 'Cloud/Edge Management', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Cómo se integran los datos del IoT en los procesos operativos?', component: 'Enterprise Integration', dimension: 'organizational', answers: { 'Los datos de IoT están aislados y no se comparten entre procesos': 1, 'Algunos datos de IoT se comparten entre algunos procesos, pero la integración es limitada (menos de 3 procesos))': 5, 'Los datos de IoT se integran y comparten en la mayoría (más de 3 procesos) de los procesos operativos': 10, 'Los datos de IoT están totalmente integrados y se comparten sin problemas en todos los procesos operativos': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Dispone actualmente la organización de sistemas empresariales (por ejemplo, CRM, ERP)?', component: 'Enterprise Integration', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Participan actualmente en una plataforma de intercambio de datos IoT para su empresa?', component: 'Enterprise Integration', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Se han identificado riesgos de seguridad en la aplicación de tecnologías IoT por parte de la organización?', component: 'Security', dimension: 'technological', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Se ha capacitado a los empleados con respecto a la seguridad de los sistemas IoT en la organización?', component: 'Security', dimension: 'human', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Se realizan auditorías de seguridad del IoT en la organización?', component: 'Security', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Se ha asociado la empresa con otras organizaciones para debatir o trabajar conjuntamente sobre la seguridad de IoT en la organización?', component: 'Security', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Cuáles son las consideraciones éticas para el uso de datos de IoT?', component: 'Compliance', dimension: 'human', answers: { 'No se realizan comprobaciones de cumplimiento ético': 1, 'Se realizan 1-2 comprobaciones de cumplimiento ético anualmente': 5, 'Se realizan de 3 a 5 comprobaciones de cumplimiento ético anualmente': 10, 'Se realizan más de 5 comprobaciones de cumplimiento ético anualmente': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Existen asociaciones o colaboraciones con proveedores de soluciones IoT o expertos del sector?', component: 'Compliance', dimension: 'organizational', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Ha implementado su organización procesos y procedimientos para garantizar el cumplimiento de la normativa relacionada con IoT?', component: 'Compliance', dimension: 'organizational', answers: { 'No existe un sistema o marco de gestión del cumplimiento específico de IoT': 1, 'Procesos informales o ad hoc para el cumplimiento relacionado con IoT': 5, 'Sistema o marco de gestión del cumplimiento específico de IoT documentado e implementado': 10, 'Sistema o marco de gestión del cumplimiento específico de IoT completo, automatizado y continuamente actualizado.': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Cómo garantiza su organización que las conexiones IoT y los sistemas asociados cumplen las normativas pertinentes y las políticas?', component: 'Compliance', dimension: 'human', answers: { 'No hay un equipo dedicado o una persona responsable de gestionar el cumplimiento de IoT': 1, 'Responsabilidad informal o ad hoc para gestionar el cumplimiento de IoT': 5, 'Persona responsable de gestionar el cumplimiento de IoT': 10, 'Equipo dedicado e interfuncional responsable de gestionar el cumplimiento de IoT, con revisiones y actualizaciones periódicas': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Existen recursos o equipos dedicados a la investigación y el desarrollo del IoT en la organización?', component: 'Contextualization', dimension: 'human', answers: { 'No hay un equipo dedicado a la investigación y el desarrollo de IoT': 1, 'Una persona dedicada a la investigación y desarrollo de IoT': 5, 'Equipo de investigación y desarrollo de IoT de tamaño medio (2 a 4 personas)': 10, 'Equipo de investigación y desarrollo de IoT grande (5 personas o más).': 15, 'No sabe/no contesta': 0 } },
+  engineer: [
+    {
+      text: '¿Cómo se gestiona el ciclo de vida de los dispositivos IoT en la organización?',
+      component: 'Device Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'Gestión ad hoc del ciclo de vida de los dispositivos IoT, con sustituciones o actualizaciones no planificadas', level: 'Estático', score: 1 },
+        { text: 'La duración media del ciclo de vida de los dispositivos IoT es inferior a 1 año', level: 'Reactivo', score: 5 },
+        { text: 'La duración media del ciclo de vida de los dispositivos IoT es de 1-3 años', level: 'Proactivo', score: 10 },
+        { text: 'La duración media del ciclo de vida de los dispositivos IoT es superior a 3 años', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cómo se mide el rendimiento de las tecnologías IoT en la organización?',
+      component: 'Device Management',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No hay métricas de rendimiento definidas ni procesos de supervisión establecidos', level: 'Estático', score: 1 },
+        { text: '1-2 métricas de rendimiento', level: 'Reactivo', score: 5 },
+        { text: '3-5 métricas de rendimiento', level: 'Proactivo', score: 10 },
+        { text: '6 o más métricas de rendimiento definidas', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Utiliza su empresa alguna tecnología de virtualización para gestionar dispositivos u operaciones de IoT?',
+      component: 'Connectivity Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No existe una red central virtualizada', level: 'Estático', score: 1 },
+        { text: 'Existe una red central virtualizada dedicada a las operaciones de IoT', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Dispone la empresa de una plataforma de gestión de la conectividad o de un sistema de supervisión de red?',
+      component: 'Connectivity Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No existe ninguna plataforma de gestión de la conectividad', level: 'Estático', score: 1 },
+        { text: 'Existe y se utiliza una plataforma de gestión de la conectividad', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Dispone la empresa de análisis de datos basados en la información de red de los dispositivos IoT de la organización?',
+      component: 'Connectivity Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'La empresa no realiza análisis basados en información de la red IoT', level: 'Estático', score: 1 },
+        { text: 'La empresa realiza análisis basados en información de la red IoT', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Como se procesan los datos de los dispositivos IoT en la organización?',
+      component: 'Cloud/Edge Management',
+      dimension: 'organizational',
+      answers: [
+        { text: 'Los datos de IoT no se recopilan o se almacenan para procesar sin ningún tipo de análisis', level: 'Estático', score: 1 },
+        { text: 'El análisis de los datos de IoT se realiza ad hoc', level: 'Reactivo', score: 5 },
+        { text: 'El análisis de datos IoT es un proceso regular y estructurado', level: 'Proactivo', score: 10 },
+        { text: 'El análisis de datos de IoT está automatizado e integrado con los procesos empresariales', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existen equipos o recursos dedicados al análisis de datos de IoT en la organización?',
+      component: 'Cloud/Edge Management',
+      dimension: 'human',
+      answers: [
+        { text: 'No hay equipos ni recursos dedicados al análisis de datos de IoT', level: 'Estático', score: 1 },
+        { text: 'El análisis de datos de IoT lo realiza el personal operativo o de TI existente como responsabilidad adicional', level: 'Reactivo', score: 5 },
+        { text: 'Existe un equipo o recursos dedicados al análisis de datos de IoT, con un tamaño de equipo moderado (de 1 a 3 personas)', level: 'Proactivo', score: 10 },
+        { text: 'Hay un equipo de personal dedicado al análisis de datos de IoT (4 o más individuos)', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Qué servicios en la nube se utilizan para operaciones con el IoT?',
+      component: 'Cloud/Edge Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No se utilizan servicios en la nube para las operaciones de IoT', level: 'Estático', score: 1 },
+        { text: 'Los servicios en la nube básicos, como el almacenamiento en la nube o las copias de seguridad, se utilizan para el almacenamiento de datos de IoT.', level: 'Reactivo', score: 5 },
+        { text: 'Se utilizan múltiples servicios en la nube para las operaciones de IoT, incluyendo computación en la nube, análisis de datos y herramientas de visualización', level: 'Proactivo', score: 10 },
+        { text: 'Existe una estrategia en la nube completa y avanzada, que aprovecha una amplia gama de servicios en la nube para las operaciones de IoT', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Emplea la empresa edge computing para procesar y almacenar datos más cerca de los dispositivos IoT?',
+      component: 'Cloud/Edge Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Dispone la empresa de capacidad para gestionar con Inteligencia Artificial (IA) los conjuntos de datos producidos por dispositivos IoT y la nube?',
+      component: 'Cloud/Edge Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Utiliza los hiperescaladores de la nube (por ejemplo, AWS, Microsoft Azure)?',
+      component: 'Cloud/Edge Management',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cómo se integran los datos del IoT en los procesos operativos?',
+      component: 'Enterprise Integration',
+      dimension: 'organizational',
+      answers: [
+        { text: 'Los datos de IoT están aislados y no se comparten entre procesos', level: 'Estático', score: 1 },
+        { text: 'Algunos datos de IoT se comparten entre algunos procesos, pero la integración es limitada (menos de 3 procesos))', level: 'Reactivo', score: 5 },
+        { text: 'Los datos de IoT se integran y comparten en la mayoría (más de 3 procesos) de los procesos operativos', level: 'Proactivo', score: 10 },
+        { text: 'Los datos de IoT están totalmente integrados y se comparten sin problemas en todos los procesos operativos', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Dispone actualmente la organización de sistemas empresariales (por ejemplo, CRM, ERP)?',
+      component: 'Enterprise Integration',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Participan actualmente en una plataforma de intercambio de datos IoT para su empresa?',
+      component: 'Enterprise Integration',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Se han identificado riesgos de seguridad en la aplicación de tecnologías IoT por parte de la organización?',
+      component: 'Security',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Se ha capacitado a los empleados con respecto a la seguridad de los sistemas IoT en la organización?',
+      component: 'Security',
+      dimension: 'human',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Se realizan auditorías de seguridad del IoT en la organización?',
+      component: 'Security',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Se ha asociado la empresa con otras organizaciones para debatir o trabajar conjuntamente sobre la seguridad de IoT en la organización?',
+      component: 'Security',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cuáles son las consideraciones éticas para el uso de datos de IoT?',
+      component: 'Compliance',
+      dimension: 'human',
+      answers: [
+        { text: 'No se realizan comprobaciones de cumplimiento ético', level: 'Estático', score: 1 },
+        { text: 'Se realizan 1-2 comprobaciones de cumplimiento ético anualmente', level: 'Reactivo', score: 5 },
+        { text: 'Se realizan de 3 a 5 comprobaciones de cumplimiento ético anualmente', level: 'Proactivo', score: 10 },
+        { text: 'Se realizan más de 5 comprobaciones de cumplimiento ético anualmente', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existen asociaciones o colaboraciones con proveedores de soluciones IoT o expertos del sector?',
+      component: 'Compliance',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Ha implementado su organización procesos y procedimientos para garantizar el cumplimiento de la normativa relacionada con IoT?',
+      component: 'Compliance',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No existe un sistema o marco de gestión del cumplimiento específico de IoT', level: 'Estático', score: 1 },
+        { text: 'Procesos informales o ad hoc para el cumplimiento relacionado con IoT', level: 'Reactivo', score: 5 },
+        { text: 'Sistema o marco de gestión del cumplimiento específico de IoT documentado e implementado', level: 'Proactivo', score: 10 },
+        { text: 'Sistema o marco de gestión del cumplimiento específico de IoT completo, automatizado y continuamente actualizado.', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cómo garantiza su organización que las conexiones IoT y los sistemas asociados cumplen las normativas pertinentes y las políticas?',
+      component: 'Compliance',
+      dimension: 'human',
+      answers: [
+        { text: 'No hay un equipo dedicado o una persona responsable de gestionar el cumplimiento de IoT', level: 'Estático', score: 1 },
+        { text: 'Responsabilidad informal o ad hoc para gestionar el cumplimiento de IoT', level: 'Reactivo', score: 5 },
+        { text: 'Persona responsable de gestionar el cumplimiento de IoT', level: 'Proactivo', score: 10 },
+        { text: 'Equipo dedicado e interfuncional responsable de gestionar el cumplimiento de IoT, con revisiones y actualizaciones periódicas', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existen recursos o equipos dedicados a la investigación y el desarrollo del IoT en la organización?',
+      component: 'Contextualization',
+      dimension: 'human',
+      answers: [
+        { text: 'No hay un equipo dedicado a la investigación y el desarrollo de IoT', level: 'Estático', score: 1 },
+        { text: 'Una persona dedicada a la investigación y desarrollo de IoT', level: 'Reactivo', score: 5 },
+        { text: 'Equipo de investigación y desarrollo de IoT de tamaño medio (2 a 4 personas)', level: 'Proactivo', score: 10 },
+        { text: 'Equipo de investigación y desarrollo de IoT grande (5 personas o más).', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
   ],
-
 
   technician: [
-      { text: '¿Cuántos dispositivos IoT se utilizan en la organización?', component: 'Device Management', dimension: 'technological', answers: { 'No hay dispositivos IoT desplegados': 1, '1-10 dispositivos IoT desplegados': 5, '11-30 dispositivos IoT desplegados': 10, 'Más de 30 dispositivos IoT desplegados': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Cuál es el tiempo promedio dedicado a configurar nuevos dispositivos IoT en la organización?', component: 'Device Management', dimension: 'technological', answers: { 'No se mide el tiempo de configuración y despliegue': 1, '1-2 días en configurar y desplegar un nuevo dispositivo': 5, 'Entre 2 y 8 horas en configurar y desplegar un nuevo dispositivo': 10, 'Configuración de dispositivos que tardan menos de 2 horas en configurar e implantar un nuevo dispositivo': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Cómo aprovisiona y configura actualmente los dispositivos IoT en su organización?', component: 'Device Management', dimension: 'technological', answers: { 'Aprovisionamiento y configuración manuales': 1, 'Existe un proceso estandarizado y automatizado para el aprovisionamiento y configuración de dispositivos': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Se actualiza el firmware y el software de los dispositivos IoT de la organización?', component: 'Device Management', dimension: 'technological', answers: { 'No existe un proceso estructurado para gestionar las actualizaciones de los dispositivos': 1, 'Procesos ad hoc para gestionar las actualizaciones de dispositivos': 5, 'Existe un proceso estructurado': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Existen procesos u operaciones en los que se recopilen datos de dispositivos IoT conectados en la organización?', component: 'Connectivity Management', dimension: 'organizational', answers: { 'Ningún proceso u operación implica la recopilación de datos de dispositivos conectados': 1, '1 a 2 procesos u operaciones que implican la recopilación de datos de dispositivos conectados.': 5, '3 a 5 procesos y operaciones que implican la recopilación de datos de dispositivos conectados': 10, 'Más de 5 procesos u operaciones de dispositivos conectados que implican la recopilación de datos de dispositivos conectados': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿La empresa dispone de dispositivos IoT que se conectan mediante tarjetas SIM?', component: 'Connectivity Management', dimension: 'technological', answers: {'Sí': 15, 'No': 1, 'No sabe/no contesta': 0} },
-      { text: '¿Cómo gestiona las tarjetas SIM y maneja el aprovisionamiento remoto para sus dispositivos IoT en la organización?', component: 'Connectivity Management', dimension: 'technological', answers: { 'La empresa gestiona manualmente tarjetas SIM físicas para dispositivos IoT': 1, 'La empresa utiliza métodos tradicionales de aprovisionamiento de SIM, pero no ha adoptado las tecnologías eSIM o iSIM.': 5, 'La empresa ha adoptado parcialmente las tecnologías eSIM o iSIM para el aprovisionamiento remoto de algunos dispositivos IoT (Liberg et al., 2018).': 10, 'La empresa ha adoptado completamente las tecnologías eSIM e iSIM en toda su flota de dispositivos IoT': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Existe una infraestructura de red específica para los dispositivos IoT, o comparten la misma red que otros sistemas informáticos?', component: 'Connectivity Management', dimension: 'technological', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Qué herramientas y técnicas de análisis de datos se utilizan para los datos de IoT en la organización?', component: 'Cloud/Edge Management', dimension: 'organizational', answers: { 'No se utilizan herramientas o técnicas de análisis de datos específicas para los datos de IoT': 1, 'Se utilizan herramientas o técnicas básicas de análisis de datos para los datos de IoT, como software de hojas de cálculo o análisis estadísticos sencillos': 5, 'Se utilizan herramientas y técnicas de análisis de datos dedicadas para los datos de IoT, como la visualización de datos, el aprendizaje automático o el análisis predictivo': 10, 'Se utilizan herramientas y técnicas avanzadas de análisis de datos para los datos de IoT, como el análisis en tiempo real, el procesamiento de datos en streaming o la inteligencia artificial (IA) y el aprendizaje profundo': 15, 'No sabe/no contesta': 0 } },
-      { text: '¿Dispone su organización de un sistema para detectar malware en sus dispositivos IoT?', component: 'Security', dimension: 'technological', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Dispone la organización de un mecanismo para bloquear el IMEI (Identidad Internacional de Equipo Móvil) del dispositivo a la tarjeta SIM conectada, impidiendo el intercambio de datos no autorizado?', component: 'Security', dimension: 'technological', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Utiliza un punto de acceso privado (APN) para su conectividad IoT con el fin de aislar su red IoT de la Internet pública?', component: 'Security', dimension: 'technological', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Ha implementado el cifrado de extremo a extremo para sus comunicaciones del IoT en la organización?', component: 'Security', dimension: 'technological', answers: { 'Sí': 15, 'No': 1, 'No sabe/no contesta': 0 } },
-      { text: '¿Existen iniciativas para explorar el análisis avanzado (IA/ML) de los datos de IoT?', component: 'Contextualization', dimension: 'organizational', answers: { 'No hay iniciativas de IA/ML sobre datos de IoT': 1, 'Exploración inicial de iniciativas de IA/ML sobre datos de IoT': 5, 'Iniciativas de IA/ML sobre datos de IoT en curso': 10, 'Las iniciativas de IA/ML sobre datos de IoT están totalmente implementadas': 15, 'No sabe/no contesta': 0 } },
+    {
+      text: '¿Cuántos dispositivos IoT se utilizan en la organización?',
+      component: 'Device Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No hay dispositivos IoT desplegados', level: 'Estático', score: 1 },
+        { text: '1-10 dispositivos IoT desplegados', level: 'Reactivo', score: 5 },
+        { text: '11-30 dispositivos IoT desplegados', level: 'Proactivo', score: 10 },
+        { text: 'Más de 30 dispositivos IoT desplegados', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cuál es el tiempo promedio dedicado a configurar nuevos dispositivos IoT en la organización?',
+      component: 'Device Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No se mide el tiempo de configuración y despliegue', level: 'Estático', score: 1 },
+        { text: '1-2 días en configurar y desplegar un nuevo dispositivo', level: 'Reactivo', score: 5 },
+        { text: 'Entre 2 y 8 horas en configurar y desplegar un nuevo dispositivo', level: 'Proactivo', score: 10 },
+        { text: 'Configuración de dispositivos que tardan menos de 2 horas en configurar e implantar un nuevo dispositivo', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cómo aprovisiona y configura actualmente los dispositivos IoT en su organización?',
+      component: 'Device Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'Aprovisionamiento y configuración manuales', level: 'Estático', score: 1 },
+        { text: 'Existe un proceso estandarizado y automatizado para el aprovisionamiento y configuración de dispositivos', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Se actualiza el firmware y el software de los dispositivos IoT de la organización?',
+      component: 'Device Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No existe un proceso estructurado para gestionar las actualizaciones de los dispositivos', level: 'Estático', score: 1 },
+        { text: 'Procesos ad hoc para gestionar las actualizaciones de dispositivos', level: 'Reactivo', score: 5 },
+        { text: 'Existe un proceso estructurado', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existen procesos u operaciones en los que se recopilen datos de dispositivos IoT conectados en la organización?',
+      component: 'Connectivity Management',
+      dimension: 'organizational',
+      answers: [
+        { text: 'Ningún proceso u operación implica la recopilación de datos de dispositivos conectados', level: 'Estático', score: 1 },
+        { text: '1 a 2 procesos u operaciones que implican la recopilación de datos de dispositivos conectados.', level: 'Reactivo', score: 5 },
+        { text: '3 a 5 procesos y operaciones que implican la recopilación de datos de dispositivos conectados', level: 'Proactivo', score: 10 },
+        { text: 'Más de 5 procesos u operaciones de dispositivos conectados que implican la recopilación de datos de dispositivos conectados', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿La empresa dispone de dispositivos IoT que se conectan mediante tarjetas SIM?',
+      component: 'Connectivity Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Cómo gestiona las tarjetas SIM y maneja el aprovisionamiento remoto para sus dispositivos IoT en la organización?',
+      component: 'Connectivity Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'La empresa gestiona manualmente tarjetas SIM físicas para dispositivos IoT', level: 'Estático', score: 1 },
+        { text: 'La empresa utiliza métodos tradicionales de aprovisionamiento de SIM, pero no ha adoptado las tecnologías eSIM o iSIM.', level: 'Reactivo', score: 5 },
+        { text: 'La empresa ha adoptado parcialmente las tecnologías eSIM o iSIM para el aprovisionamiento remoto de algunos dispositivos IoT (Liberg et al., 2018).', level: 'Proactivo', score: 10 },
+        { text: 'La empresa ha adoptado completamente las tecnologías eSIM e iSIM en toda su flota de dispositivos IoT', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existe una infraestructura de red específica para los dispositivos IoT, o comparten la misma red que otros sistemas informáticos?',
+      component: 'Connectivity Management',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Qué herramientas y técnicas de análisis de datos se utilizan para los datos de IoT en la organización?',
+      component: 'Cloud/Edge Management',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No se utilizan herramientas o técnicas de análisis de datos específicas para los datos de IoT', level: 'Estático', score: 1 },
+        { text: 'Se utilizan herramientas o técnicas básicas de análisis de datos para los datos de IoT, como software de hojas de cálculo o análisis estadísticos sencillos', level: 'Reactivo', score: 5 },
+        { text: 'Se utilizan herramientas y técnicas de análisis de datos dedicadas para los datos de IoT, como la visualización de datos, el aprendizaje automático o el análisis predictivo', level: 'Proactivo', score: 10 },
+        { text: 'Se utilizan herramientas y técnicas avanzadas de análisis de datos para los datos de IoT, como el análisis en tiempo real, el procesamiento de datos en streaming o la inteligencia artificial (IA) y el aprendizaje profundo', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Dispone su organización de un sistema para detectar malware en sus dispositivos IoT?',
+      component: 'Security',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Dispone la organización de un mecanismo para bloquear el IMEI (Identidad Internacional de Equipo Móvil) del dispositivo a la tarjeta SIM conectada, impidiendo el intercambio de datos no autorizado?',
+      component: 'Security',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Utiliza un punto de acceso privado (APN) para su conectividad IoT con el fin de aislar su red IoT de la Internet pública?',
+      component: 'Security',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Ha implementado el cifrado de extremo a extremo para sus comunicaciones del IoT en la organización?',
+      component: 'Security',
+      dimension: 'technological',
+      answers: [
+        { text: 'No', level: 'Estático', score: 1 },
+        { text: 'Sí', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
+    {
+      text: '¿Existen iniciativas para explorar el análisis avanzado (IA/ML) de los datos de IoT?',
+      component: 'Contextualization',
+      dimension: 'organizational',
+      answers: [
+        { text: 'No hay iniciativas de IA/ML sobre datos de IoT', level: 'Estático', score: 1 },
+        { text: 'Exploración inicial de iniciativas de IA/ML sobre datos de IoT', level: 'Reactivo', score: 5 },
+        { text: 'Iniciativas de IA/ML sobre datos de IoT en curso', level: 'Proactivo', score: 10 },
+        { text: 'Las iniciativas de IA/ML sobre datos de IoT están totalmente implementadas', level: 'Innovador', score: 15 },
+        { text: 'No sabe/no contesta', level: null, score: 0 }
+      ]
+    },
   ]
 };
 
@@ -170,6 +660,639 @@ const legalFigures = [
   'Sociedad por Acciones Simplificada',
   'Sucursal de Empresa Extranjera',
 ];
+
+
+
+
+
+
+const rubricData = {
+    "Device Management": {
+        "¿Cuántos dispositivos o sensores habilitados para IoT se utilizan en la organización?": {
+            "Estático": "No hay dispositivos IoT desplegados.",
+            "Reactivo": "1-10 dispositivos IoT desplegados.",
+            "Proactivo": "11-30 dispositivos IoT desplegados.",
+            "Innovador": "Más de 30 dispositivos IoT desplegados."
+        },
+        "¿Tiempo promedio dedicado a configurar nuevos dispositivos IoT en la organización?": {
+            "Estático": "No se mide el tiempo de configuración y despliegue",
+            "Reactivo": "1-2 días en configurar y desplegar un nuevo dispositivo.",
+            "Proactivo": "Entre 2 y 8 horas en configurar y desplegar un nuevo dispositivo.",
+            "Innovador": "Configuración de dispositivos que tardan menos de 2 horas en configurar e implantar un nuevo dispositivo"
+        },
+        "¿Qué procesos existen para gestionar y mantener los dispositivos IoT?": {
+            "Estático": "No hay prácticas de gestión de la conectividad establecidas.",
+            "Reactivo": "Procesos ad hoc para gestionar dispositivos IoT",
+            "Proactivo": "Prácticas de gestión de la conectividad para el 1-75% de los dispositivos IoT.",
+            "Innovador": "Prácticas de gestión de la conectividad para más del 75% de los dispositivos IoT."
+        },
+        "¿Cómo se realizan los procesos de gestión o mantenimiento de los dispositivos IoT?": {
+            "Estático": "No hay dispositivos IoT con procesos de gestión o mantenimiento documentados.",
+            "Reactivo": "Procesos documentados para menos del 25% de los dispositivos IoT.",
+            "Proactivo": "Procesos documentados para el 25-75% de los dispositivos IoT.",
+            "Innovador": "Procesos documentados para más del 75% de los dispositivos IoT."
+        },
+        "¿Cuáles son los retos a los que se enfrenta la gestión y el mantenimiento de los dispositivos IoT?": {
+            "Estático": "No hay SLA definidos para el mantenimiento.",
+            "Reactivo": "SLAs definidos para menos del 25% de los dispositivos IoT.",
+            "Proactivo": "Acuerdos de Nivel de Servicio definidos para el 25-75% de los dispositivos IoT.",
+            "Innovador": "SLA definidos para más del 75% de los dispositivos IoT."
+        },
+        "¿Se implementan anualmente estrategias de formación para la gestión de dispositivos IoT en la organización?": {
+            "Estático": "No hay cursos de actualizaciones y actividades de mantenimiento de dispositivos IoT.",
+            "Reactivo": "Formación ad hoc limitada para dispositivos IoT o casos de uso específicos.",
+            "Proactivo": "1-5 cursos disponibles.",
+            "Innovador": "Más de 5 cursos disponibles."
+        },
+        "¿Cómo se gestiona el ciclo de vida de los dispositivos IoT en la organización?": {
+            "Estático": "Gestión ad hoc del ciclo de vida de los dispositivos IoT, con sustituciones o actualizaciones no planificadas",
+            "Reactivo": "La duración media del ciclo de vida de los dispositivos IoT es inferior a 1 año.",
+            "Proactivo": "La duración media del ciclo de vida es de 1-3 años.",
+            "Innovador": "La duración media del ciclo de vida es superior a 3 años."
+        },
+        "¿Cómo se mide el rendimiento de las tecnologías IoT?": {
+            "Estático": "No hay métricas de rendimiento definidas ni procesos de supervisión establecidos.",
+            "Reactivo": "1-2 métricas de rendimiento",
+            "Proactivo": "3-5 métricas de rendimiento.",
+            "Innovador": "Más de 5 métricas de rendimiento definidas"
+        },
+        "¿Cómo se evalúan e integran las nuevas tecnologías de IoT en las operaciones?": {
+            "Estático": "No hay estrategias para integrar las nuevas tecnologías IoT.",
+            "Reactivo": "Evaluación e integración ad hoc de nuevas tecnologías IoT según sea necesario.",
+            "Proactivo": "1-5 estrategias disponibles.",
+            "Innovador": "Más de 5 estrategias disponibles."
+        },
+        "¿Cómo aprovisiona y configura actualmente los dispositivos IoT en su organización?": {
+            "Estático": "Aprovisionamiento y configuración manuales",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Existe un proceso estandarizado y automatizado para el aprovisionamiento y configuración de dispositivos"
+        },
+        "¿Existencia de mecanismos de autenticación de seguridad utiliza para los dispositivos IoT en la organización?": {
+            "Estático": "Sin métodos de autenticación",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Existen métodos de autenticación"
+        },
+        "¿Cómo se actualiza el firmware y el software de los dispositivos IoT de la organización?": {
+            "Estático": "No existe un proceso estructurado para gestionar las actualizaciones de los dispositivos.",
+            "Reactivo": "Procesos ad hoc para gestionar las actualizaciones de dispositivos",
+            "Proactivo": "",
+            "Innovador": "Existe un proceso estructurado."
+        },
+        "¿Utiliza una plataforma dedicada a la gestión de dispositivos?": {
+            "Estático": "No existe ninguna plataforma de gestión de dispositivos dedicada.",
+            "Reactivo": "Capacidades básicas de gestión de dispositivos, pero no una plataforma dedicada.",
+            "Proactivo": "",
+            "Innovador": "Se dispone de una plataforma de gestión de dispositivos dedicada"
+        }
+    },
+    "Connectivity Management": {
+        "¿Existen procesos u operaciones en los que se recopilen datos de dispositivos IoT conectados en la organización?": {
+            "Estático": "Ningún proceso u operación implica la recopilación de datos de dispositivos conectados.",
+            "Reactivo": "1 a 2 procesos u operaciones que implican la recopilación de datos de dispositivos conectados.",
+            "Proactivo": "3 a 5 procesos y operaciones que implican la recopilación de datos de dispositivos conectados.",
+            "Innovador": "Más de 5 procesos u operaciones de dispositivos conectados que implican la recopilación de datos de dispositivos conectados."
+        },
+        "¿Qué protocolos y normas de conectividad se utilizan para los dispositivos IoT?": {
+            "Estático": "No se han adoptado protocolos o estándares de conectividad específicos.",
+            "Reactivo": "Se utilizan algunos protocolos y estándares de conectividad básicos (por ejemplo, Wi-Fi, Bluetooth) para los dispositivos IoT.",
+            "Proactivo": "Se han adoptado una serie de protocolos y estándares de conectividad estándar del sector (por ejemplo, LoRaWAN, Zigbee, MQTT).",
+            "Innovador": "La empresa explora y adopta activamente protocolos y estándares de conectividad emergentes, manteniendo una infraestructura IoT preparada para el futuro."
+        },
+        "¿Cantidad de datos que se transfieren al día por el IoT?": {
+            "Estático": "Menos de 1 MB de datos transferidos al día",
+            "Reactivo": "1 MB - 1 GB de datos transferidos al día.",
+            "Proactivo": "1 GB - 10 GB de datos transferidos al día.",
+            "Innovador": "Más de 10 GB de datos transferidos al día."
+        },
+        "¿Cómo se mide la eficacia de las prácticas de conectividad IoT?": {
+            "Estático": "Sin seguimiento del tiempo de inactividad debido a problemas de conectividad IoT.",
+            "Reactivo": "El tiempo de inactividad debido a problemas de conectividad de IoT se rastrea de forma reactiva, pero no hay métricas ni procesos establecidos.",
+            "Proactivo": "Más de 2 horas de inactividad a la semana registradas debido a problemas de conectividad",
+            "Innovador": "Entre 0 minutos y 2 horas de tiempo de inactividad a la semana con esfuerzos para reducirlo"
+        },
+        "¿Utiliza su empresa alguna tecnología de virtualización para gestionar dispositivos u operaciones de IoT?": {
+            "Estático": "No existe una red central virtualizada.",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Existe una red central virtualizada dedicada a las operaciones de IoT."
+        },
+        "¿Dispone la empresa de una plataforma de gestión de la conectividad o de un sistema de supervisión de red?": {
+            "Estático": "No existe ninguna plataforma de gestión de la conectividad (CMP).",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Existe y se utiliza una plataforma de gestión de la conectividad (CMP)."
+        },
+        "¿Dispone la empresa de análisis de datos basados en la información de red de los dispositivos IoT de la organización?": {
+            "Estático": "La empresa no realiza análisis basados en información de la red IoT.",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "La empresa realiza análisis basados en información de la red IoT."
+        },
+        "¿Cuántos empleados de su empresa tienen conocimientos en tecnologías de gestión de la conectividad IoT (por ejemplo, virtualización de redes, SDN, eSIM, RSP)?": {
+            "Estático": "La empresa no tiene empleados con experiencia o certificaciones",
+            "Reactivo": "La empresa cuenta con 1 o 2 empleados con formación en gestión de la conectividad IoT.",
+            "Proactivo": "La empresa cuenta con un equipo (3 a 5 empleados) de gestión de la conectividad IoT",
+            "Innovador": "La empresa cuenta con un equipo (>5 empleados) con conocimientos en tecnologías de gestión de conectividad IoT."
+        },
+        "¿Dispone su empresa de mecanismos para compartir conocimientos y documentar las mejores prácticas relacionadas con la gestión de la conectividad IoT?": {
+            "Estático": "La empresa no dispone de mecanismos ni documentación para compartir conocimientos relacionados con la gestión de la conectividad IoT",
+            "Reactivo": "La empresa dispone de alguna documentación ad hoc o procesos informales de intercambio de conocimientos, pero no de un repositorio centralizado.",
+            "Proactivo": "La empresa tiene una base de conocimientos centralizada o un repositorio de documentación para las mejores prácticas de gestión de la conectividad IoT y el intercambio de conocimientos (Ding et al., 2018).",
+            "Innovador": ""
+        },
+        "¿Cómo gestiona las tarjetas SIM y maneja el aprovisionamiento remoto para sus dispositivos IoT?": {
+            "Estático": "La empresa gestiona manualmente tarjetas SIM físicas para dispositivos IoT",
+            "Reactivo": "La empresa utiliza métodos tradicionales de aprovisionamiento de SIM, pero no ha adoptado las tecnologías eSIM o iSIM.",
+            "Proactivo": "La empresa ha adoptado parcialmente las tecnologías eSIM o iSIM para el aprovisionamiento remoto de algunos dispositivos IoT (Liberg et al., 2018).",
+            "Innovador": "La empresa ha adoptado completamente las tecnologías eSIM e iSIM en toda su flota de dispositivos IoT"
+        },
+        "¿Explora la empresa posibles servicios basados en la monetización de los datos de red (por ejemplo, Crowd Insights)?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Existe una infraestructura de red específica para los dispositivos IoT, o comparten la misma red que otros sistemas informáticos?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        }
+    },
+    "Cloud/Edge Management": {
+        "¿Como se procesan los datos de los dispositivos IoT en la organización?": {
+            "Estático": "Los datos de IoT no se recopilan o se almacenan para procesar sin ningún tipo de análisis",
+            "Reactivo": "El análisis de los datos de IoT se realiza ad hoc.",
+            "Proactivo": "El análisis de datos IoT es un proceso regular y estructurado.",
+            "Innovador": "El análisis de datos de IoT está automatizado e integrado con los procesos empresariales."
+        },
+        "¿Qué herramientas y técnicas de análisis de datos se utilizan para los datos de IoT?": {
+            "Estático": "No se utilizan herramientas o técnicas de análisis de datos específicas para los datos de IoT",
+            "Reactivo": "Se utilizan herramientas o técnicas básicas de análisis de datos para los datos de IoT, como software de hojas de cálculo o análisis estadísticos sencillos",
+            "Proactivo": "Se utilizan herramientas y técnicas de análisis de datos dedicadas para los datos de IoT, como la visualización de datos, el aprendizaje automático o el análisis predictivo",
+            "Innovador": "Se utilizan herramientas y técnicas avanzadas de análisis de datos para los datos de IoT, como el análisis en tiempo real, el procesamiento de datos en streaming o la inteligencia artificial (IA) y el aprendizaje profundo"
+        },
+        "¿Cómo se aprovechan los datos de IoT para supervisar el rendimiento empresarial?": {
+            "Estático": "Los datos de IoT no se utilizan para supervisar el rendimiento empresarial.",
+            "Reactivo": "La supervisión de los datos de IoT se realiza de forma manual o ad hoc.",
+            "Proactivo": "Los datos de IoT se utilizan para supervisar una serie de métricas de rendimiento empresarial, como la eficiencia operativa, la utilización de recursos y la satisfacción del cliente (Entre 1 a 5 métricas)",
+            "Innovador": "Los datos de IoT se utilizan para supervisar un conjunto completo de métricas de rendimiento empresarial, incluidas métricas financieras, operativas y estratégicas (Más de 5 métricas)"
+        },
+        "¿Existen equipos o recursos dedicados al análisis de datos de IoT?": {
+            "Estático": "No hay equipos ni recursos dedicados al análisis de datos de IoT",
+            "Reactivo": "El análisis de datos de IoT lo realiza el personal operativo o de TI existente como responsabilidad adicional",
+            "Proactivo": "Existe un equipo o recursos dedicados al análisis de datos de IoT, con un tamaño de equipo moderado (de 1 a 3 personas).",
+            "Innovador": "Hay un equipo de personal dedicado al análisis de datos de IoT (4 o más individuos)"
+        },
+        "¿Cómo se garantiza la calidad de los datos de IoT?": {
+            "Estático": "No existen procesos ni medidas para garantizar la calidad de los datos de IoT",
+            "Reactivo": "Se realizan comprobaciones básicas de la calidad de los datos de IoT, como la comprobación de valores atípicos o ausentes",
+            "Proactivo": "El número de métricas de calidad de los datos de IoT es limitado (1-2 métricas, por ejemplo, integridad, validez).",
+            "Innovador": "Se utiliza un número de métricas de calidad de datos IoT (3 en adelante, por ejemplo, integridad, validez, coherencia, puntualidad, precisión)."
+        },
+        "¿Qué prácticas de gestión de nube/borde se aplican a las tecnologías IoT?": {
+            "Estático": "No se aplican prácticas de gestión de la nube ni borde a los dispositivos IoT.",
+            "Reactivo": "Existen prácticas de gestión de la nube/borde para un pequeño porcentaje de dispositivos IoT (menos del 25%)",
+            "Proactivo": "Existen prácticas de gestión de la nube/borde para un porcentaje moderado de dispositivos IoT (25-75%).",
+            "Innovador": "Un alto porcentaje de dispositivos IoT (más del 75%) dispone de prácticas de gestión de la nube/borde."
+        },
+        "¿Qué servicios en la nube se utilizan para operaciones con el IoT?": {
+            "Estático": "No se utilizan servicios en la nube para las operaciones de IoT",
+            "Reactivo": "Los servicios en la nube básicos, como el almacenamiento en la nube o las copias de seguridad, se utilizan para el almacenamiento de datos de IoT.",
+            "Proactivo": "Se utilizan múltiples servicios en la nube para las operaciones de IoT, incluyendo computación en la nube, análisis de datos y herramientas de visualización.",
+            "Innovador": "Existe una estrategia en la nube completa y avanzada, que aprovecha una amplia gama de servicios en la nube para las operaciones de IoT."
+        },
+        "¿Qué capacidades de análisis y visualización de datos están disponibles para los datos de IoT?": {
+            "Estático": "No se dispone de herramientas dedicadas de análisis o visualización de datos para los datos de IoT.",
+            "Reactivo": "Existen herramientas básicas de análisis y visualización de datos, pero su uso es ad hoc y reactivo.",
+            "Proactivo": "Existen herramientas completas de análisis y visualización de datos para los datos de IoT.",
+            "Innovador": "Las capacidades avanzadas de análisis y visualización de datos, como el aprendizaje automático, la inteligencia artificial y los cuadros de mando interactivos, se integran en el ecosistema de IoT."
+        },
+        "¿Emplea la empresa edge computing para procesar y almacenar datos más cerca de los dispositivos IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Utiliza la empresa conectores de nube o soluciones similares para agilizar la entrega de datos desde y hacia la nube?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Dispone la empresa de capacidad para gestionar con Inteligencia Artificial (IA) los conjuntos de datos producidos por dispositivos IoT y la nube?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Hasta qué punto es diverso el ecosistema de proveedores y plataformas de la empresa para soluciones IoT?": {
+            "Estático": "Entre 1 y 2 proveedores distintos de soluciones IoT",
+            "Reactivo": "Entre 3 y 5 proveedores distintos de soluciones IoT",
+            "Proactivo": "Entre 6 y 8 proveedores distintos de soluciones IoT",
+            "Innovador": "Más de 9 proveedores distintos de soluciones IoT"
+        },
+        "¿Utiliza los hiperescaladores de la nube (por ejemplo, AWS, Microsoft)?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        }
+    },
+    "Business Integration Management": {
+        "¿En qué áreas funcionales de la empresa se aplican las tecnologías IoT?": {
+            "Estático": "En ningún área funcional de la empresa",
+            "Reactivo": "En 1 a 2 áreas funcionales de la empresa",
+            "Proactivo": "En 3 a 4 áreas funcionales de la empresa",
+            "Innovador": "En 5 o más áreas funcionales de la empresa"
+        },
+        "¿Cómo se integran los datos del IoT en los procesos operativos?": {
+            "Estático": "Los datos de IoT están aislados y no se comparten entre procesos.",
+            "Reactivo": "Algunos datos de IoT se comparten entre algunos procesos, pero la integración es limitada",
+            "Proactivo": "Los datos de IoT se integran y comparten en la mayoría de los procesos operativos",
+            "Innovador": "Los datos de IoT están totalmente integrados y se comparten sin problemas en todos los procesos operativos"
+        },
+        "¿Existen retos o limitaciones para la integración de IoT en todas las operaciones?": {
+            "Estático": "4 o más problemas o cuellos de botella de integración de IoT notificados",
+            "Reactivo": "3 problemas o cuellos de botella de integración de IoT notificados",
+            "Proactivo": "1-2 problemas o cuellos de botella de integración de IoT notificados",
+            "Innovador": "No se ha informado de problemas o cuellos de botella en la integración de IoT"
+        },
+        "¿Cómo se integran las tecnologías IoT en los procesos empresariales existentes?": {
+            "Estático": "0-2 procesos empresariales integrados con tecnologías IoT",
+            "Reactivo": "3-5 procesos empresariales integrados con tecnologías IoT",
+            "Proactivo": "6-8 procesos empresariales integrados con tecnologías IoT",
+            "Innovador": "9 o más procesos empresariales integrados con tecnologías IoT"
+        },
+        "¿Cómo aprovecha la organización los datos del IoT para la optimización de procesos o la oferta de nuevos productos/servicios?": {
+            "Estático": "0 mejoras de procesos a partir de datos de IoT",
+            "Reactivo": "1-3 mejoras de procesos a partir de datos de IoT",
+            "Proactivo": "4-6 mejoras de procesos a partir de datos de IoT",
+            "Innovador": "7 o más mejoras de procesos a partir de datos de IoT"
+        },
+        "¿Cómo se integran los sistemas IoT con los sistemas empresariales (ERP, CRM, etc.)?": {
+            "Estático": "Los sistemas IoT no están integrados con los sistemas empresariales",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Los sistemas IoT están integrados con los sistemas empresariales."
+        },
+        "¿Dispone actualmente la organización de sistemas empresariales (por ejemplo, CRM, ERP)?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Cómo impulsan los conocimientos de IoT la toma de decisiones y la estrategia empresarial?": {
+            "Estático": "Los conocimientos de IoT no afectan a la estrategia empresarial ni a la toma de decisiones.",
+            "Reactivo": "Los conocimientos de IoT afectan a 1-2 procesos o decisiones empresariales",
+            "Proactivo": "Los conocimientos de IoT afectan a entre 3 y 5 procesos o decisiones empresariales",
+            "Innovador": "Los conocimientos de IoT afectan a 6 o más procesos o decisiones empresariales"
+        },
+        "¿Cómo se alinean las iniciativas de IoT con las metas y objetivos de la organización?": {
+            "Estático": "Las iniciativas de IoT no están alineadas con las metas y objetivos de la organización",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Las iniciativas de IoT están alineadas con las metas y objetivos organizativos"
+        },
+        "¿Se utilizan las tecnologías IoT para implicar a los clientes en la organización?": {
+            "Estático": "No se utilizan",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Se utilizan"
+        },
+        "¿Qué procesos existen para la mejora continua y la optimización de las tecnologías de IoT?": {
+            "Estático": "0-25% de las tecnologías IoT cuentan con procesos de mejora continua.",
+            "Reactivo": "26-50% de las tecnologías IoT cuentan con procesos de mejora continua.",
+            "Proactivo": "51-75% de las tecnologías IoT disponen de procesos de mejora continua.",
+            "Innovador": "76-100% de las tecnologías IoT cuentan con procesos de mejora continua"
+        },
+        "¿Participa actualmente o está considerando participar en una plataforma de intercambio de datos IoT para su empresa?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Cuál es el conocimiento actual sobre los dispositivos IoT y sus capacidades?": {
+            "Estático": "No hay empleados con conocimientos básicos de IoT.",
+            "Reactivo": "Menos del 25% de los empleados tienen conocimientos básicos de IoT.",
+            "Proactivo": "Entre el 25 y el 75% de los empleados tienen conocimientos básicos de IoT.",
+            "Innovador": "Más del 75% de los empleados tienen conocimientos básicos de IoT."
+        },
+        "¿Está explorando la empresa oportunidades e innovaciones emergentes en IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Se generan informes o cuadros de mando basados en datos del IoT en la organización?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Cómo recoge e incorpora los comentarios de los usuarios finales para mejorar continuamente sus soluciones IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        }
+    },
+    "Security": {
+        "¿Qué políticas de privacidad y gobernanza de datos se aplican a los datos de IoT?": {
+            "Estático": "La organización desconoce o no cumple las leyes y normativas pertinentes.",
+            "Reactivo": "La organización cumple las leyes y normativas cuando surgen problemas.",
+            "Proactivo": "La organización revisa y actualiza periódicamente su cumplimiento de las leyes y reglamentos.",
+            "Innovador": "La organización se anticipa a los cambios en las leyes y reglamentos y ajusta sus políticas en consecuencia"
+        },
+        "¿Se han identificado riesgos de seguridad en la aplicación de tecnologías IoT por parte de la organización?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Se ha capacitado a los empleados en relación a la seguridad de los sistemas IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Se realizan auditorías de seguridad?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Cómo se supervisan y optimizan los sistemas de IoT en cuanto a seguridad?": {
+            "Estático": "Los sistemas IoT no se supervisan en materia de seguridad.",
+            "Reactivo": "La seguridad de los sistemas IoT se supervisa, pero solo después de un incidente de seguridad",
+            "Proactivo": "Los sistemas IoT se supervisan regularmente en cuanto a seguridad.",
+            "Innovador": "Los sistemas IoT se supervisan continuamente."
+        },
+        "¿Cómo se supervisan y adoptan las mejores prácticas de IoT y las tendencias del sector?": {
+            "Estático": "No hay seguimiento activo ni adopción de las mejores prácticas y tendencias del sector de la IoT.",
+            "Reactivo": "Seguimiento ocasional de las mejores prácticas de IoT y las tendencias del sector, con adopción ad hoc de algunas prácticas.",
+            "Proactivo": "Supervisión periódica de las mejores prácticas de IoT y las tendencias del sector, con un proceso definido para evaluar y adoptar las prácticas pertinentes",
+            "Innovador": "Participación activa en consorcios, eventos e iniciativas de intercambio de conocimientos de la industria de IoT, con un fuerte enfoque en contribuir y dar forma a las mejores prácticas de la industria."
+        },
+        "¿Dispone su organización de un sistema para detectar malware en sus dispositivos IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Dispone de un mecanismo para bloquear el IMEI (Identidad Internacional de Equipo Móvil) del dispositivo a la tarjeta SIM conectada, evitando el intercambio no autorizado de SIM?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Utiliza un punto de acceso privado (APN) para su conectividad IoT con el fin de aislar su red IoT de la Internet pública?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Ha implementado el cifrado de extremo a extremo para sus comunicaciones IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Utiliza VPN IPSec para proteger los canales de comunicación entre sus dispositivos IoT y los sistemas backend?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Ha adoptado la norma IoT SAFE u otra similar para aprovechar la tarjeta SIM como elemento de confianza basado en hardware para la autenticación entre sus dispositivos IoT y los servidores en la nube?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Se ha asociado la empresa con otras organizaciones para debatir o trabajar conjuntamente sobre la seguridad de IoT en la organización?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        }
+    },
+    "Compliance": {
+        "¿Ha implantado la empresa procesos para garantizar el cumplimiento de la normativa pertinente (por ejemplo, soberanía de los datos, seguridad de los dispositivos, certificación)?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Cómo se supervisan y auditan las tecnologías IoT para garantizar su cumplimiento?": {
+            "Estático": "Menos del 25% de los dispositivos IoT han establecido procesos de supervisión y auditoría del cumplimiento.",
+            "Reactivo": "Entre el 25 y el 50% de los dispositivos IoT han establecido procesos de supervisión y auditoría de la conformidad.",
+            "Proactivo": "Entre el 51% y el 75% de los dispositivos IoT han establecido procesos de supervisión y auditoría del cumplimiento.",
+            "Innovador": "Más del 75% de los dispositivos IoT han establecido procesos de supervisión y auditoría del cumplimiento."
+        },
+        "¿Cuáles son las consideraciones éticas para el uso de datos de IoT?": {
+            "Estático": "No se realizan comprobaciones de cumplimiento ético.",
+            "Reactivo": "Se realizan 1-2 comprobaciones de cumplimiento ético.",
+            "Proactivo": "Se realizan de 3 a 5 comprobaciones de cumplimiento ético.",
+            "Innovador": "Se realizan más de 5 comprobaciones de cumplimiento ético."
+        },
+        "¿Existen asociaciones o colaboraciones con proveedores de soluciones IoT o expertos del sector?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Qué estrategias existen para ampliar las soluciones IoT?": {
+            "Estático": "No existen estrategias para ampliar las soluciones IoT.",
+            "Reactivo": "1 estrategia para ampliar las soluciones IoT.",
+            "Proactivo": "2-3 estrategias para ampliar las soluciones IoT.",
+            "Innovador": "Más de 3 estrategias implementadas para escala"
+        },
+        "¿Ha implantado su organización procesos y procedimientos para garantizar el cumplimiento de la normativa relacionada con IoT?": {
+            "Estático": "No existe un sistema o marco de gestión del cumplimiento específico de IoT.",
+            "Reactivo": "Procesos informales o ad hoc para el cumplimiento relacionado con IoT.",
+            "Proactivo": "Sistema o marco de gestión del cumplimiento específico de IoT documentado e implementado.",
+            "Innovador": "Sistema o marco de gestión del cumplimiento específico de IoT completo, automatizado y continuamente actualizado."
+        },
+        "¿Colabora su organización con organismos reguladores o asociaciones del sector para mantenerse informada sobre los cambios en la normativa relacionada con IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Ha considerado o implementado su organización una solución de cumplimiento como servicio para gestionar los requisitos normativos relacionados con IoT?": {
+            "Estático": "Sin conocimiento de las ofertas de cumplimiento como servicio de IoT.",
+            "Reactivo": "Conocimiento de las ofertas de conformidad de IoT como servicio, pero sin implementación.",
+            "Proactivo": "Consideración de las ofertas de cumplimiento de IoT como servicio, con implementación parcial.",
+            "Innovador": "Implementación de ofertas de cumplimiento de IoT como servicio para gestionar los requisitos normativos."
+        },
+        "¿Cómo garantiza su organización que las conexiones IoT y los sistemas asociados cumplen las normativas pertinentes y las políticas?": {
+            "Estático": "No hay un equipo dedicado o una persona responsable de gestionar el cumplimiento de IoT.",
+            "Reactivo": "Responsabilidad informal o ad hoc para gestionar el cumplimiento de IoT.",
+            "Proactivo": "Persona responsable de gestionar el cumplimiento de IoT.",
+            "Innovador": "Equipo dedicado e interfuncional responsable de gestionar el cumplimiento de IoT, con revisiones y actualizaciones periódicas."
+        },
+        "¿Utiliza su empresa plataformas GRC para gestionar la gobernanza, el riesgo y el cumplimiento relacionados con IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        }
+    },
+    "Contextualisation": {
+        "¿Existen recursos (financieros, humanos, técnicos) para explorar nuevas implementaciones de IoT en la organización?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Existe apoyo ejecutivo para las nuevas iniciativas relacionadas con la tecnología IoT en la organización?": {
+            "Estático": "No hay apoyo ejecutivo para las iniciativas de IoT.",
+            "Reactivo": "Apoyo ejecutivo limitado, con exploración ad hoc de posibles aplicaciones de IoT.",
+            "Proactivo": "Fuerte apoyo ejecutivo, con un inventario documentado de posibles aplicaciones de IoT.",
+            "Innovador": "Liderazgo ejecutivo comprometido, que impulsa activamente iniciativas de IoT y explora nuevas aplicaciones."
+        },
+        "¿Ha evaluado la organización el posible retorno de la inversión (ROI) de las implementaciones de IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Dispone la PYME de la infraestructura o las competencias informáticas necesarias para respaldar la IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Cuáles son los obstáculos o retos percibidos para la adopción de IoT?": {
+            "Estático": "No se han identificado los obstáculos ni los retos.",
+            "Reactivo": "Se identifican algunos obstáculos y retos, pero no se proponen soluciones.",
+            "Proactivo": "Barreras y retos identificados y soluciones propuestas.",
+            "Innovador": "Barreras y retos identificados proactivamente y soluciones implementadas"
+        },
+        "¿Cómo se implementa la contextualización para las tecnologías IoT?": {
+            "Estático": "No se han implementado capacidades de contextualización o adaptación para las tecnologías IoT.",
+            "Reactivo": "Implementación ad hoc de capacidades de contextualización o adaptación para algunas tecnologías IoT.",
+            "Proactivo": "Implementación planificada de capacidades de contextualización o adaptativas a las tecnologías IoT.",
+            "Innovador": "Implementación integral de capacidades de contextualización y adaptación en todas las tecnologías IoT de la organización."
+        },
+        "¿Existen iniciativas para explorar el análisis avanzado (IA/ML) de los datos de IoT?": {
+            "Estático": "No hay iniciativas de IA/ML sobre datos de IoT.",
+            "Reactivo": "Exploración inicial de iniciativas de IA/ML sobre datos de IoT.",
+            "Proactivo": "Iniciativas de IA/ML sobre datos de IoT en curso.",
+            "Innovador": "Las iniciativas de IA/ML sobre datos de IoT están totalmente implementadas."
+        },
+        "¿Cómo contribuyen los sistemas IoT a la ventaja competitiva?": {
+            "Estático": "Los sistemas IoT no contribuyen a la ventaja competitiva.",
+            "Reactivo": "Pruebas limitadas o anecdóticas de la contribución de los sistemas IoT a la ventaja competitiva.",
+            "Proactivo": "Contribución documentada de los sistemas IoT a la ventaja competitiva, basada en los comentarios de los clientes.",
+            "Innovador": "Aprovechamiento integral y estratégico de los sistemas IoT para impulsar la mejora continua y mantener una ventaja competitiva, con los comentarios de los clientes impulsando la innovación."
+        },
+        "¿Cuáles son las estrategias para ampliar las soluciones de IoT a medida que crece la organización?": {
+            "Estático": "No existen estrategias para ampliar las soluciones IoT.",
+            "Reactivo": "Estrategias ad hoc o limitadas para el escalado de soluciones IoT.",
+            "Proactivo": "Estrategias documentadas para ampliar las soluciones de IoT a medida que crece la organización.",
+            "Innovador": "Estrategias implementadas para ampliar continuamente las soluciones IoT con el fin de satisfacer las necesidades cambiantes de la organización."
+        },
+        "¿Existen recursos o equipos dedicados a la investigación y el desarrollo de IoT?": {
+            "Estático": "No hay un equipo dedicado a la investigación y el desarrollo de IoT.",
+            "Reactivo": "Una persona dedicada a la investigación y desarrollo de IoT.",
+            "Proactivo": "Equipo de investigación y desarrollo de IoT de tamaño medio (2 a 4 personas).",
+            "Innovador": "Equipo de investigación y desarrollo de IoT grande (5 personas o más)."
+        },
+        "¿Se comparten dentro de la organización las lecciones aprendidas y las mejores prácticas para el IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Existen iniciativas para colaborar con centros/instituciones de investigación, universidades o consorcios industriales sobre IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Personaliza la empresa sus soluciones IoT en función de las necesidades y el contexto específicos de cada vertical?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Conoce la empresa las limitaciones normativas específicas de su sector, los requisitos de la cadena de suministro y otros factores contextuales en relación con el IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Ha desarrollado la empresa sus propias plataformas para atender mejor a su clientela con soluciones de IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Existe un mecanismo de colaboración con el cliente para comprender sus retos específicos y crear soluciones conjuntas de IoT?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Conoce las soluciones específicas de IoT disponibles para su sector empresarial?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        },
+        "¿Sus soluciones IoT en la organización responden a necesidades específicas del sector o son genéricas?": {
+            "Estático": "No",
+            "Reactivo": "",
+            "Proactivo": "",
+            "Innovador": "Sí"
+        }
+    }
+};
+
+const maturityLevels = ["Estático", "Reactivo", "Proactivo", "Innovador"];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const profileTranslations = {
@@ -492,25 +1615,18 @@ function selectProfile(profile) {
 }
 
 
+
 function loadQuestions(profile, companyId) {
   const questionsContainer = document.getElementById('questions-container');
   const profileInfoDiv = document.getElementById('profile-info');
-  questionsContainer.innerHTML = ''; // Clear previous questions
+  questionsContainer.innerHTML = ''; 
 
-  // --- START: MODIFIED CODE ---
-  // Get the Spanish translation from the mapping object
-  // Use the original profile key as a fallback if translation not found
   const profileNameSpanish = profileTranslations[profile] || profile.charAt(0).toUpperCase() + profile.slice(1);
-
-  // Set the dynamic title inside the profile-info div using the Spanish name
   profileInfoDiv.innerHTML = `<h2>Preguntas para el perfil de: <strong>${profileNameSpanish}</strong></h2>`;
-  // --- END: MODIFIED CODE ---
 
-  // Ensure company profile data structure exists (safer access)
   const currentAnswers = companyProfiles[companyId]?.[profile] || {};
 
   questions[profile].forEach((question, index) => {
-      // ... (el resto del código para crear las preguntas sigue igual) ...
       const questionDiv = document.createElement('div');
       questionDiv.className = 'question';
 
@@ -529,11 +1645,13 @@ function loadQuestions(profile, companyId) {
       const radioContainer = document.createElement('div');
       radioContainer.style.marginTop = '15px';
 
-      for (const answerText in question.answers) {
-          const answerValue = question.answers[answerText];
+      // *** MODIFICACIÓN CLAVE AQUÍ ***
+      question.answers.forEach(answer => {
+          const answerValue = answer.score;
           const radioButtonId = `${profile}-q${index}-ans${answerValue}`;
           const radioButtonName = `${profile}-q${index}`;
-          const isChecked = currentAnswers[index] == answerValue;
+          // Comparamos por 'score' para ver si está seleccionado
+          const isChecked = currentAnswers[index]?.score == answerValue; 
 
           const radioLabel = document.createElement('label');
           radioLabel.htmlFor = radioButtonId;
@@ -543,88 +1661,88 @@ function loadQuestions(profile, companyId) {
           radioButton.name = radioButtonName;
           radioButton.id = radioButtonId;
           radioButton.value = answerValue;
+          
+          // Guardamos el nivel y el texto en atributos de datos para recuperarlos fácilmente
+          radioButton.dataset.level = answer.level; 
+          radioButton.dataset.text = answer.text;
+
           if (isChecked) {
               radioButton.checked = true;
           }
 
           radioLabel.appendChild(radioButton);
-          radioLabel.appendChild(document.createTextNode(` ${answerText}`));
+          radioLabel.appendChild(document.createTextNode(` ${answer.text}`));
           radioContainer.appendChild(radioLabel);
-      }
+      });
+      // *** FIN DE LA MODIFICACIÓN ***
+      
       questionDiv.appendChild(radioContainer);
       questionsContainer.appendChild(questionDiv);
   });
 
-  // Show save/clear buttons and update calculate button status
   showSaveButton(profile, companyId);
   updateCalculateButton(companyId);
 }
 
-async function saveAnswers (profile, companyId) { // Make the function async
-  let allAnsweredThisProfile = true; // Renamed for clarity
-  const saveButton = document.getElementById(`save-button-${profile}`);
 
-  if (saveButton) {
-      saveButton.disabled = true;
-      saveButton.textContent = 'Guardando...';
-  }
 
-  try {
-      const questionDivs = document.querySelectorAll ('#questions-container .question');
-      questionDivs.forEach ((questionDiv, index) => {
-        const radioButtonName = `${profile}-q${index}`;
-        const selectedAnswer = questionDiv.querySelector (
-          `input[name="${radioButtonName}"]:checked`
-        );
-        if (selectedAnswer) {
-          if (!companyProfiles[companyId]) companyProfiles[companyId] = {};
-          if (!companyProfiles[companyId][profile]) companyProfiles[companyId][profile] = {};
-          companyProfiles[companyId][profile][index] = parseInt (
-            selectedAnswer.value
-          );
+// En script.js, reemplaza la función saveAnswers
+
+async function saveAnswers(profile, companyId) {
+    let allAnsweredThisProfile = true;
+    const saveButton = document.getElementById(`save-button-${profile}`);
+
+    if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.textContent = 'Guardando...';
+    }
+
+    try {
+        const questionDivs = document.querySelectorAll('#questions-container .question');
+        questionDivs.forEach((questionDiv, index) => {
+            const radioButtonName = `${profile}-q${index}`;
+            const selectedAnswer = questionDiv.querySelector(`input[name="${radioButtonName}"]:checked`);
+
+            if (selectedAnswer) {
+                if (!companyProfiles[companyId]) companyProfiles[companyId] = {};
+                if (!companyProfiles[companyId][profile]) companyProfiles[companyId][profile] = {};
+                
+                // *** MODIFICACIÓN CLAVE: Guardar el objeto completo ***
+                companyProfiles[companyId][profile][index] = {
+                    score: parseInt(selectedAnswer.value),
+                    level: selectedAnswer.dataset.level,
+                    text: selectedAnswer.dataset.text
+                };
+                // *** FIN DE LA MODIFICACIÓN ***
+
+            } else {
+                allAnsweredThisProfile = false;
+            }
+        });
+
+        if (allAnsweredThisProfile) {
+            await saveInfo(companyProfiles, 1);
+            alert(`Respuestas guardadas para ${profile} de la empresa ${companyId}!`);
+            
+            // Lógica de redirección (sin cambios)
+            if (!areAllThreeProfilesComplete(companyId)) {
+                alert("Volviendo a la página de presentación. Por favor, complete los cuestionarios de los perfiles restantes.");
+                openTab('presentation');
+            }
         } else {
-          allAnsweredThisProfile = false; // Check if all questions for *this specific profile* are answered
+            alert(`Por favor, responda todas las preguntas para el perfil de ${profileTranslations[profile] || profile} antes de guardar.`);
         }
-      });
+        updateCalculateButton(companyId);
 
-      if (allAnsweredThisProfile) {
-        console.log(`Attempting to save answers for ${profile}...`);
-        await saveInfo (companyProfiles, 1);
-        console.log(`Answers saved successfully for ${profile}.`);
-        alert (`Respuestas guardadas para ${profile} de la empresa ${companyId}!`);
-
-        // ---- NEW REDIRECTION LOGIC ----
-        if (!areAllThreeProfilesComplete(companyId)) {
-            // If not all three profiles (manager, engineer, technician) are complete
-            alert("Volviendo a la página de presentación. Por favor, complete los cuestionarios de los perfiles restantes para poder calcular la puntuación general.");
-            openTab('presentation'); // Go to presentation tab
-        } else {
-            // All three profiles are now complete, stay on the model tab.
-            // The "Calculate Score" button will be enabled by updateCalculateButton.
-            console.log("Todos los perfiles requeridos están completos. Permaneciendo en la pestaña del modelo.");
-            // Optionally, you could add a specific message here if needed
-            // alert("¡Todos los perfiles han completado sus respuestas! Ya puede calcular la puntuación.");
+    } catch (error) {
+        console.error(`Error saving answers for ${profile}:`, error);
+        alert(`Error al guardar las respuestas para ${profile}. Por favor, intente de nuevo. Detalles: ${error.message}`);
+    } finally {
+        if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.textContent = `Guardar respuestas de ${profileTranslations[profile] || profile.charAt(0).toUpperCase() + profile.slice(1)}`;
         }
-        // ---- END NEW REDIRECTION LOGIC ----
-
-      } else {
-        alert (
-          `Por favor, responda todas las preguntas para el perfil de ${profileTranslations[profile] || profile} antes de guardar.`
-        );
-      }
-      updateCalculateButton (companyId); // This is important to enable the calculate button if all are done
-
-  } catch (error) {
-      console.error(`Error saving answers for ${profile}:`, error);
-      alert(`Error al guardar las respuestas para ${profile}. Por favor, intente de nuevo. Detalles: ${error.message}`);
-  } finally {
-      if (saveButton) {
-          saveButton.disabled = false;
-          saveButton.textContent = `Guardar respuestas de ${profileTranslations[profile] || profile
-            .charAt (0)
-            .toUpperCase () + profile.slice (1)}`;
-      }
-  }
+    }
 }
 
 
@@ -641,248 +1759,157 @@ function componentName (dimension) {
 
 
 
-// script.js
+// En script.js, REEMPLAZA tu función calculateScore con esta versión optimizada.
 
-async function calculateScore (companyId) { // companyId se pasa desde el botón
-  const resultsDiv = document.getElementById ('results');
-  resultsDiv.innerHTML = '';
-  resultsDiv.classList.remove('show');
+async function calculateScore(companyId) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+    resultsDiv.classList.remove('show');
 
-  // --- NUEVA VERIFICACIÓN INICIAL ---
-  if (!companyId) {
-      alert("Error: No se ha especificado un ID de empresa para calcular la puntuación.");
-      return;
-  }
+    // --- Verificaciones y mensaje de carga (sin cambios) ---
+    if (!companyId) { /* ... */ return; }
+    if (!allCompaniesData || !allCompaniesData.length || !companyProfiles || !Object.keys(companyProfiles).length) { /* ... */ return; }
+    
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'loading-feedback';
+    loadingDiv.innerHTML = '<p style="text-align: center; padding: 30px; font-style: italic; color: var(--secondary-color);">Calculando puntuaciones y generando análisis completo. Esto puede tardar un momento...</p>';
+    resultsDiv.appendChild(loadingDiv);
+    resultsDiv.classList.add('show');
 
-  // Verificar si allCompaniesData y companyProfiles están poblados
-  // Esto es crucial después de una recarga de página.
-  if (!allCompaniesData || allCompaniesData.length === 0 || !companyProfiles || Object.keys(companyProfiles).length === 0) {
-      console.warn("calculateScore: Datos no cargados. Intentando recargar datos...");
-      alert("Los datos de la empresa aún no están completamente cargados. Por favor, espere un momento e intente de nuevo. Si el problema persiste, recargue la página.");
-      // Opcionalmente, podrías intentar llamar a fetchData() aquí y luego reintentar,
-      // pero eso puede complicar el flujo. Es mejor que el usuario reintente.
-      // await fetchData(); // Descomentar con precaución, podría llevar a bucles si hay otros problemas.
-      return;
-  }
-  // --- FIN NUEVA VERIFICACIÓN ---
+    const companyIndex = allCompaniesData.findIndex(c => c.id === companyId);
+    if (companyIndex === -1) { /* ... */ return; }
+    const companyInfo = allCompaniesData[companyIndex];
 
+    try {
+        // --- Cálculo de scores (sin cambios) ---
+        const titleDiv = document.createElement('div');
+        titleDiv.innerHTML = '<h2 class="results-main-title">Resultados obtenidos con FREEPORT</h2>';
+        const componentScores = {};
+        const dimensionScores = { technological: 0, human: 0, organizational: 0 };
+        for (const component in componentWeights) componentScores[component] = 0;
 
-  const loadingDiv = document.createElement('div');
-  loadingDiv.id = 'loading-feedback';
-  loadingDiv.innerHTML = '<p style="text-align: center; padding: 30px; font-style: italic; color: var(--secondary-color);">Calculando puntuaciones y generando comentarios personalizados, por favor espere...</p>';
-  resultsDiv.appendChild(loadingDiv);
-  resultsDiv.classList.add('show');
+        if (companyProfiles[companyId]) {
+            for (const profile in companyProfiles[companyId]) {
+                if (questions[profile]) {
+                    questions[profile].forEach((question, index) => {
+                        const answerData = companyProfiles[companyId][profile][index];
+                        if (answerData?.score) {
+                            const score = answerData.score;
+                            const componentName = question.component;
+                            const dimensionName = question.dimension;
+                            if (componentName && componentWeights.hasOwnProperty(componentName)) {
+                                const maxPointsForQuestion = 15;
+                                let numQuestionsComponent = 0;
+                                for (const prof in questions) {
+                                    if (questions[prof]) {
+                                        numQuestionsComponent += questions[prof].filter(q => q.component === componentName).length;
+                                    }
+                                }
+                                if (numQuestionsComponent > 0) {
+                                    componentScores[componentName] += (score / maxPointsForQuestion) * componentWeights[componentName] / numQuestionsComponent;
+                                }
+                            }
+                            if (dimensionName) dimensionScores[dimensionName] += score;
+                        }
+                    });
+                }
+            }
+        } else { throw new Error(`Datos del perfil para la empresa con ID ${companyId} no encontrados.`); }
 
-  // --- Find Company Data (Crucial Step) ---
-  // Asegurarse de que companyId es el que se usará para buscar
-  console.log(`calculateScore: Buscando empresa con ID: ${companyId}`);
-  const companyIndex = allCompaniesData.findIndex(company => company.id === companyId);
-  let companyInfo = null;
+        let overallScore = Object.values(componentScores).reduce((sum, score) => sum + score, 0);
+        overallScore = Math.min(overallScore, 100);
 
-  if (companyIndex !== -1) {
-      companyInfo = allCompaniesData[companyIndex];
-      console.log("calculateScore: Información de la empresa encontrada para feedback:", companyInfo.companyName);
-  } else {
-      console.error(`Error crítico: No se encontró la información de la empresa con ID ${companyId} en allCompaniesData. No se pueden calcular los resultados ni generar feedback.`);
-      console.log("allCompaniesData actual:", JSON.stringify(allCompaniesData)); // Log para depuración
-      console.log("companyProfiles actual:", JSON.stringify(companyProfiles)); // Log para depuración
+        const updatedCompanyData = { ...companyInfo, componentScores, dimensionScores, overallScore };
+        allCompaniesData[companyIndex] = updatedCompanyData;
+        await saveInfo(allCompaniesData, 2);
+        
+        // --- LLAMADA ÚNICA A LA IA ---
+        const scoresForFeedback = { overallScore, componentScores, dimensionScores };
+        const fullAnalysisText = await generateComprehensiveAnalysis(scoresForFeedback, companyInfo, companyId);
+        
+        // --- PROCESAMIENTO Y RENDERIZADO DE LA RESPUESTA ÚNICA ---
+        loadingDiv.remove();
+        resultsDiv.appendChild(titleDiv);
+        
+        // Renderizado de Gráficos y Scores (sin cambios)
+        const chartsDiv = document.createElement('div');
+        chartsDiv.className = 'charts-container';
+        chartsDiv.innerHTML = `<canvas id="chart0"></canvas><canvas id="chart1"></canvas><canvas id="chart2"></canvas>`;
+        resultsDiv.appendChild(chartsDiv);
+        ['chart0', 'chart1', 'chart2'].forEach(id => Chart.getChart(id)?.destroy());
+        createComponentChart(componentScores);
+        createDimensionChart(dimensionScores);
+        createOverallScoreChart(overallScore);
 
-      const loadingElement = document.getElementById('loading-feedback');
-      if (loadingElement) loadingElement.remove();
-      alert(`Error crítico: No se encontró la información de la empresa (ID: ${companyId}). Verifique el ID o que la empresa esté registrada correctamente. No se pueden calcular los resultados.`);
-      resultsDiv.classList.remove('show');
-      return;
-  }
-  // --- End Find Company Data ---
+        let scoresText = `<div class="results-section"><div class="scores-container"><h3>Puntuación por Componentes</h3><ul>`;
+        for (const component in componentScores) scoresText += `<li><b>${component}:</b> ${componentScores[component]?.toFixed(2) ?? 'N/A'}</li>`;
+        scoresText += `</ul></div></div><div class="results-section"><div class="scores-container"><h3>Puntuación por Dimensiones (Bruto)</h3><ul>`;
+        for (const dimension in dimensionScores) scoresText += `<li><b>${dimension.charAt(0).toUpperCase() + dimension.slice(1)}:</b> ${dimensionScores[dimension]?.toFixed(2) ?? 'N/A'}</li>`;
+        scoresText += `</ul></div></div><div class="results-section"><div class="scores-container"><h3>Puntuación General</h3><p><b>Puntuación total:</b> ${overallScore.toFixed(2)} / 100</p></div></div>`;
+        const scoresDiv = document.createElement('div');
+        scoresDiv.innerHTML = scoresText;
+        resultsDiv.appendChild(scoresDiv);
 
-  try {
-      const titleDiv = document.createElement ('div');
-      titleDiv.innerHTML = '<h2 class="results-main-title">Resultados obtenidos con FREEPORT</h2>';
-
-      const componentScores = {};
-      let overallScore = 0;
-      const dimensionScores = {technological: 0, human: 0, organizational: 0};
-
-      for (const component in componentWeights) {
-          componentScores[component] = 0;
-      }
-
-      // --- MODIFICACIÓN AQUÍ para usar el companyId pasado como argumento ---
-      if (companyProfiles[companyId]) {
-          for (const profile in companyProfiles[companyId]) {
-              if (questions[profile]) {
-                  questions[profile].forEach ((question, index) => {
-                  // Asegurarse de que el perfil y el índice de la pregunta existen en los datos
-                  if (companyProfiles[companyId][profile] && companyProfiles[companyId][profile].hasOwnProperty(index)) {
-                      const score = companyProfiles[companyId][profile][index];
-                      const componentName = question.component;
-                      const dimensionName = question.dimension;
-
-                      if (componentName && componentWeights.hasOwnProperty(componentName)) {
-                          const maxPointsForQuestion = 15;
-                          let numQuestionsComponent = 0;
-                          for (const prof in questions) {
-                              if(questions[prof]) {
-                                  numQuestionsComponent += questions[prof].filter(
-                                      q => q.component === componentName
-                                  ).length;
-                              }
-                          }
-                          if (numQuestionsComponent > 0) {
-                              componentScores[componentName] +=
-                                  (score / maxPointsForQuestion) *
-                                  componentWeights[componentName] *
-                                  (1 / numQuestionsComponent);
-                          } else {
-                              console.warn(`calculateScore: El componente ${componentName} parece no tener preguntas.`);
-                          }
-                      } else if (componentName) {
-                          console.warn(`calculateScore: No se encontró peso para el componente: ${componentName}`);
-                      }
-
-                      if (dimensionName && dimensionScores.hasOwnProperty(dimensionName)) {
-                          dimensionScores[dimensionName] += score;
-                      } else if (dimensionName) {
-                          console.warn(`calculateScore: El objeto de puntuaciones de dimensión no tiene la clave: ${dimensionName}`);
-                      }
-
-                  } else {
-                      // Esto puede pasar si un perfil no ha respondido todas las preguntas
-                      // pero se intenta calcular. updateCalculateButton debería prevenir esto.
-                      console.log(`calculateScore: No hay respuesta para la pregunta ${index} del perfil ${profile} para la empresa ${companyId}.`);
-                  }
-                  });
-              } else {
-                  console.warn(`calculateScore: El perfil "${profile}" no se encontró en la definición de preguntas.`);
-              }
-          }
-      } else {
-          console.error(`Error: Datos del perfil para la empresa con ID ${companyId} no encontrados en companyProfiles.`);
-          const loadingElement = document.getElementById('loading-feedback');
-          if (loadingElement) loadingElement.remove();
-          alert("Error: No se encontraron los datos de los perfiles para esta empresa. No se pueden calcular los resultados.");
-          resultsDiv.classList.remove('show');
-          return;
-      }
-      // --- FIN MODIFICACIÓN ---
+        // Separar la respuesta de Gemini en las dos partes que pedimos
+        const analysisParts = fullAnalysisText.split('## Próximos Pasos para Avanzar');
+        const generalAnalysisHTML = analysisParts[0]
+            .replace('## Análisis y Recomendaciones Generales', '')
+            .replace(/\n\*\s/g, '<br>• ')
+            .replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/###\s(.*?)(<br>|$)/g, '<h4>$1</h4>'); // Formatear subtítulos
 
 
-      overallScore = 0;
-      for (const component in componentScores) {
-          overallScore += componentScores[component];
-      }
-      overallScore = Math.min(overallScore, 100);
+            let nextStepsHTML = "";
+if (analysisParts[1] && analysisParts[1].trim() !== "") {
+    nextStepsHTML = analysisParts[1]
+        // 1. Convierte los títulos ### a <h4> dentro de un div con estilo
+        .replace(/###\s(.*?)\n/g, '</div><div class="recommendation-item"><h4>$1</h4>')
+        // 2. Convierte los asteriscos (*) en elementos de lista. Esto es para el formato que pedimos.
+        .replace(/\*\s(.*?)\n/g, '<li>$1</li>')
+        // 3. Convierte las negritas de Markdown (**) a etiquetas <b>
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        // 4. Convierte los saltos de línea restantes en <br> para separar los puntos
+        .replace(/\n/g, '<br>');
 
-      const updatedCompanyData = {
-          ...companyInfo, // companyInfo ya fue encontrado usando el companyId correcto
-          componentScores,
-          dimensionScores,
-          overallScore,
-      };
-      allCompaniesData[companyIndex] = updatedCompanyData;
+    // 5. Limpieza final:
+    // - Elimina el `</div>` extra del principio.
+    // - Envuelve todo en un `div` contenedor para asegurar que el estilo se aplique correctamente.
+    // - Cierra el último `</div>` del `recommendation-item`.
+    if (nextStepsHTML.startsWith('</div>')) {
+        nextStepsHTML = nextStepsHTML.substring(6);
+    }
+    nextStepsHTML = `<div class="recommendations-wrapper">${nextStepsHTML}</div>`;
 
-      try {
-          console.log("calculateScore: Intentando guardar datos actualizados de la empresa con puntuaciones...");
-          await saveInfo(allCompaniesData, 2);
-          console.log('calculateScore: Datos de la empresa con puntuaciones guardados exitosamente.');
-      } catch (error) {
-          console.error('calculateScore: Error al guardar datos de la empresa con puntuaciones:', error);
-          alert("Advertencia: Hubo un error al guardar los puntajes calculados. Los resultados se mostrarán, pero podrían no estar persistidos.");
-      }
+} else {
+    nextStepsHTML = "<p>No se generaron próximos pasos específicos o ya se encuentra en el nivel máximo en todas las áreas.</p>";
+}
 
-      let feedbackText = "La generación de feedback está actualmente no disponible.";
-      const scoresForFeedback = {
-          overallScore: overallScore,
-          componentScores: componentScores,
-          dimensionScores: dimensionScores
-      };
-      try {
-          console.log("calculateScore: Generando feedback IA (esto podría tomar un momento)...");
-          feedbackText = await generateFeedbackWithGemini(scoresForFeedback, companyInfo); // companyInfo es correcto
-          console.log("calculateScore: Feedback IA generado.");
-      } catch (error) {
-          console.error("calculateScore: Falló la generación de feedback:", error);
-          alert("Advertencia: No se pudo generar el feedback de la IA. Se mostrarán los puntajes básicos.");
-      }
 
-      const loadingElement = document.getElementById('loading-feedback');
-      if (loadingElement) {
-          loadingElement.remove();
-      }
 
-      resultsDiv.appendChild(titleDiv);
 
-      const chartsDiv = document.createElement ('div');
-      chartsDiv.className = 'charts-container';
-      for (let i = 0; i < 3; i++) {
-          const canvas = document.createElement ('canvas');
-          canvas.id = `chart${i}`;
-          chartsDiv.appendChild (canvas);
-      }
-      resultsDiv.appendChild (chartsDiv);
+        // Renderizar Parte 1: Análisis General
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'results-section ai-feedback-section';
+        feedbackDiv.innerHTML = `
+            <h3><i class="fas fa-lightbulb"></i> Análisis y Recomendaciones Generales</h3>
+            <div class="ai-feedback-content">${generalAnalysisHTML}</div>`;
+        resultsDiv.appendChild(feedbackDiv);
+        
+        // Renderizar Parte 2: Próximos Pasos
+        const recommendationsContainer = document.createElement('div');
+        recommendationsContainer.className = 'results-section recommendations-section';
+        recommendationsContainer.innerHTML = `<h3><i class="fas fa-arrow-up"></i> Próximos Pasos para Avanzar</h3>${nextStepsHTML}`;
+        resultsDiv.appendChild(recommendationsContainer);
 
-      ['chart0', 'chart1', 'chart2'].forEach(id => {
-          const chartInstance = Chart.getChart(id);
-          if (chartInstance) {
-              chartInstance.destroy();
-          }
-      });
+        // --- Envío de Email (sin cambios, ahora enviará el análisis completo) ---
+        await sendResultsEmailWithFeedback(companyId, companyInfo, scoresForFeedback, fullAnalysisText);
 
-      createComponentChart (componentScores);
-      createDimensionChart (dimensionScores);
-      createOverallScoreChart (overallScore);
-
-      let scoresText = `
-          <div class="results-section"> <div class="scores-container"> <h3>Puntuación por Componentes</h3> <ul>`;
-      for (const component in componentScores) {
-          scoresText += `<li><b>${component}:</b> ${componentScores[component]?.toFixed (2) ?? 'N/A'}</li>`;
-      }
-      scoresText += `</ul></div></div> <div class="results-section"> <div class="scores-container"> <h3>Puntuación por Dimensiones (Puntaje Bruto)</h3> <ul>`;
-      for (const dimension in dimensionScores) {
-          const dimensionCapitalized = dimension.charAt(0).toUpperCase() + dimension.slice(1);
-          scoresText += `<li><b>${dimensionCapitalized}:</b> ${dimensionScores[dimension]?.toFixed(2) ?? 'N/A'}</li>`;
-      }
-      scoresText += `</ul> </div> </div> <div class="results-section"> <div class="scores-container"> <h3>Puntuación General</h3> <p><b>Puntuación total obtenida con FREEPORT:</b> ${overallScore.toFixed (2)} / 100</p> </div> </div>`;
-
-      const scoresDiv = document.createElement ('div');
-      scoresDiv.innerHTML = scoresText;
-      resultsDiv.appendChild (scoresDiv);
-
-      const feedbackDiv = document.createElement('div');
-      feedbackDiv.className = 'results-section ai-feedback-section';
-      feedbackDiv.innerHTML = `
-          <h3><i class="fas fa-lightbulb"></i> Análisis y Recomendaciones (IA)</h3>
-          <div class="ai-feedback-content">
-              ${feedbackText
-                  .replace(/\n\*\s/g, '<br>• ')
-                  .replace(/\n\-/g, '<br>• ')
-                  .replace(/\n/g, '<br>')
-                  .replace(/### (.*?)<br>/g, '<h4>$1</h4><br>')
-                  .replace(/## (.*?)<br>/g, '<h3>$1</h3><br>')
-                  .replace(/# (.*?)<br>/g, '<h2>$1</h2><br>')
-                  .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                  .replace(/\*(.*?)\*/g, '<i>$1</i>')
-              }
-          </div>
-          <small><i>Nota: Esta retroalimentación es generada por inteligencia artificial basada en sus puntuaciones y puede servir como guía inicial.</i></small>
-      `;
-      resultsDiv.appendChild(feedbackDiv);
-      resultsDiv.classList.add ('show');
-
-      console.log("calculateScore: Preparando para enviar email de resultados después de mostrar...");
-      // Pasar el companyId correcto a sendResultsEmailWithFeedback
-      await sendResultsEmailWithFeedback(companyId, companyInfo, scoresForFeedback, feedbackText);
-      console.log("calculateScore: Proceso de envío de email iniciado.");
-
-  } catch (generalError) {
-      console.error("calculateScore: Un error inesperado ocurrió durante el cálculo de la puntuación:", generalError);
-      const loadingElement = document.getElementById('loading-feedback');
-      if (loadingElement) {
-          loadingElement.remove();
-      }
-      resultsDiv.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">Ocurrió un error al calcular los resultados. Por favor, intente de nuevo o contacte al soporte.</p>`;
-      resultsDiv.classList.add('show');
-  }
+    } catch (generalError) {
+        console.error("Un error inesperado ocurrió durante el cálculo de la puntuación:", generalError);
+        resultsDiv.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">Ocurrió un error al calcular los resultados. Error: ${generalError.message}</p>`;
+        resultsDiv.classList.add('show');
+    }
 }
 
 
@@ -1658,91 +2685,162 @@ document.addEventListener ('DOMContentLoaded', function () {
 
 
 
-async function generateFeedbackWithGemini(scores, companyInfo) {
-  console.log("Generating feedback for:", companyInfo.companyName, "Scores:", scores);
-  // --- Prompt Engineering ---
-  // Craft a prompt that tells the AI what to do.
-  const prompt = `
-You are an expert consultant specializing in IoT maturity for Small and Medium Enterprises (SMEs).
-Analyze the following IoT maturity scores for an SME named "${companyInfo.companyName}".
-The company's main activity is: ${companyInfo.mainActivity}.
-The company size is: ${companyInfo.companySize}.
 
-The scores are calculated based on the FREEPORT model. Higher scores indicate higher maturity.
-The maximum possible overall score is 100. Component scores contribute percentages to this total.
+// Añade estas nuevas funciones a tu script.js
 
-Scores:
-- Overall Score: ${scores.overallScore.toFixed(2)} / 100
-- Component Scores:
-    - Device Management: ${scores.componentScores['Device Management']?.toFixed(2) ?? 'N/A'} (Weight: ${componentWeights['Device Management']}%)
-    - Connectivity Management: ${scores.componentScores['Connectivity Management']?.toFixed(2) ?? 'N/A'} (Weight: ${componentWeights['Connectivity Management']}%)
-    - Cloud/Edge Management: ${scores.componentScores['Cloud/Edge Management']?.toFixed(2) ?? 'N/A'} (Weight: ${componentWeights['Cloud/Edge Management']}%)
-    - Enterprise Integration: ${scores.componentScores['Enterprise Integration']?.toFixed(2) ?? 'N/A'} (Weight: ${componentWeights['Enterprise Integration']}%)
-    - Security: ${scores.componentScores['Security']?.toFixed(2) ?? 'N/A'} (Weight: ${componentWeights['Security']}%)
-    - Compliance: ${scores.componentScores['Compliance']?.toFixed(2) ?? 'N/A'} (Weight: ${componentWeights['Compliance']}%)
-    - Contextualization: ${scores.componentScores['Contextualization']?.toFixed(2) ?? 'N/A'} (Weight: ${componentWeights['Contextualization']}%)
-- Dimension Scores (Total points accumulated per dimension, max varies):
-    - Technological: ${scores.dimensionScores.technological?.toFixed(2) ?? 'N/A'}
-    - Human: ${scores.dimensionScores.human?.toFixed(2) ?? 'N/A'}
-    - Organizational: ${scores.dimensionScores.organizational?.toFixed(2) ?? 'N/A'}
+/**
+ * Llama a la API de Gemini para obtener una recomendación específica.
+ * @param {string} question - La pregunta que evalúa el área de madurez.
+ * @param {string} currentLevel - El nombre del nivel actual (ej. "Reactivo").
+ * @param {string} currentDescription - La descripción del nivel actual.
+ * @param {string} nextLevel - El nombre del siguiente nivel (ej. "Proactivo").
+ * @param {string} nextDescription - La descripción del siguiente nivel.
+ * @returns {Promise<string>} La recomendación generada por la IA.
+ */
 
-Task:
-Based ONLY on these scores and the company context provided:
-1. Provide a brief (1-2 sentence) overall assessment of the company's current IoT maturity level.
-2. Highlight 1-2 key strengths based on the highest scoring components or dimensions relative to their weight/importance.
-3. Identify the 2-3 most critical areas for improvement based on the lowest scoring components (considering their weight) or dimensions.
-4. For each critical improvement area identified, suggest 1-2 specific, practical, and actionable next steps the SME could take to enhance its maturity. Focus on realistic steps for an SME.
-5. Keep the tone constructive, encouraging, and professional.
-6. Format the output clearly using Markdown (e.g., headings like "Overall Assessment", "Strengths", "Areas for Improvement", "Recommendations", and bullet points for steps). Do NOT include the original scores in your response. Just provide the analysis and recommendations.
+
+
+/**
+ * Orquesta la generación de recomendaciones para las áreas de mejora.
+ * @param {string} companyId - El ID de la empresa.
+ * @returns {Promise<Array<object>>} Una lista de objetos con las recomendaciones.
+ */
+
+// En script.js, añade esta nueva función (reemplaza las 3 eliminadas)
+
+/**
+ * Genera un análisis completo (general y específico por área) con una sola llamada a la API de Gemini.
+ * @param {object} scores - Objeto con las puntuaciones (overallScore, componentScores, dimensionScores).
+ * @param {object} companyInfo - Información de la empresa.
+ * @param {string} companyId - El ID de la empresa para buscar las respuestas específicas.
+ * @returns {Promise<string>} El análisis completo en formato Markdown.
+ */
+
+
+// En script.js, REEMPLAZA tu función generateComprehensiveAnalysis con esta versión CORREGIDA.
+
+async function generateComprehensiveAnalysis(scores, companyInfo, companyId) {
+    console.log("Iniciando generación de análisis completo para:", companyInfo.companyName);
+
+    // --- 1. Recopilar contextos ---
+    let fullAnswersContext = "";
+    let improvementAreasContext = "";
+    const companyAnswers = companyProfiles[companyId];
+
+    if (companyAnswers) {
+        for (const profile in companyAnswers) {
+            for (const qIndex in companyAnswers[profile]) {
+                const answerData = companyAnswers[profile][qIndex];
+                const questionData = questions[profile][qIndex];
+                const currentLevel = answerData.level;
+                const questionText = questionData.text;
+                const component = questionData.component;
+
+                if (currentLevel) { // Solo si hay una respuesta válida
+                    const currentDescription = rubricData[component]?.[questionText]?.[currentLevel] || answerData.text;
+                    
+                    fullAnswersContext += `
+- Pregunta: "${questionText}"
+  - Nivel alcanzado: **${currentLevel}** ("${currentDescription}")
+`;
+                    
+                    const currentLevelIndex = maturityLevels.indexOf(currentLevel);
+                    if (currentLevelIndex < maturityLevels.length - 1) {
+                        const nextLevel = maturityLevels[currentLevelIndex + 1];
+                        const nextDescription = rubricData[component]?.[questionText]?.[nextLevel] || "N/A";
+                        
+                        improvementAreasContext += `
+- Área de Mejora: "${questionText}"
+  - Nivel Actual: ${currentLevel}
+  - Objetivo para avanzar: Nivel **${nextLevel}** ("${nextDescription}")
+`;
+                    }
+                }
+            }
+        }
+    }
+    
+    if (improvementAreasContext === "") {
+        improvementAreasContext = "La empresa ha alcanzado el nivel máximo en todas las áreas evaluadas. ¡Excelente trabajo!";
+    }
+
+    // --- 2. Construir el "Mega-Prompt" REFINADO ---
+    // *** CORRECCIÓN CLAVE: El prompt ahora es una plantilla genérica. Los detalles específicos se insertarán en el bucle de la Parte 2 ***
+    const prompt = `
+Eres un consultor de élite, experto en el modelo de madurez IoT FREEPORT. Tu comunicación es directa, precisa y orientada a la acción.
+
+**Contexto de la Empresa:**
+- Nombre: "${companyInfo.companyName}"
+- Actividad Principal: "${companyInfo.mainActivity}"
+- Tamaño: "${companyInfo.companySize}"
+
+**Resultados del Modelo de Madurez:**
+- Puntuación General: ${scores.overallScore.toFixed(2)} / 100
+- Puntuaciones por Componente:
+    - Gestión de Dispositivos: ${scores.componentScores['Device Management']?.toFixed(2)}
+    - Gestión de Conectividad: ${scores.componentScores['Connectivity Management']?.toFixed(2)}
+    - Gestión de Nube/Borde: ${scores.componentScores['Cloud/Edge Management']?.toFixed(2)}
+    - Integración Empresarial: ${scores.componentScores['Enterprise Integration']?.toFixed(2)}
+    - Seguridad: ${scores.componentScores['Security']?.toFixed(2)}
+    - Cumplimiento: ${scores.componentScores['Compliance']?.toFixed(2)}
+    - Contextualización: ${scores.componentScores['Contextualization']?.toFixed(2)}
+
+**Diagnóstico Detallado (Respuestas del Usuario):**
+${fullAnswersContext}
+
+**Áreas Específicas para Avanzar al Siguiente Nivel:**
+${improvementAreasContext}
+
+**--- TU TAREA ---**
+Genera un informe en español con formato Markdown, dividido en DOS PARTES.
+
+**PARTE 1: ANÁLISIS GENERAL**
+Bajo el título "## Análisis y Recomendaciones Generales", proporciona:
+1.  **Evaluación General:** Un párrafo conciso resumiendo el estado de madurez IoT.
+2.  **Fortalezas Clave:** 2 o 3 puntos destacando las áreas de mayor madurez.
+3.  **Áreas Críticas de Enfoque:** 2 o 3 puntos identificando las áreas más importantes a mejorar.
+
+**PARTE 2: PRÓXIMOS PASOS PARA AVANZAR**
+Bajo el título "## Próximos Pasos para Avanzar", para CADA UNA de las "Áreas de Mejora" que te he proporcionado en el contexto, genera una subsección que siga ESTRICTAMENTE este formato:
+
+### [Componente]: [Pregunta]
+*   **Nivel Actual:** [Nombre del Nivel Actual]
+*   **Para avanzar al nivel [Nombre del Siguiente Nivel], la acción prioritaria es:** [Genera aquí UNA SOLA frase de acción. Debe ser la recomendación más impactante y directa para lograr la descripción del nivel objetivo. Sé prescriptivo y claro. Por ejemplo: "Implementar un sistema de inventario centralizado para todos los dispositivos IoT."]
+
+Repite este formato para cada área de mejora. No añadas introducciones ni texto extra.
 `;
 
-  const requestBody = {
-    contents: [{ parts: [{ text: prompt }] }],
-    // Optional: Add safety settings if needed
-    // safetySettings: [
-    //   { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-    //   { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
-    // ],
-    generationConfig: {
-      // Optional: Adjust temperature, topK, topP if needed
-      temperature: 0.7, // Controls randomness (0=deterministic, 1=creative)
-      // maxOutputTokens: 8192,
+    const requestBody = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.4 }
+    };
+
+    try {
+        const response = await fetch(GEMINI_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+            console.error('Gemini API Error Response:', errorBody);
+            throw new Error(`Gemini API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.candidates && data.candidates.length > 0) {
+            console.log("Análisis completo generado exitosamente.");
+            return data.candidates[0].content.parts[0].text;
+        } else {
+            console.warn("Respuesta de Gemini sin contenido válido:", data);
+            return "## Error\nNo se pudo generar el análisis.";
+        }
+    } catch (error) {
+        console.error('Error llamando a la API de Gemini:', error);
+        return `## Error\nError al contactar al servicio de IA: ${error.message}`;
     }
-  };
-
-  try {
-    const response = await fetch(GEMINI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('Gemini API Error Response:', errorBody);
-      throw new Error(`Gemini API Error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    // Extract the generated text
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-      const feedbackText = data.candidates[0].content.parts[0].text;
-      console.log("Feedback generated successfully.");
-      return feedbackText;
-    } else {
-      console.error("No valid feedback content found in Gemini response:", data);
-      throw new Error("Could not extract feedback from Gemini response.");
-    }
-  } catch (error) {
-    console.error('Error calling Gemini API:', error);
-    // Return a fallback message or rethrow the error
-    return "Error: Could not generate personalized feedback at this time.";
-  }
 }
-
 
 const componentTranslations = {
   'Device Management': 'Gestión Dispositivos',
