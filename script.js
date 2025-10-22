@@ -1,6 +1,6 @@
 // script.js
 
-const GEMINI_API_KEY = 'AIzaSyCXeBmyXuw69lLPNUBizk6MAc1mtPqK7N0'; // <-- PASTE YOUR KEY HERE
+const GEMINI_API_KEY = 'AIzaSyDlqcl58hBc1VuEwe5eB1Xrd1RPW5_BQxk'; // <-- PASTE YOUR KEY HERE
 const GEMINI_MODEL = 'gemini-2.5-pro'; // Or 'gemini-pro', etc.
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -2857,5 +2857,6 @@ const dimensionTranslations = {
   'human': 'Humana',
   'organizational': 'Organizacional',
 };
+
 
 window.addEventListener ('DOMContentLoaded', initializePage);
