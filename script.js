@@ -1,6 +1,6 @@
 // script.js
 
-const GEMINI_API_KEY = 'AIzaSyDkEzIIS4lRFbt2ctuzMEmyoa2xQoIH_lk'; // <-- PASTE YOUR KEY HERE
+const GEMINI_API_KEY = 'AIzaSyAWkCDUgfu4dNjxz0qcmcsUjKoGrbvfoQ8'; // <-- PASTE YOUR KEY HERE
 const GEMINI_MODEL = 'gemini-2.5-pro'; // Or 'gemini-pro', etc.
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -2860,4 +2860,5 @@ const dimensionTranslations = {
 
 
 window.addEventListener ('DOMContentLoaded', initializePage);
+
 
