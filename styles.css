@@ -1,13 +1,23 @@
 :root {
-    --primary-color: #3498db;
-    --primary-dark: #2980b9;
-    --secondary-color: #2c3e50;
-    --background-color: #f5f7fa;
-    --text-color: #333;
-    --border-radius: 8px;
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
-    --active-color: #e74c3c;
+    --primary-color: #4361ee;
+    --primary-dark: #3651d4;
+    --primary-light: #6b84ff;
+    --secondary-color: #1e293b;
+    --accent-color: #7c3aed;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
+    --background-color: #f8fafc;
+    --surface-color: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --border-color: #e2e8f0;
+    --border-radius: 12px;
+    --border-radius-sm: 8px;
+    --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --box-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.2s ease;
 }
 
 /* Replace current Roboto with this modern stack */
@@ -34,12 +44,58 @@ h1, h2, h3, h4 {
 }
 
 header {
-    background-color: var(--secondary-color);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #334155 100%);
     color: white;
+    padding: 0;
+    margin-bottom: 0;
+    border-radius: 0;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+}
+
+header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.logos-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    max-height: 60px;
+    width: auto;
+    filter: grayscale(20%);
+    transition: filter 0.3s ease;
+}
+
+.logo:hover {
+    filter: grayscale(0%);
+}
+
+header h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    padding: 40px 20px;
+    margin: 0;
     text-align: center;
-    padding: 40px 0;
-    margin-bottom: 40px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-width: 900px;
+    margin: 0 auto;
+    line-height: 1.4;
 }
 
 /* === NUEVO ESTILO PARA EL BOTÓN 'VOLVER' === */
@@ -78,6 +134,22 @@ h1 {
     transition: var(--transition);
     border-radius: var(--border-radius);
     font-weight: 500;
+    position: relative; /* Necesario para el pseudo-elemento */
+    white-space: nowrap;
+}
+
+/* Línea animada debajo del botón */
+.tabs button::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: var(--primary-color);
+    transition: var(--transition);
+    transform: translateX(-50%);
+    border-radius: 3px;
 }
 
 .recommendation-item {
@@ -94,27 +166,66 @@ h1 {
 }
 
 .tabs button:hover {
-    background-color: var(--primary-color);
-    color: white;
-    transform: translateY(-2px);
-    background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
-    color: white;
+    color: var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.08); /* Un fondo muy sutil con tu color primario */
+    transform: translateY(0); /* Reseteamos la transformación anterior */
 }
 
 .tabs button.active {
-    background-color: var(--active-color);
-    color: white;
-    transform: translateY(-2px);
+    color: var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.12); /* Un fondo un poco más intenso */
+    font-weight: 600;
+    transform: translateY(0); /* Reseteamos la transformación anterior */
+}
+
+.tabs button.active::after {
+    width: 30px;
 }
 
 .tab-content {
     display: none;
-    background-color: white;
-    padding: 40px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    background: white;
+    padding: 48px;
+    border-radius: 20px;
+    box-shadow: var(--box-shadow-md);
     margin-bottom: 40px;
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.section-container {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid var(--border-color);
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+}
+
+.publication-item {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    border-radius: 12px;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.publication-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--box-shadow-lg);
+    border-color: var(--primary-light);
 }
 
 @keyframes fadeIn {
@@ -126,58 +237,95 @@ h1 {
     display: block;
 }
 
-/* styles.css */
-
-/* Ensure the main question container is the positioning reference */
 .question {
-    position: relative; /* Needed for absolute positioning of the child */
-    padding-right: 150px; /* Add padding to prevent long question text overlapping the meta info. Adjust value as needed based on testing. */
-    /* --- Keep your existing .question styles below --- */
-    margin-bottom: 30px;
-    background-color: #f9f9f9;
-    padding: 20px; /* Apply base padding */
-    padding-right: 150px; /* Re-declare specifically to override if needed */
-    border-radius: var(--border-radius);
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
     transition: var(--transition);
+    position: relative;
 }
 
 .question:hover {
-    /* Keep existing hover styles */
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
+    border-color: var(--primary-light);
+    box-shadow: 0 8px 16px rgba(67, 97, 238, 0.08);
 }
 
 .question h3 {
-     /* Keep existing h3 styles */
-    margin-bottom: 15px;
-    color: var(--secondary-color);
-    /* Ensure h3 doesn't manually push content too far right */
-    margin-right: 0; /* Remove any explicit right margin if present */
+    color: var(--text-primary);
+    font-size: 1.15rem;
+    margin-bottom: 20px;
+    padding-right: 160px;
+    line-height: 1.5;
 }
 
-
-/* Styles for the Component/Dimension descriptor */
 .question-meta {
-    position: absolute; /* Position relative to the .question div */
-    top: 15px;          /* Adjust distance from top */
-    right: 15px;         /* Adjust distance from right */
-    font-size: 0.5em;   /* Make it smaller */
-    color: #555;        /* Use a grey color */
-    font-style: italic;
-    font-weight: normal; /* Ensure it's not bold */
-    text-align: right;   /* Align text to the right if it wraps */
-    line-height: 1.3;    /* Adjust line spacing if needed */
-    max-width: 130px;    /* Optional: prevent it becoming too wide */
-    z-index: 1;          /* Ensure it stays above other elements if needed */
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background: var(--background-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
 }
 
-/* Ensure radio button labels stack nicely below the heading */
 .question label {
-    display: block; /* Make each radio button + text take its own line */
-    margin-left: 5px; /* Optional: Indent radios slightly */
-    margin-top: 8px; /* Add some space between radio options */
-    /* Clear any floats if you were using them */
-    clear: both;
+    display: flex; /* Alinea el radio button con el texto */
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* Reseteamos estilos anteriores si los hubiera */
+    margin-left: 0;
+    clear: none;
+}
+
+.question label:hover {
+    background-color: #f5f7fa; /* Fondo sutil al pasar el mouse */
+}
+
+.question input[type="radio"] {
+    margin-right: 12px;
+    /* Estilo moderno para el radio button */
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #fff;
+    margin: 0;
+    font: inherit;
+    color: currentColor;
+    width: 1.15em;
+    height: 1.15em;
+    border: 0.15em solid currentColor;
+    border-radius: 50%;
+    transform: translateY(-0.075em);
+    display: grid;
+    place-content: center;
+    margin-right: 12px;
+}
+
+.question input[type="radio"]::before {
+    content: "";
+    width: 0.65em;
+    height: 0.65em;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em var(--primary-color);
+}
+
+.question input[type="radio"]:checked::before {
+    transform: scale(1);
+}
+
+.question input[type="radio"]:focus {
+    outline: max(2px, 0.15em) solid var(--primary-color);
+    outline-offset: max(2px, 0.15em);
 }
 
 select, input[type="text"], input[type="radio"], input[type="email"] {
@@ -439,18 +587,29 @@ canvas#chart2 {
 }
 
 .results-section {
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #fafbfc 0%, #f3f4f6 100%);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
 }
 
 .results-section h3 {
-    color: #2c3e50;
-    border-bottom: 1px solid #3498db;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.results-section h3::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+    border-radius: 2px;
 }
 
 .scores-container ul {
@@ -554,17 +713,30 @@ header {
 }
 
 .freeport-description ul {
-    list-style: disc;
-    margin-left: 20px;
+    list-style: none; /* Quitamos los puntos por defecto */
+    margin-left: 0;
+    padding-left: 0;
 }
 
 .freeport-description li {
+    position: relative; /* Necesario para posicionar la flecha */
+    padding-left: 25px; /* Espacio para la flecha */
     margin-bottom: 15px;
     line-height: 1.7;
 }
 
 .freeport-description li b {
     color: var(--primary-color);
+}
+
+.freeport-description li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1.2rem;
 }
 
 @media (max-width: 768px) {
@@ -583,7 +755,7 @@ header {
     display: flex;
     margin-top: 20px;
     gap: 20px;
-  }
+}
   
   .how-to-use .column {
     flex: 1;
@@ -591,25 +763,23 @@ header {
     border: 1px solid #e7e7e7;
     padding: 20px;
     border-radius: var(--border-radius);
-  }
+}
   
   .how-to-use .column h3 {
     margin-top: 0;
-  }
+}
   
   .how-to-use .column ol {
     padding-left: 20px;
-  }
+}
   
   .how-to-use .column ul {
     list-style-type: disc;
     padding-left: 20px;
-  }
+}
 
 
-/* ... (resto del CSS) ... */
 
-/* Estilos específicos para la sección de presentación */
 .presentation-header {
     text-align: center;
     margin-bottom: 40px;
@@ -670,19 +840,32 @@ header {
     text-align: center;
     width: 250px;
     padding: 20px;
-    border: 1px solid #ccc;
+    border: 1px solid #e0e0e0;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
+    background-color: white;
+    transition: var(--transition); /* Aseguramos que la transición esté aquí */
 }
 
 .team-member-photo {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 10px;
-    transition: transform 0.3s ease;
+    margin: 0 auto 15px;
+    border: 4px solid #e0e0e0;
+    transition: var(--transition);
 
+}
+
+.team-member:hover .team-member-photo {
+    border-color: var(--primary-color);
+    transform: scale(1.05); /* La foto también se agranda un poco */
+}
+
+.team-member:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12); /* Sombra más pronunciada */
 }
 
 /* Estilos para la sección ¿Cómo usar FREEPORT? */
@@ -824,6 +1007,24 @@ header {
     border-radius: var(--border-radius);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(-30px, -30px) rotate(180deg); }
 }
 
 .logos-container {
@@ -910,20 +1111,69 @@ body {
 }
 
 button {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px 24px;
+    padding: 12px 28px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
     transition: var(--transition);
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
 }
 
-button:hover {
-    background-color: var(--primary-dark);
+button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
 }
+
+button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+button[type="submit"] {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+}
+
+.calculate-button {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    padding: 16px 40px;
+    font-size: 1.1rem;
+    margin: 32px auto;
+    display: block;
+}
+
+.secondary-button {
+    background: var(--text-secondary);
+    color: white;
+}
+
+.danger-button {
+    background: var(--danger-color);
+    color: white;
+}
+
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
@@ -1058,34 +1308,73 @@ button:hover {
     flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
 }
 
-/* Ensure form-button styles don't conflict badly */
-.form-button {
-    /* Keep your existing form-button styles */
-    padding: 10px 20px; /* Example */
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
+.form-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.form-header h2 {
+    font-size: 2rem;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.form-description {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.form-field {
+    position: relative;
+}
+
+.form-field label {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.form-field input,
+.form-field select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
     transition: var(--transition);
-    font-size: 16px;
-    color: white; /* Assuming text is white */
+    background: white;
 }
 
-/* Override the default primary color for the secondary button */
-.form-button.secondary-button {
-    background-color: #7f8c8d;
+.form-field input:focus,
+.form-field select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
 }
 
-.form-button.secondary-button:hover {
-    background-color: #95a5a6;
+.email-fieldset {
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 32px;
+    background: var(--background-color);
 }
 
-/* Make sure the primary save button still uses its original color */
-.form-button:not(.secondary-button) {
-    background-color: var(--primary-color); /* Or your specific save button color */
-}
-
-.form-button:not(.secondary-button):hover {
-    background-color: var(--primary-dark); /* Or your specific save button hover color */
+.email-fieldset legend {
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 0 12px;
+    font-size: 1.1rem;
 }
 
 /* styles.css */
@@ -1132,4 +1421,28 @@ button:hover {
     justify-content: center; /* Center Save/Clear buttons */
     gap: 15px;
     flex-wrap: wrap;
+}
+
+.loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    margin: -12px 0 0 -12px;
+    border: 3px solid var(--primary-light);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }

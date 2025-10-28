@@ -1,6 +1,6 @@
 // script.js
 
-const GEMINI_API_KEY = 'AIzaSyCVRA6k6I5t44e88IqKnbGW23d97lnBtPE'; // <-- PASTE YOUR KEY HERE
+const GEMINI_API_KEY = 'AIzaSyBtK8GlMKXSgPQotIbRfDFU6xd_pN6-2XE'; // <-- PASTE YOUR KEY HERE
 const GEMINI_MODEL = 'gemini-2.5-pro'; // Or 'gemini-pro', etc.
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -2511,10 +2511,22 @@ function initializePage () {
     alert("Error: Could not initialize the email service. Please check console.");
   }
 
+  // --- INICIO DEL CÓDIGO A AGREGAR ---
+  // Se añade el listener al formulario de registro.
+  const registrationForm = document.getElementById('registration-form');
+  if (registrationForm) {
+    registrationForm.addEventListener('submit', function(event) {
+      event.preventDefault(); // ¡La línea más importante! Evita que la página se recargue.
+      registerCompany();      // Llama a tu función de registro.
+    });
+  }
+  // --- FIN DEL CÓDIGO A AGREGAR ---
+
   populateDropdowns ();
   openTab ('presentation');
   fetchData (); // Load data from backend/Apps Script
 }
+
 
 /* Implementacin de funcion asicronca que conecta con api encargada de almacenar infomracin en base de datos*/
 
@@ -2858,8 +2870,4 @@ const dimensionTranslations = {
   'organizational': 'Organizacional',
 };
 
-
 window.addEventListener ('DOMContentLoaded', initializePage);
-
-
-
