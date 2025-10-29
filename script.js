@@ -1758,8 +1758,7 @@ function componentName (dimension) {
 }
 
 
-
-// En script.js, REEMPLAZA tu función calculateScore con esta versión optimizada.
+// PASTE AND REPLACE THIS ENTIRE FUNCTION IN YOUR script.js
 
 async function calculateScore(companyId) {
     const resultsDiv = document.getElementById('results');
@@ -1859,35 +1858,37 @@ async function calculateScore(companyId) {
             .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
             .replace(/###\s(.*?)(<br>|$)/g, '<h4>$1</h4>'); // Formatear subtítulos
 
-
-            let nextStepsHTML = "";
-if (analysisParts[1] && analysisParts[1].trim() !== "") {
-    nextStepsHTML = analysisParts[1]
-        // 1. Convierte los títulos ### a <h4> dentro de un div con estilo
-        .replace(/###\s(.*?)\n/g, '</div><div class="recommendation-item"><h4>$1</h4>')
-        // 2. Convierte los asteriscos (*) en elementos de lista. Esto es para el formato que pedimos.
-        .replace(/\*\s(.*?)\n/g, '<li>$1</li>')
-        // 3. Convierte las negritas de Markdown (**) a etiquetas <b>
-        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-        // 4. Convierte los saltos de línea restantes en <br> para separar los puntos
-        .replace(/\n/g, '<br>');
-
-    // 5. Limpieza final:
-    // - Elimina el `</div>` extra del principio.
-    // - Envuelve todo en un `div` contenedor para asegurar que el estilo se aplique correctamente.
-    // - Cierra el último `</div>` del `recommendation-item`.
-    if (nextStepsHTML.startsWith('</div>')) {
-        nextStepsHTML = nextStepsHTML.substring(6);
-    }
-    nextStepsHTML = `<div class="recommendations-wrapper">${nextStepsHTML}</div>`;
-
-} else {
-    nextStepsHTML = "<p>No se generaron próximos pasos específicos o ya se encuentra en el nivel máximo en todas las áreas.</p>";
-}
-
-
-
-
+        // Procesamiento del color de las recomendaciones (sin cambios)
+        let nextStepsHTML = "";
+        if (analysisParts[1] && analysisParts[1].trim() !== "") {
+            const rawText = analysisParts[1];
+            const levelToClassMap = {
+                'Estático': 'priority-high',
+                'Reactivo': 'priority-medium',
+                'Proactivo': 'priority-low'
+            };
+            nextStepsHTML = rawText.replace(/(### .*?)(?=\n### |$)/gs, (block) => {
+                let className = "recommendation-item";
+                const levelMatch = block.match(/\*\*Nivel Actual:\*\* (Estático|Reactivo|Proactivo)/);
+                if (levelMatch && levelMatch[1]) {
+                    const levelName = levelMatch[1];
+                    const priorityClass = levelToClassMap[levelName];
+                    if (priorityClass) {
+                        className += ` ${priorityClass}`;
+                    }
+                }
+                let processedBlock = block
+                    .replace(/###\s(.*?)\n/g, '<h4>$1</h4>')
+                    .replace(/\*\s(.*?)\n/g, '<li>$1</li>')
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                    .replace(/\n/g, '<br>');
+                return `<div class="${className}">${processedBlock}</div>`;
+            });
+            nextStepsHTML = `<div class="recommendations-wrapper">${nextStepsHTML}</div>`;
+        } else {
+            nextStepsHTML = "<p>No se generaron próximos pasos específicos o ya se encuentra en el nivel máximo en todas las áreas.</p>";
+        }
+        
         // Renderizar Parte 1: Análisis General
         const feedbackDiv = document.createElement('div');
         feedbackDiv.className = 'results-section ai-feedback-section';
@@ -1896,11 +1897,42 @@ if (analysisParts[1] && analysisParts[1].trim() !== "") {
             <div class="ai-feedback-content">${generalAnalysisHTML}</div>`;
         resultsDiv.appendChild(feedbackDiv);
         
-        // Renderizar Parte 2: Próximos Pasos
+        // =================================================================
+        // START OF THE MODIFICATION FOR THE LEGEND
+        // =================================================================
+        
+        // Define the HTML for our new legend
+        const legendHTML = `
+            <div class="priority-legend">
+              <div class="legend-item">
+                <span class="legend-color-box priority-high"></span>
+                <span class="legend-text">Prioridad Alta (Área Crítica)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color-box priority-medium"></span>
+                <span class="legend-text">Prioridad Media (Área de Mejora)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color-box priority-low"></span>
+                <span class="legend-text">Prioridad Baja (Área de Optimización)</span>
+              </div>
+            </div>
+        `;
+
+        // Renderizar Parte 2: Próximos Pasos (Now includes the legend)
         const recommendationsContainer = document.createElement('div');
         recommendationsContainer.className = 'results-section recommendations-section';
-        recommendationsContainer.innerHTML = `<h3><i class="fas fa-arrow-up"></i> Próximos Pasos para Avanzar</h3>${nextStepsHTML}`;
+        // Inject the legendHTML right after the title and before the recommendations
+        recommendationsContainer.innerHTML = `
+            <h3><i class="fas fa-arrow-up"></i> Próximos Pasos para Avanzar</h3>
+            ${legendHTML}
+            ${nextStepsHTML}
+        `;
         resultsDiv.appendChild(recommendationsContainer);
+
+        // =================================================================
+        // END OF THE MODIFICATION
+        // =================================================================
 
         // --- Envío de Email (sin cambios, ahora enviará el análisis completo) ---
         await sendResultsEmailWithFeedback(companyId, companyInfo, scoresForFeedback, fullAnalysisText);
@@ -1911,7 +1943,6 @@ if (analysisParts[1] && analysisParts[1].trim() !== "") {
         resultsDiv.classList.add('show');
     }
 }
-
 
 async function sendResultsEmailWithFeedback(companyId, companyInfo, scores, feedbackText) {
   console.log(`Attempting to send results email for ${companyInfo.companyName} (ID: ${companyId})`);
