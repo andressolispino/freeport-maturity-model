@@ -866,7 +866,7 @@ button[type="submit"]:disabled {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 20px;
+    gap: 24px;
     width: 100%;
 }
 
@@ -878,37 +878,581 @@ button[type="submit"]:disabled {
 
 .chart-wrapper {
     width: 100%;
-    max-width: 700px;
-    /* Default max width */
+    max-width: 550px;
     display: flex;
     justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    will-change: transform;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.chart-wrapper:hover {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08),
+        0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+.overall-wrapper {
+    max-width: 500px;
+    padding: 2.5rem;
 }
 
 /* Adjust top row charts to fit side-by-side on larger screens */
-@media (min-width: 1400px) {
-
-    /* Adjust breakpoint as needed */
+@media (min-width: 1200px) {
     .charts-row-top .chart-wrapper {
         max-width: 48%;
-        /* Slightly less than 50% to account for gap */
+        flex: 1 1 45%;
     }
 }
 
 .chart-wrapper canvas {
     width: 100% !important;
     height: auto !important;
+    max-height: 360px;
 }
 
-/* Specific styling for canvases if needed, though wrappers handle layout now */
+/* Specific styling for canvases */
 canvas#chart0,
 canvas#chart1,
 canvas#chart2 {
     max-width: 100%;
-    /* Let wrapper constrain it */
     height: auto;
-    border: 1px solid #ddd;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* ============================================
+   NEW RESULTS DASHBOARD LAYOUT
+   IoT/Tech Aesthetic with Modern Gradients
+   ============================================ */
+
+/* IoT Color Palette Variables */
+.results-dashboard {
+    --iot-cyan: #06b6d4;
+    --iot-cyan-light: rgba(6, 182, 212, 0.15);
+    --iot-violet: #8b5cf6;
+    --iot-violet-light: rgba(139, 92, 246, 0.15);
+    --iot-mint: #10b981;
+    --iot-mint-light: rgba(16, 185, 129, 0.15);
+    --iot-orange: #f97316;
+    --iot-orange-light: rgba(249, 115, 22, 0.15);
+    --performance-danger: #ef4444;
+    --performance-warning: #eab308;
+    --performance-success: #22c55e;
+    --performance-optimal: #14b8a6;
+    --dark-navy: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+}
+
+.results-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Dashboard Header Row */
+.dashboard-header {
+    background: linear-gradient(135deg, var(--dark-navy) 0%, var(--slate-800) 50%, var(--slate-700) 100%);
+    border-radius: var(--border-radius);
+    padding: 2rem 2.5rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.dashboard-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: 10%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* CTA Row and Button */
+.cta-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.cta-recommendations {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: auto;
+    max-width: fit-content;
+}
+
+.cta-recommendations:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
+}
+
+.dimensions-column-header {
+    font-size: 1.25rem;
+    color: var(--dark-navy);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 700;
+}
+
+.dashboard-header .eval-date {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    z-index: 1;
+}
+
+/* Main Dashboard Row */
+.dashboard-main {
+    display: grid;
+    grid-template-columns: minmax(280px, 35%) 1fr;
+    gap: 2rem;
+    width: 100%;
+}
+
+/* NEW: Full-Width Gauge Row (Most Prominent) */
+.gauge-row {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.gauge-card-large {
+    width: 100%;
+    max-width: 600px;
+    padding: 2rem 3rem;
+    margin-bottom: 2rem;
+}
+
+.gauge-card-large h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.gauge-card-large .gauge-canvas-container {
+    max-width: 500px;
+}
+
+/* NEW: 2-Column Content Grid (Dimensions + Components) */
+.dashboard-content-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.dimensions-vertical-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.components-chart-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    height: 100%;
+}
+
+.detail-card h3 {
+    margin-bottom: 2rem;
+    color: var(--dark-navy);
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* NEW: Dimensions Row (Horizontal Cards) */
+.dimensions-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* NEW: CTA Row */
+.cta-row {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Gauge Column - Left Side */
+.gauge-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.gauge-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 30px -5px rgba(6, 182, 212, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.gauge-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--performance-danger), var(--performance-warning), var(--performance-success));
+}
+
+.gauge-card h3 {
+    margin-bottom: 1rem;
+    color: var(--dark-navy);
+    font-size: 1.25rem;
+}
+
+.gauge-canvas-container {
+    max-width: 400px;
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Gauge Score Display (below the semicircle) */
+.gauge-score-display {
+    text-align: center;
+    margin-top: 0.5rem;
+    padding: 1rem;
+}
+
+.gauge-score-display .score-number {
+    font-size: 4rem;
+    font-weight: 800;
+    font-family: 'Manrope', sans-serif;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.gauge-score-display .score-label {
+    font-size: 1rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+.gauge-score-display .maturity-level {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.gauge-score-display .maturity-level i {
+    font-size: 1.1rem;
+}
+
+.cta-recommendations {
+    background: linear-gradient(135deg, var(--iot-cyan), #0891b2);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.cta-recommendations:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.5);
+}
+
+.cta-recommendations i {
+    font-size: 1.1rem;
+}
+
+/* Dimensions Column - Right Side */
+.dimensions-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.dimensions-cards-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.dimension-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.dimension-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.dimension-card.technological::before {
+    background: var(--iot-cyan);
+}
+
+.dimension-card.human::before {
+    background: var(--iot-violet);
+}
+
+.dimension-card.organizational::before {
+    background: var(--iot-mint);
+}
+
+.dimension-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+.dimension-card h4 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    color: var(--slate-700);
+}
+
+.dimension-card .score {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'Manrope', sans-serif;
+}
+
+.dimension-card.technological .score {
+    color: var(--iot-cyan);
+}
+
+.dimension-card.human .score {
+    color: var(--iot-violet);
+}
+
+.dimension-card.organizational .score {
+    color: var(--iot-mint);
+}
+
+.polar-chart-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.profile-summary {
+    background: linear-gradient(135deg, var(--iot-violet-light), var(--iot-cyan-light));
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    border-left: 4px solid var(--iot-violet);
+}
+
+.profile-summary p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--slate-700);
+    line-height: 1.6;
+}
+
+/* Detail Row - Full Width Components Chart */
+.dashboard-detail {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-detail h3 {
+    margin-bottom: 1.5rem;
+    color: var(--dark-navy);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dashboard-detail h3 i {
+    color: var(--iot-orange);
+}
+
+.components-chart-container {
+    width: 100%;
+    max-height: 450px;
+}
+
+/* Performance Color Legend */
+.performance-legend {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: rgba(248, 250, 252, 0.8);
+    border-radius: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--slate-700);
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-dot.alert {
+    background: linear-gradient(135deg, #ef4444, #f97316);
+}
+
+.legend-dot.progress {
+    background: linear-gradient(135deg, #eab308, #3b82f6);
+}
+
+.legend-dot.optimal {
+    background: linear-gradient(135deg, #22c55e, #14b8a6);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-content-grid {
+        grid-template-columns: 240px 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .dashboard-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dimensions-vertical-column {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .dimension-card {
+        flex: 1 1 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .dimensions-vertical-column {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .dimension-card {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .gauge-canvas-container {
+        max-width: 300px;
+    }
+
+    .gauge-card-large {
+        padding: 1.5rem;
+    }
+
+    .gauge-card-large h3 {
+        font-size: 1.25rem;
+    }
+
+    .cta-recommendations {
+        width: 100%;
+        max-width: 320px;
+    }
 }
 
 .results-section {

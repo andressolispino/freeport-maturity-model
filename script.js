@@ -1,12 +1,19 @@
 // script.js
 
-const GEMINI_API_KEY = 'AIzaSyCdw3VwTsV69e3Tj8xDCWeHf5YPx_riPjA'; // <-- PASTE YOUR KEY HERE
-const GEMINI_MODEL = 'gemini-2.5-flash'; // Or 'gemini-pro', etc.
+const GEMINI_API_KEY = 'AIzaSyA2Jqmk3y8EgAabxbiLt4Fu8e3XCkZkEiA'; // <-- PASTE YOUR KEY HERE
+const GEMINI_MODEL = 'gemini-2.5-flash-lite'; // UPDATED MODEL
+
+// --- SUPABASE CONFIGURATION ---
+const SUPABASE_URL = 'https://vxyktnzqkzejdgtfxexs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4eWt0bnpxa3plamRndGZ4ZXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4OTE0NTksImV4cCI6MjA4MjQ2NzQ1OX0.lQE56q3oelLfLM1v-m8nhh7_VL68XjhWxOejeA9HFuk';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ------------------------------
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 
 let companyProfiles = {};
 let allCompaniesData = [];
+let isDataLoaded = false; // Track initialization state
 let urlbase = 'https://script.google.com/macros/s/AKfycbyE2-lgyoQPBuIOpzd129JPPnDA0nUmeYFj80mzvIvp3hRf82pkZCrmBDH-1PCDxAI7PQ/exec';
 
 const componentTranslations = {
@@ -495,7 +502,7 @@ const questions = {
       answers: [
         { text: 'La empresa gestiona manualmente tarjetas SIM físicas para dispositivos IoT', level: 'Estático', score: 1 },
         { text: 'La empresa utiliza métodos tradicionales de aprovisionamiento de SIM, pero no ha adoptado las tecnologías eSIM o iSIM.', level: 'Reactivo', score: 5 },
-        { text: 'La empresa ha adoptado parcialmente las tecnologías eSIM o iSIM para el aprovisionamiento remoto de algunos dispositivos IoT (Liberg et al., 2018).', level: 'Proactivo', score: 10 },
+        { text: 'La empresa ha adoptado parcialmente las tecnologías eSIM o iSIM para el aprovisionamiento remoto de algunos dispositivos IoT.', level: 'Proactivo', score: 10 },
         { text: 'La empresa ha adoptado completamente las tecnologías eSIM e iSIM en toda su flota de dispositivos IoT', level: 'Innovador', score: 15 },
         { text: 'No sabe/no contesta', level: null, score: 0 }
       ]
@@ -1375,8 +1382,10 @@ function openTab(tabName, shouldScroll = true, shouldHighlight = true) {
 // REEMPLAZA LA FUNCIÓN ANTIGUA CON ESTA VERSIÓN CORREGIDA
 
 function loadCompanyProgress() {
-  // Busca el input y los botones DENTRO del contenedor de login de la pestaña "model"
-  // Esto evita conflictos si existen otros elementos con el mismo ID en otra parte.
+  if (!isDataLoaded) {
+    alert("Iniciando sistema... Por favor, espere 2 segundos y vuelva a intentarlo.");
+    return;
+  }
   const loginContainer = document.getElementById('model-login-container');
   const companyIdInput = loginContainer.querySelector('#company-id');
   const progressDiv = loginContainer.querySelector('#company-progress');
@@ -1396,11 +1405,13 @@ function loadCompanyProgress() {
     return;
   }
 
-  // El resto de la lógica permanece igual
-  if (companyProfiles[companyId]) {
+  // --- FIX: Verify ID against allCompaniesData, not just companyProfiles ---
+  const companyExists = allCompaniesData.find(c => c.id === companyId);
+
+  if (companyExists) {
     const progress = checkCompanyProgress(companyId);
     progressDiv.innerHTML = `
-            <h3>Progreso de la empresa:</h3>
+            <h3>Progreso de la empresa: <strong>${companyExists.companyName}</strong></h3>
             <p>Gerente: ${progress.manager.toFixed(2)}%</p>
             <p>Ingeniero: ${progress.engineer.toFixed(2)}%</p>
             <p>Técnico: ${progress.technician.toFixed(2)}%</p>
@@ -1409,14 +1420,12 @@ function loadCompanyProgress() {
     if (profileButtonsDiv) {
       profileButtonsDiv.style.display = 'flex';
     }
-    // *** FIX: Update the calculate button state when progress is loaded ***
     updateCalculateButton(companyId);
 
   } else {
     alert(
       'ID de empresa no encontrado. Por favor, verifique el ID o registre una nueva empresa.'
     );
-    // FALLO: Los botones permanecen ocultos
   }
 }
 
@@ -1531,10 +1540,14 @@ async function registerCompany() {
     const allDataToSave = JSON.parse(JSON.stringify(allCompaniesData));
     allDataToSave.push(companyData);
 
-    await Promise.all([
-      saveInfo(profilesToSave, 1),
-      saveInfo(allDataToSave, 2)
-    ]);
+    // --- FIX: Save companies FIRST, then profiles to avoid Foreign Key violations ---
+    // Specifically, the new company must exist in 'companies' before a profile can reference it.
+    console.log("Saving new company reference...");
+    await saveInfo(allDataToSave, 2);
+
+    console.log("Saving initial profile data...");
+    await saveInfo(profilesToSave, 1);
+    // --- END FIX ---
 
     companyProfiles = profilesToSave;
     allCompaniesData = allDataToSave;
@@ -1862,43 +1875,98 @@ async function calculateScore(companyId) {
 
     // --- PROCESAMIENTO Y RENDERIZADO DE LA RESPUESTA ÚNICA ---
     loadingDiv.remove();
-    resultsDiv.appendChild(titleDiv);
 
-    // Renderizado de Gráficos y Scores (sin cambios)
-    // Renderizado de Gráficos y Scores (sin cambios)
-    // Renderizado de Gráficos y Scores (sin cambios en funciones, solo layout)
-    const chartsDiv = document.createElement('div');
-    chartsDiv.className = 'charts-container';
+    // =============================================================
+    // NEW DASHBOARD LAYOUT STRUCTURE
+    // =============================================================
+    const dashboardDiv = document.createElement('div');
+    dashboardDiv.className = 'results-dashboard';
 
-    // Fila Superior (d-flex para ponerlos al lado)
-    const topRow = document.createElement('div');
-    topRow.className = 'charts-row-top';
-    topRow.innerHTML = `<div class="chart-wrapper"><canvas id="chart0"></canvas></div><div class="chart-wrapper"><canvas id="chart1"></canvas></div>`;
+    // --- Header Row: Company Title and Evaluation Date ---
+    const headerRow = document.createElement('div');
+    headerRow.className = 'dashboard-header';
+    const evalDate = new Date().toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    headerRow.innerHTML = `
+      <h2><i class="fas fa-building"></i> Resultados FREEPORT - ${companyInfo.companyName || 'Empresa'}</h2>
+      <span class="eval-date"><i class="fas fa-calendar-alt"></i> Evaluación: ${evalDate}</span>
+    `;
+    dashboardDiv.appendChild(headerRow);
 
-    // Fila Inferior (centrado)
-    const bottomRow = document.createElement('div');
-    bottomRow.className = 'charts-row-bottom';
-    bottomRow.innerHTML = `<div class="chart-wrapper overall-wrapper"><canvas id="chart2"></canvas></div>`;
+    // --- GAUGE ROW: Most Prominent - Full Width ---
+    const gaugeRow = document.createElement('div');
+    gaugeRow.className = 'gauge-row';
+    gaugeRow.innerHTML = `
+      <div class="gauge-card gauge-card-large">
+        <h3><i class="fas fa-tachometer-alt"></i> Madurez General</h3>
+        <div class="gauge-canvas-container">
+          <canvas id="chart2"></canvas>
+        </div>
+      </div>
+    `;
+    dashboardDiv.appendChild(gaugeRow);
 
-    chartsDiv.appendChild(topRow);
-    chartsDiv.appendChild(bottomRow);
-    resultsDiv.appendChild(chartsDiv);
-    ['chart0', 'chart1', 'chart2'].forEach(id => Chart.getChart(id)?.destroy());
-    createComponentChart(componentScores);
-    createDimensionChart(dimensionScores);
+    // --- CONTENT ROW: 2 Columns (Vertical Dimensions + Component Chart) ---
+    const contentRow = document.createElement('div');
+    contentRow.className = 'dashboard-content-grid';
+
+    // Column 1: Vertical Dimension Score Cards
+    const dimensionsCol = document.createElement('div');
+    dimensionsCol.className = 'dimensions-vertical-column';
+    dimensionsCol.innerHTML = `
+      <div class="dimensions-column-header">
+        <i class="fas fa-layer-group"></i> Puntaje por Dimensiones
+      </div>
+      <div class="dimension-card technological">
+        <h4><i class="fas fa-microchip"></i> Tecnológica</h4>
+        <div class="score">${dimensionScores.technological?.toFixed(0) || 0}</div>
+      </div>
+      <div class="dimension-card human">
+        <h4><i class="fas fa-users"></i> Humana</h4>
+        <div class="score">${dimensionScores.human?.toFixed(0) || 0}</div>
+      </div>
+      <div class="dimension-card organizational">
+        <h4><i class="fas fa-sitemap"></i> Organizacional</h4>
+        <div class="score">${dimensionScores.organizational?.toFixed(0) || 0}</div>
+      </div>
+    `;
+    contentRow.appendChild(dimensionsCol);
+
+    // Column 2: Component Performance Chart
+    const componentsCol = document.createElement('div');
+    componentsCol.className = 'components-chart-column';
+    componentsCol.innerHTML = `
+      <div class="detail-card">
+        <h3><i class="fas fa-chart-bar"></i> Puntaje por Componentes</h3>
+        <div class="components-chart-container">
+          <canvas id="chart0"></canvas>
+        </div>
+      </div>
+    `;
+    contentRow.appendChild(componentsCol);
+
+    dashboardDiv.appendChild(contentRow);
+
+    // --- CTA Button ---
+    const ctaRow = document.createElement('div');
+    ctaRow.className = 'cta-row';
+    ctaRow.innerHTML = `
+      <button class="cta-recommendations" onclick="document.querySelector('.recommendations-section').scrollIntoView({behavior: 'smooth'})">
+        <i class="fas fa-lightbulb"></i> Ver Recomendaciones Personalizadas
+      </button>
+    `;
+    dashboardDiv.appendChild(ctaRow);
+
+    // Append dashboard to results
+    resultsDiv.appendChild(dashboardDiv);
+
+    // Destroy existing charts if any, then create new ones
+    ['chart0', 'chart2'].forEach(id => Chart.getChart(id)?.destroy());
     createOverallScoreChart(overallScore);
-
-    let scoresText = `<div class="results-section"><div class="scores-container"><h3><i class="fas fa-cubes"></i> Puntaje por componentes</h3><ul>`;
-    for (const component in componentScores) scoresText += `<li><b>${componentTranslations[component] || component}:</b> ${componentScores[component]?.toFixed(2) ?? 'N/A'}</li>`;
-    scoresText += `</ul></div></div><div class="results-section"><div class="scores-container"><h3><i class="fas fa-layer-group"></i> Puntaje por dimensiones</h3><ul>`;
-    for (const dimension in dimensionScores) scoresText += `<li><b>${dimensionTranslations[dimension] || dimension.charAt(0).toUpperCase() + dimension.slice(1)}:</b> ${dimensionScores[dimension]?.toFixed(2) ?? 'N/A'}</li>`;
-    scoresText += `</ul></div></div><div class="results-section"><div class="scores-container"><h3><i class="fas fa-star"></i> Puntuación General</h3><p class="overall-score-display" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);"> ${overallScore.toFixed(2)} / 100</p></div></div>`;
-    const scoresDiv = document.createElement('div');
-    scoresDiv.style.display = 'grid';
-    scoresDiv.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
-    scoresDiv.style.gap = '20px';
-    scoresDiv.innerHTML = scoresText;
-    resultsDiv.appendChild(scoresDiv);
+    createComponentChart(componentScores);
 
     // Separar la respuesta de Gemini en las dos partes que pedimos
     const analysisParts = fullAnalysisText.split('## Próximos Pasos para Avanzar');
@@ -2121,7 +2189,47 @@ function sendResultsEmail(params) {
 
 function createComponentChart(componentScores) {
   const ctx = document.getElementById('chart0').getContext('2d');
-  const labels = Object.keys(componentScores).map(key => componentTranslations[key] || key);
+
+  // Sort components by score (highest to lowest)
+  const sortedEntries = Object.entries(componentScores)
+    .map(([key, value]) => ({
+      label: componentTranslations[key] || key,
+      value: value,
+      // Normalize score to percentage for color coding (assuming max weight-adjusted score)
+      percentage: (value / 20) * 100 // Approximate normalization
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  const labels = sortedEntries.map(e => e.label);
+  const dataValues = sortedEntries.map(e => e.value);
+
+  // Performance-based colors
+  const getBarColor = (value, percentage) => {
+    const pct = (value / 20) * 100; // Normalize to percentage
+    if (pct <= 40) {
+      return {
+        bg: 'rgba(239, 68, 68, 0.85)',      // Red
+        border: 'rgba(220, 38, 38, 1)',
+        hover: 'rgba(239, 68, 68, 1)'
+      };
+    } else if (pct <= 70) {
+      return {
+        bg: 'rgba(234, 179, 8, 0.85)',       // Yellow/Amber
+        border: 'rgba(202, 138, 4, 1)',
+        hover: 'rgba(234, 179, 8, 1)'
+      };
+    } else {
+      return {
+        bg: 'rgba(20, 184, 166, 0.85)',      // Turquoise
+        border: 'rgba(13, 148, 136, 1)',
+        hover: 'rgba(20, 184, 166, 1)'
+      };
+    }
+  };
+
+  const backgroundColors = dataValues.map(v => getBarColor(v).bg);
+  const borderColors = dataValues.map(v => getBarColor(v).border);
+  const hoverColors = dataValues.map(v => getBarColor(v).hover);
 
   new Chart(ctx, {
     type: 'bar',
@@ -2131,135 +2239,232 @@ function createComponentChart(componentScores) {
       datasets: [
         {
           label: 'Puntaje por componente',
-          data: Object.values(componentScores),
-          backgroundColor: 'rgba(52, 152, 219, 0.5)',
-          borderColor: 'rgba(52, 152, 219, 1)',
-          borderWidth: 1,
+          data: dataValues,
+          backgroundColor: backgroundColors,
+          borderColor: borderColors,
+          borderWidth: 2,
+          borderRadius: 6,
+          borderSkipped: false,
+          barPercentage: 0.75,
+          categoryPercentage: 0.85,
+          hoverBackgroundColor: hoverColors,
+          hoverBorderWidth: 3,
         },
       ],
     },
     options: {
+      indexAxis: 'y', // Horizontal bars
       responsive: true,
       maintainAspectRatio: true,
       aspectRatio: 1.5,
-      scales: {
-        y: {
-          beginAtZero: true,
-          suggestedMax: 20,
-        },
+      animation: {
+        duration: 1200,
+        easing: 'easeOutQuart'
       },
-      plugins: {
-        title: {
-          display: true,
-          text: 'Puntaje por componentes',
-          font: { size: 14 }
-        },
-        datalabels: {
-          display: false // Removed numbers from bars
+      layout: {
+        padding: {
+          top: 10,
+          right: 30,
+          bottom: 10,
+          left: 10
         }
       },
-    },
-  });
-}
-
-function createDimensionChart(dimensionScores) {
-  const ctx = document.getElementById('chart1').getContext('2d');
-  const labels = Object.keys(dimensionScores).map(key => dimensionTranslations[key] || key);
-
-  new Chart(ctx, {
-    type: 'radar',
-    plugins: [ChartDataLabels],
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Puntaje por dimensión',
-          data: Object.values(dimensionScores),
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          borderColor: 'rgba(255, 99, 132, 1)',
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 1.5,
       scales: {
-        r: {
+        x: {
           beginAtZero: true,
+          suggestedMax: 25,
+          grid: {
+            color: 'rgba(226, 232, 240, 0.6)',
+            drawBorder: false
+          },
           ticks: {
-            display: false // Hide axis numbers to declutter
+            color: '#374151',
+            font: {
+              size: 11,
+              weight: '500'
+            },
+            padding: 8
+          },
+          border: {
+            display: false
           }
         },
+        y: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            color: '#1e293b',
+            font: {
+              size: 12,
+              weight: '600',
+              family: "'Inter', sans-serif"
+            },
+            padding: 10
+          },
+          border: {
+            display: false
+          }
+        }
       },
       plugins: {
         title: {
           display: true,
-          text: 'Puntaje por dimensiones',
-          font: { size: 14 }
+          text: 'Rendimiento por Componente',
+          color: '#0f172a',
+          font: {
+            size: 18,
+            weight: 'bold',
+            family: "'Manrope', sans-serif"
+          },
+          padding: {
+            bottom: 20
+          }
+        },
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          titleColor: '#fff',
+          bodyColor: '#e2e8f0',
+          borderColor: 'rgba(6, 182, 212, 0.5)',
+          borderWidth: 1,
+          cornerRadius: 8,
+          padding: 14,
+          displayColors: true,
+          titleFont: {
+            size: 13,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: 12
+          },
+          callbacks: {
+            label: function (context) {
+              const percentage = ((context.parsed.x / 20) * 100).toFixed(0);
+              return `Puntaje: ${context.parsed.x.toFixed(2)} (${percentage}%)`;
+            }
+          }
         },
         datalabels: {
-          display: false // Removed numbers from radar chart
+          anchor: 'end',
+          align: 'end',
+          color: '#374151',
+          font: {
+            size: 11,
+            weight: '600'
+          },
+          formatter: function (value) {
+            return value.toFixed(1);
+          },
+          offset: 4
         }
       },
     },
   });
 }
+
+
 
 function createOverallScoreChart(overallScore) {
   const ctx = document.getElementById('chart2').getContext('2d');
+
+  // Determine color based on score for text
+  let scoreColor;
+  if (overallScore < 40) scoreColor = '#dc2626';
+  else if (overallScore < 70) scoreColor = '#ca8a04';
+  else scoreColor = '#0d9488';
+
+  // Center text plugin to display score in the middle
+  const centerTextPlugin = {
+    id: 'centerText',
+    afterDraw: function (chart) {
+      const { ctx, chartArea: { left, right, top, bottom } } = chart;
+      const centerX = (left + right) / 2;
+      const centerY = bottom - 20;
+
+      ctx.save();
+
+      // Main Score Number
+      ctx.font = "bold 60px 'Manrope', sans-serif";
+      ctx.fillStyle = scoreColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(Math.round(overallScore), centerX, centerY - 25);
+
+      // Label below score
+      ctx.font = "600 16px 'Inter', sans-serif";
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('de 100 puntos', centerX, centerY + 15);
+
+      ctx.restore();
+    }
+  };
+
   new Chart(ctx, {
     type: 'doughnut',
-    plugins: [ChartDataLabels],
+    plugins: [centerTextPlugin],
     data: {
-      labels: ['Puntaje', 'Restante'],
+      labels: ['Madurez', 'Restante'],
       datasets: [
         {
           data: [overallScore, 100 - overallScore],
           backgroundColor: [
-            'rgba(75, 192, 192, 0.6)',
-            'rgba(201, 203, 207, 0.6)',
+            overallScore < 40 ? 'rgba(239, 68, 68, 0.85)' : (overallScore < 70 ? 'rgba(234, 179, 8, 0.85)' : 'rgba(20, 184, 166, 0.85)'),
+            'rgba(241, 245, 249, 1)'
           ],
-          borderColor: ['rgba(75, 192, 192, 1)', 'rgba(201, 203, 207, 1)'],
-          borderWidth: 1,
+          borderColor: [
+            overallScore < 40 ? '#dc2626' : (overallScore < 70 ? '#ca8a04' : '#0d9488'),
+            '#e2e8f0'
+          ],
+          borderWidth: 2,
+          hoverOffset: 10,
+          borderRadius: [10, 0],
+          spacing: 2
         },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
-      aspectRatio: 2,
-      circumference: 180,
+      aspectRatio: 1.8,
       rotation: -90,
-      plugins: {
-        title: {
-          display: true,
-          text: 'Puntaje General',
-          font: { size: 16 }
-        },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              return `${context.label}: ${context.parsed.toFixed(1)}%`;
-            },
-          },
-        },
-        datalabels: {
-          color: '#444',
-          font: {
-            size: 11,
-            weight: 'bold'
-          },
-          formatter: (value, ctx) => {
-            if (ctx.dataIndex === 0) return value.toFixed(1) + '%';
-            return '';
-          }
+      circumference: 180,
+      cutout: '75%',
+      animation: {
+        duration: 1500,
+        easing: 'easeOutQuart'
+      },
+      layout: {
+        padding: {
+          top: 10,
+          right: 30,
+          bottom: 40,
+          left: 30
         }
       },
-    },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            label: function (context) {
+              return `Puntaje: ${context.parsed.toFixed(1)}`;
+            }
+          }
+        },
+        datalabels: { display: false }
+      }
+    }
   });
 }
+
+
+
 
 function resetForm() {
   // 1. Clear answers
@@ -2565,7 +2770,7 @@ function checkCompanyProgress(companyId) {
   return progress;
 }
 
-function initializePage() {
+async function initializePage() {
   // Initialize EmailJS ONCE here
   try {
     emailjs.init("g9Z2DR7zaXpn8GfVK"); // Your EmailJS Public Key (User ID)
@@ -2589,7 +2794,11 @@ function initializePage() {
   populateDropdowns();
   // Call openTab without scrolling or highlighting for a neutral initial load
   openTab('presentation', false, false);
-  fetchData(); // Load data from backend/Apps Script
+
+  // FIX: Await fetchData to ensure allCompaniesData is populated before user interaction
+  console.log("Initializing data...");
+  await fetchData();
+  console.log("Data initialization complete.");
 }
 
 
@@ -2598,13 +2807,98 @@ function initializePage() {
 // In saveInfo, REMOVE the fetchData call
 // In saveInfo, REMOVED fetchData call and added parallel processing capability
 async function saveInfo(dataToSave, tipo) {
+  // --- 1. SUPABASE WRITE (PRIMARY) ---
+  try {
+    console.log(`Saving to Supabase (Type ${tipo})...`);
+    if (tipo === 2) {
+      // Type 2: ALL Companies Data (Array of objects)
+      // We upsert each company in the array.
+      // NOTE: In a more optimized version, we might just upsert the single company being modified,
+      // but to match existing logic which passes the whole array, we'll handle it carefully.
+      // Ideally, the calling function should pass just the *changed* company, but let's
+      // respect the current flow: we will upsert the *latest* entry or all of them.
+      // TO AVOID EXCEEDING LIMITS, we will only upsert the LAST item in the array if it's an array,
+      // or the object itself if it is a single object (though current logic passes full array).
+
+      let dataToUpsert = [];
+      if (Array.isArray(dataToSave)) {
+        // Assuming the last one is the new/updated one.
+        // However, existing logic effectively replaces the whole JSON in Sheets.
+        // For SQL, we should loop and upsert, OR just upsert the relevant one.
+        // Let's safe-guard: upsert ALL of them is expensive if the list is huge.
+        // Given this is a migration, let's assume valid data.
+
+        // Mapping "Companies" structure to Supabase columns
+        dataToUpsert = dataToSave.map(c => ({
+          company_id: c.id,
+          company_name: c.companyName,
+          country: c.country,
+          main_activity: c.mainActivity,
+          company_size: c.companySize,
+          legal_figure: c.legalFigure,
+          manager_email: c.managerEmail,
+          engineer_email: c.engineerEmail,
+          technician_email: c.technicianEmail,
+          device_management_score: c.componentScores?.['Device Management'],
+          connectivity_management_score: c.componentScores?.['Connectivity Management'],
+          cloud_edge_management_score: c.componentScores?.['Cloud/Edge Management'],
+          enterprise_integration_score: c.componentScores?.['Enterprise Integration'],
+          security_score: c.componentScores?.['Security'],
+          compliance_score: c.componentScores?.['Compliance'],
+          contextualization_score: c.componentScores?.['Contextualization'],
+          technological_dimension_score: c.dimensionScores?.technological,
+          human_dimension_score: c.dimensionScores?.human,
+          organizational_dimension_score: c.dimensionScores?.organizational,
+          overall_score: c.overallScore,
+          last_updated: new Date().toISOString()
+        }));
+      } else {
+        // Should not happen with current logic, but handle it
+        console.warn("saveInfo type 2 received non-array:", dataToSave);
+      }
+
+      if (dataToUpsert.length > 0) {
+        const { error } = await supabaseClient
+          .from('companies')
+          .upsert(dataToUpsert, { onConflict: 'company_id' });
+
+        if (error) throw error;
+      }
+
+    } else if (tipo === 1) {
+      // Type 1: Profiles (Object: { companyId: { manager: {...}, ... } })
+      // We need to transform this Nested Object -> Array of Rows for 'profiles' table
+      const rows = Object.keys(dataToSave).map(companyId => ({
+        company_id: companyId,
+        profile_data: dataToSave[companyId], // Store the whole JSON object for profiles
+        last_updated: new Date().toISOString()
+      }));
+
+      if (rows.length > 0) {
+        const { error } = await supabaseClient
+          .from('profiles')
+          .upsert(rows, { onConflict: 'company_id' });
+        if (error) throw error;
+      }
+    }
+    console.log("Supabase save successful.");
+  } catch (sbError) {
+    console.error("Supabase Save Error:", sbError);
+    // Alert the user but continue to backup if it's not a critical failure
+    // Re-throw if we want registerCompany to stop
+    alert(`Error en base de datos principal: ${sbError.message || 'Error desconocido'}`);
+    throw sbError; // Rethrow to ensure registerCompany catches the failure
+  }
+
+
+  // --- 2. GOOGLE SHEETS BACKUP (ORIGINAL LOGIC) ---
   const url = urlbase; // Apps script URL handles routing via doPost
   const jsonDataPayload = {
     json: JSON.stringify(dataToSave),
     tipo: tipo,
   };
   try {
-    console.log(`Sending data (type ${tipo}) to Apps Script...`);
+    console.log(`Sending data (type ${tipo}) to Apps Script (Backup)...`);
     const response = await fetch(url, {
       method: 'POST',
       mode: 'cors',
@@ -2623,55 +2917,99 @@ async function saveInfo(dataToSave, tipo) {
           errorText += ` - ${errorBody}`;
         }
       } catch (e) { /* Ignore if cannot read body */ }
-      throw new Error(`Error saving data (type ${tipo}): ${response.status} - ${errorText}`);
+      console.warn(`Backup Warning: Error saving data (type ${tipo}): ${response.status} - ${errorText}`);
+      // return; // Don't throw, just warn, since Supabase might have succeeded
+    } else {
+      const result = await response.json();
+      console.log(`Apps Script Response (Backup) for type ${tipo}:`, result);
+      return result;
     }
-    const result = await response.json();
-    console.log(`Apps Script Response for type ${tipo}:`, result);
-
-    // Check if Apps Script explicitly signaled an error in its JSON response
-    if (result && result.status === 'error') {
-      throw new Error(`Apps Script reported error for type ${tipo}: ${result.message || 'Unknown error'}`);
-    }
-    return result; // Return the parsed response from Apps Script
   } catch (error) {
-    console.error(`Error in saveInfo for type ${tipo}:`, error);
-    throw error; // Re-throw the error to be caught by the calling function
+    console.error(`Error in saveInfo (Backup) for type ${tipo}:`, error);
+    // If Supabase succeeded, we might suppress this error to the user, or show a warning.
+    // For now, allow it to bubble if BOTH failed (implicit, since if SB failed we alerted).
   }
 }
 
 
 //extraccion de base ded atos y almacenado en los json definidos
 async function fetchData() {
-  const url = urlbase; // GET requests go to the same URL
-
   try {
-    console.log("Fetching data from Apps Script...");
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'cors',
-      redirect: 'follow' // Important for Apps Script GET requests
+    console.log("Fetching data from Supabase...");
+
+    // 1. Fetch Companies
+    const { data: companiesDB, error: errorCompanies } = await supabaseClient
+      .from('companies')
+      .select('*');
+
+    if (errorCompanies) throw errorCompanies;
+
+    // 2. Fetch Profiles
+    const { data: profilesDB, error: errorProfiles } = await supabaseClient
+      .from('profiles')
+      .select('*');
+
+    if (errorProfiles) throw errorProfiles;
+
+    console.log("Supabase Data Received:", { companiesDB, profilesDB });
+
+    // 3. Transform Supabase 'companies' format back to Application 'allCompaniesData' format
+    allCompaniesData = companiesDB.map(c => ({
+      id: c.company_id,
+      companyName: c.company_name,
+      country: c.country,
+      mainActivity: c.main_activity,
+      companySize: c.company_size,
+      legalFigure: c.legal_figure,
+      managerEmail: c.manager_email,
+      engineerEmail: c.engineer_email,
+      technicianEmail: c.technician_email,
+      componentScores: {
+        'Device Management': c.device_management_score,
+        'Connectivity Management': c.connectivity_management_score,
+        'Cloud/Edge Management': c.cloud_edge_management_score,
+        'Enterprise Integration': c.enterprise_integration_score,
+        'Security': c.security_score,
+        'Compliance': c.compliance_score,
+        'Contextualization': c.contextualization_score
+      },
+      dimensionScores: {
+        'technological': c.technological_dimension_score,
+        'human': c.human_dimension_score,
+        'organizational': c.organizational_dimension_score
+      },
+      overallScore: c.overall_score
+    }));
+
+    // 4. Transform Supabase 'profiles' format back to Application 'companyProfiles' object
+    companyProfiles = {};
+    profilesDB.forEach(row => {
+      companyProfiles[row.company_id] = row.profile_data;
     });
 
-    if (!response.ok) {
-      // Try to get more details from the response body if possible
-      let errorText = response.statusText;
-      try {
-        const errorBody = await response.text();
-        errorText += ` - ${errorBody}`;
-      } catch (e) { /* Ignore if cannot read body */ }
-      throw new Error(`Error fetching data: ${response.status} - ${errorText}`);
-    }
-
-    // Apps script doGet returns an array of {json, tipo} objects stringified
-    const dataArray = await response.json();
-    console.log("Data received from Apps Script:", dataArray);
-    getData(dataArray); // Call existing getData function
+    console.log("Data successfully loaded from Supabase.");
+    isDataLoaded = true;
 
   } catch (error) {
-    console.error('Error fetching data via Apps Script:', error);
-    // Reset local data on fetch error to prevent using stale data
-    companyProfiles = {};
-    allCompaniesData = [];
+    console.error('Error fetching data from Supabase:', error);
+    // Fallback? Or just retry? For now, we rely on Supabase.
+    // We could try fetching from Google Sheets as a fallback read if Supabase fails?
+    // Let's implement a fallback read just in case, for robustness.
+    console.warn("Attempting fallback fetch from Google Sheets...");
+    await fetchDataBackup();
+    isDataLoaded = true;
+  }
+}
+
+async function fetchDataBackup() {
+  const url = urlbase;
+  try {
+    const response = await fetch(url, { method: 'GET', mode: 'cors', redirect: 'follow' });
+    if (!response.ok) throw new Error('Backup fetch failed');
+    const dataArray = await response.json();
+    getData(dataArray);
+  } catch (e) {
+    console.error("Backup fetch also failed:", e);
   }
 }
 
