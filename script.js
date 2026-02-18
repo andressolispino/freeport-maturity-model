@@ -1,6 +1,6 @@
 // script.js
 
-const GEMINI_API_KEY = 'AIzaSyA_wDHoU6WA8ZCJ4lorTwTdI6MVTaI-Y5I'; // <-- PASTE YOUR KEY HERE
+const GEMINI_API_KEY = 'AIzaSyDp1hY2V5YZmA_DHZ9YS1Ew0atpCByLQ2o'; // <-- PASTE YOUR KEY HERE
 const GEMINI_MODEL = 'gemini-2.0-flash'; // Or 'gemini-pro', etc.
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
