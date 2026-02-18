@@ -1,7 +1,7 @@
 // script.js
 
 const GEMINI_API_KEY = 'AIzaSyCN81vE1IEMO8xPH2u5pxbA_zRLUg90nM8'; // <-- PASTE YOUR KEY HERE
-const GEMINI_MODEL = 'gemini-2.5-flash-lite'; // UPDATED MODEL
+const GEMINI_MODEL = 'gemini-2.0-flash'; // UPDATED MODEL
 
 // --- SUPABASE CONFIGURATION ---
 const SUPABASE_URL = 'https://vxyktnzqkzejdgtfxexs.supabase.co';
