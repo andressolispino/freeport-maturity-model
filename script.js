@@ -1,14 +1,14 @@
 // script.js
 
-const GEMINI_API_KEY = 'AIzaSyCN81vE1IEMO8xPH2u5pxbA_zRLUg90nM8'; // <-- PASTE YOUR KEY HERE
-const GEMINI_MODEL = 'gemini-2.0-flash'; // UPDATED MODEL
+const GROQ_API_KEY = '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'; // GROQ API KEY
+const GROQ_MODEL = 'llama-3.3-70b-versatile'; // SELECTED MODEL
 
 // --- SUPABASE CONFIGURATION ---
 const SUPABASE_URL = 'https://vxyktnzqkzejdgtfxexs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4eWt0bnpxa3plamRndGZ4ZXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4OTE0NTksImV4cCI6MjA4MjQ2NzQ1OX0.lQE56q3oelLfLM1v-m8nhh7_VL68XjhWxOejeA9HFuk';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ------------------------------
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 
 let companyProfiles = {};
@@ -1543,10 +1543,12 @@ async function registerCompany() {
     // --- FIX: Save companies FIRST, then profiles to avoid Foreign Key violations ---
     // Specifically, the new company must exist in 'companies' before a profile can reference it.
     console.log("Saving new company reference...");
-    await saveInfo(allDataToSave, 2);
+    // Pass 'companyId' as specificId to optimize Supabase save, but allDataToSave still goes to Sheets
+    await saveInfo(allDataToSave, 2, companyId);
 
     console.log("Saving initial profile data...");
-    await saveInfo(profilesToSave, 1);
+    // Pass 'companyId' as specificId
+    await saveInfo(profilesToSave, 1, companyId);
     // --- END FIX ---
 
     companyProfiles = profilesToSave;
@@ -1753,7 +1755,7 @@ async function saveAnswers(profile, companyId) {
     });
 
     if (allAnsweredThisProfile) {
-      await saveInfo(companyProfiles, 1);
+      await saveInfo(companyProfiles, 1, companyId);
       alert(`Respuestas guardadas para ${profile} de la empresa ${companyId}!`);
 
       // Lógica de redirección (sin cambios)
@@ -1867,7 +1869,7 @@ async function calculateScore(companyId) {
 
     const updatedCompanyData = { ...companyInfo, componentScores, dimensionScores, overallScore };
     allCompaniesData[companyIndex] = updatedCompanyData;
-    await saveInfo(allCompaniesData, 2);
+    await saveInfo(allCompaniesData, 2, companyId);
 
     // --- LLAMADA ÚNICA A LA IA ---
     const scoresForFeedback = { overallScore, componentScores, dimensionScores };
@@ -2806,54 +2808,74 @@ async function initializePage() {
 
 // In saveInfo, REMOVE the fetchData call
 // In saveInfo, REMOVED fetchData call and added parallel processing capability
-async function saveInfo(dataToSave, tipo) {
+async function saveInfo(dataToSave, tipo, specificId = null) {
   // --- 1. SUPABASE WRITE (PRIMARY) ---
   try {
-    console.log(`Saving to Supabase (Type ${tipo})...`);
+    console.log(`Saving to Supabase (Type ${tipo})... Specific ID: ${specificId}`);
     if (tipo === 2) {
       // Type 2: ALL Companies Data (Array of objects)
-      // We upsert each company in the array.
-      // NOTE: In a more optimized version, we might just upsert the single company being modified,
-      // but to match existing logic which passes the whole array, we'll handle it carefully.
-      // Ideally, the calling function should pass just the *changed* company, but let's
-      // respect the current flow: we will upsert the *latest* entry or all of them.
-      // TO AVOID EXCEEDING LIMITS, we will only upsert the LAST item in the array if it's an array,
-      // or the object itself if it is a single object (though current logic passes full array).
 
       let dataToUpsert = [];
       if (Array.isArray(dataToSave)) {
-        // Assuming the last one is the new/updated one.
-        // However, existing logic effectively replaces the whole JSON in Sheets.
-        // For SQL, we should loop and upsert, OR just upsert the relevant one.
-        // Let's safe-guard: upsert ALL of them is expensive if the list is huge.
-        // Given this is a migration, let's assume valid data.
-
-        // Mapping "Companies" structure to Supabase columns
-        dataToUpsert = dataToSave.map(c => ({
-          company_id: c.id,
-          company_name: c.companyName,
-          country: c.country,
-          main_activity: c.mainActivity,
-          company_size: c.companySize,
-          legal_figure: c.legalFigure,
-          manager_email: c.managerEmail,
-          engineer_email: c.engineerEmail,
-          technician_email: c.technicianEmail,
-          device_management_score: c.componentScores?.['Device Management'],
-          connectivity_management_score: c.componentScores?.['Connectivity Management'],
-          cloud_edge_management_score: c.componentScores?.['Cloud/Edge Management'],
-          enterprise_integration_score: c.componentScores?.['Enterprise Integration'],
-          security_score: c.componentScores?.['Security'],
-          compliance_score: c.componentScores?.['Compliance'],
-          contextualization_score: c.componentScores?.['Contextualization'],
-          technological_dimension_score: c.dimensionScores?.technological,
-          human_dimension_score: c.dimensionScores?.human,
-          organizational_dimension_score: c.dimensionScores?.organizational,
-          overall_score: c.overallScore,
-          last_updated: new Date().toISOString()
-        }));
+        // OPTIMIZATION: If specificId is provided, ONLY upsert that company
+        if (specificId) {
+          const specificCompany = dataToSave.find(c => c.id === specificId);
+          if (specificCompany) {
+            console.log(`Optimized Supabase Save: Updating Single Company (${specificId})`);
+            dataToUpsert = [{
+              company_id: specificCompany.id,
+              company_name: specificCompany.companyName,
+              country: specificCompany.country,
+              main_activity: specificCompany.mainActivity,
+              company_size: specificCompany.companySize,
+              legal_figure: specificCompany.legalFigure,
+              manager_email: specificCompany.managerEmail,
+              engineer_email: specificCompany.engineerEmail,
+              technician_email: specificCompany.technicianEmail,
+              device_management_score: specificCompany.componentScores?.['Device Management'],
+              connectivity_management_score: specificCompany.componentScores?.['Connectivity Management'],
+              cloud_edge_management_score: specificCompany.componentScores?.['Cloud/Edge Management'],
+              enterprise_integration_score: specificCompany.componentScores?.['Enterprise Integration'],
+              security_score: specificCompany.componentScores?.['Security'],
+              compliance_score: specificCompany.componentScores?.['Compliance'],
+              contextualization_score: specificCompany.componentScores?.['Contextualization'],
+              technological_dimension_score: specificCompany.dimensionScores?.technological,
+              human_dimension_score: specificCompany.dimensionScores?.human,
+              organizational_dimension_score: specificCompany.dimensionScores?.organizational,
+              overall_score: specificCompany.overallScore,
+              last_updated: new Date().toISOString()
+            }];
+          } else {
+            console.warn(`Specific ID ${specificId} not found in dataToSave array.`);
+          }
+        } else {
+          // Fallback: Upsert ALL (only if specificId is NOT provided)
+          console.log("Standard Supabase Save: Upserting ALL Companies (No specific ID provided)");
+          dataToUpsert = dataToSave.map(c => ({
+            company_id: c.id,
+            company_name: c.companyName,
+            country: c.country,
+            main_activity: c.mainActivity,
+            company_size: c.companySize,
+            legal_figure: c.legalFigure,
+            manager_email: c.managerEmail,
+            engineer_email: c.engineerEmail,
+            technician_email: c.technicianEmail,
+            device_management_score: c.componentScores?.['Device Management'],
+            connectivity_management_score: c.componentScores?.['Connectivity Management'],
+            cloud_edge_management_score: c.componentScores?.['Cloud/Edge Management'],
+            enterprise_integration_score: c.componentScores?.['Enterprise Integration'],
+            security_score: c.componentScores?.['Security'],
+            compliance_score: c.componentScores?.['Compliance'],
+            contextualization_score: c.componentScores?.['Contextualization'],
+            technological_dimension_score: c.dimensionScores?.technological,
+            human_dimension_score: c.dimensionScores?.human,
+            organizational_dimension_score: c.dimensionScores?.organizational,
+            overall_score: c.overallScore,
+            last_updated: new Date().toISOString()
+          }));
+        }
       } else {
-        // Should not happen with current logic, but handle it
         console.warn("saveInfo type 2 received non-array:", dataToSave);
       }
 
@@ -2867,12 +2889,29 @@ async function saveInfo(dataToSave, tipo) {
 
     } else if (tipo === 1) {
       // Type 1: Profiles (Object: { companyId: { manager: {...}, ... } })
-      // We need to transform this Nested Object -> Array of Rows for 'profiles' table
-      const rows = Object.keys(dataToSave).map(companyId => ({
-        company_id: companyId,
-        profile_data: dataToSave[companyId], // Store the whole JSON object for profiles
-        last_updated: new Date().toISOString()
-      }));
+
+      let rows = [];
+      if (specificId) {
+        // OPTIMIZATION: Only upsert the specific profile
+        if (dataToSave[specificId]) {
+          console.log(`Optimized Supabase Save: Updating Single Profile (${specificId})`);
+          rows = [{
+            company_id: specificId,
+            profile_data: dataToSave[specificId],
+            last_updated: new Date().toISOString()
+          }];
+        } else {
+          console.warn(`Specific ID ${specificId} not found in dataToSave object (Profiles).`);
+        }
+      } else {
+        // Fallback: Upsert ALL
+        console.log("Standard Supabase Save: Upserting ALL Profiles (No specific ID provided)");
+        rows = Object.keys(dataToSave).map(companyId => ({
+          company_id: companyId,
+          profile_data: dataToSave[companyId],
+          last_updated: new Date().toISOString()
+        }));
+      }
 
       if (rows.length > 0) {
         const { error } = await supabaseClient
@@ -2891,14 +2930,49 @@ async function saveInfo(dataToSave, tipo) {
   }
 
 
-  // --- 2. GOOGLE SHEETS BACKUP (ORIGINAL LOGIC) ---
-  const url = urlbase; // Apps script URL handles routing via doPost
-  const jsonDataPayload = {
-    json: JSON.stringify(dataToSave),
-    tipo: tipo,
-  };
+  // --- 2. GOOGLE SHEETS BACKUP (OPTIMIZED) ---
+  const url = urlbase;
+
+  // Construct Load
+  let jsonDataPayload = {};
+
+  if (specificId) {
+    // --- OPTIMIZED MODE: Single Record ---
+    let singleRecord = null;
+    if (tipo === 2 && Array.isArray(dataToSave)) {
+      singleRecord = dataToSave.find(c => c.id === specificId);
+    } else if (tipo === 1 && dataToSave[specificId]) {
+      singleRecord = dataToSave[specificId];
+    }
+
+    if (singleRecord) {
+      jsonDataPayload = {
+        mode: 'single',
+        tipo: tipo,
+        id: specificId,
+        single_data: JSON.stringify(singleRecord)
+        // We do NOT send 'json' here to avoid legacy script overwriting everything if not updated
+      };
+      console.log(`Prepare payload for Single Update (Type ${tipo}, ID ${specificId})`);
+    } else {
+      // Fallback if record not found
+      jsonDataPayload = {
+        json: JSON.stringify(dataToSave),
+        tipo: tipo,
+        mode: 'full'
+      };
+    }
+  } else {
+    // --- LEGACY MODE: Full Update ---
+    jsonDataPayload = {
+      json: JSON.stringify(dataToSave),
+      tipo: tipo,
+      mode: 'full'
+    };
+  }
+
   try {
-    console.log(`Sending data (type ${tipo}) to Apps Script (Backup)...`);
+    console.log(`Sending data (type ${tipo}) to Apps Script (Backup)... Mode: ${jsonDataPayload.mode}`);
     const response = await fetch(url, {
       method: 'POST',
       mode: 'cors',
@@ -2912,13 +2986,11 @@ async function saveInfo(dataToSave, tipo) {
       let errorText = response.statusText;
       try {
         const errorBody = await response.text();
-        // Avoid logging large HTML error pages if Apps Script returns one
         if (errorBody && !errorBody.trim().startsWith('<')) {
           errorText += ` - ${errorBody}`;
         }
-      } catch (e) { /* Ignore if cannot read body */ }
+      } catch (e) { /* Ignore */ }
       console.warn(`Backup Warning: Error saving data (type ${tipo}): ${response.status} - ${errorText}`);
-      // return; // Don't throw, just warn, since Supabase might have succeeded
     } else {
       const result = await response.json();
       console.log(`Apps Script Response (Backup) for type ${tipo}:`, result);
@@ -2926,8 +2998,6 @@ async function saveInfo(dataToSave, tipo) {
     }
   } catch (error) {
     console.error(`Error in saveInfo (Backup) for type ${tipo}:`, error);
-    // If Supabase succeeded, we might suppress this error to the user, or show a warning.
-    // For now, allow it to bubble if BOTH failed (implicit, since if SB failed we alerted).
   }
 }
 
@@ -3135,7 +3205,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // En script.js, REEMPLAZA tu función generateComprehensiveAnalysis con esta versión CORREGIDA.
 
 async function generateComprehensiveAnalysis(scores, companyInfo, companyId) {
-  console.log("Iniciando generación de análisis completo para:", companyInfo.companyName);
+  console.log("Iniciando generación de análisis completo (Groq) para:", companyInfo.companyName);
 
   // --- 1. Recopilar contextos ---
   let fullAnswersContext = "";
@@ -3179,19 +3249,24 @@ async function generateComprehensiveAnalysis(scores, companyInfo, companyId) {
     improvementAreasContext = "La empresa ha alcanzado el nivel máximo en todas las áreas evaluadas. ¡Excelente trabajo!";
   }
 
-  // --- 2. Construir el "Mega-Prompt" REFINADO ---
-  // *** CORRECCIÓN CLAVE: El prompt ahora es una plantilla genérica. Los detalles específicos se insertarán en el bucle de la Parte 2 ***
+  // --- 2. Construir el Prompt Optimizado (Doctoral Level & Color Compatible) ---
   const prompt = `
-Eres un consultor de élite, experto en el modelo de madurez IoT FREEPORT. Tu comunicación es directa, precisa y orientada a la acción.
+Actúa como un Consultor Senior Especialista en Transformación Digital e IoT para PyMEs en Latinoamérica. Tu tarea es interpretar los resultados del modelo de madurez FREEPORT y generar un informe estratégico riguroso.
 
-**Contexto de la Empresa:**
-- Nombre: "${companyInfo.companyName}"
-- Actividad Principal: "${companyInfo.mainActivity}"
-- Tamaño: "${companyInfo.companySize}"
+**PRINCIPIOS METODOLÓGICOS (Cero Alucinaciones):**
+1.  **Verdad Fundamental (Ground Truth):** Basa tu diagnóstico ÚNICAMENTE en los datos "Diagnóstico Detallado" y "Áreas Específicas" proporcionados abajo.
+2.  **Análisis de Brechas (Gap Analysis):** Enfócate en cerrar la brecha entre el nivel actual y el siguiente nivel inmediato.
+3.  **Realismo PyME Latam:** Al sugerir acciones, prioriza soluciones costo-efectivas (SaaS escalable, Open Source, capacitación interna) evitando grandes inversiones de capital (CAPEX) innecesarias.
+4.  **Criterio de Acción:** Las recomendaciones deben ser Específicas, Alcanzables y Relevantes (sin restricciones temporales estrictas, pero sí priorizables).
 
-**Resultados del Modelo de Madurez:**
-- Puntuación General: ${scores.overallScore.toFixed(2)} / 100
-- Puntuaciones por Componente:
+**DATOS DE LA EMPRESA:**
+- **Nombre:** "${companyInfo.companyName}"
+- **Sector/Actividad:** "${companyInfo.mainActivity}" (Contextualiza las recomendaciones a este sector).
+- **Tamaño:** "${companyInfo.companySize}" (Ajusta la complejidad técnica a este tamaño).
+
+**MÉTRICAS DEL MODELO (Resultados Cuantitativos):**
+- **Puntuación Global:** ${scores.overallScore.toFixed(2)} / 100
+- **Desglose por Componentes:**
     - Gestión de Dispositivos: ${scores.componentScores['Device Management']?.toFixed(2)}
     - Gestión de Conectividad: ${scores.componentScores['Connectivity Management']?.toFixed(2)}
     - Gestión de Nube/Borde: ${scores.componentScores['Cloud/Edge Management']?.toFixed(2)}
@@ -3200,62 +3275,97 @@ Eres un consultor de élite, experto en el modelo de madurez IoT FREEPORT. Tu co
     - Cumplimiento: ${scores.componentScores['Compliance']?.toFixed(2)}
     - Contextualización: ${scores.componentScores['Contextualization']?.toFixed(2)}
 
-**Diagnóstico Detallado (Respuestas del Usuario):**
+**EVIDENCIA DEL DIAGNÓSTICO (In-Context Learning):**
 ${fullAnswersContext}
 
-**Áreas Específicas para Avanzar al Siguiente Nivel:**
+**DEFINICIÓN DE BRECHAS Y OBJETIVOS (Rúbrica):**
 ${improvementAreasContext}
 
-**--- TU TAREA ---**
-Genera un informe en español con formato Markdown, dividido en DOS PARTES.
+**--- INSTRUCCIONES DE SALIDA (FORMATO MARKDOWN ESTRICTO) ---**
+
+Genera el informe en español, dividido en dos partes.
 
 **PARTE 1: ANÁLISIS GENERAL**
-Bajo el título "## Análisis y Recomendaciones Generales", proporciona:
-1.  **Evaluación General:** Un párrafo conciso resumiendo el estado de madurez IoT.
-2.  **Fortalezas Clave:** 2 o 3 puntos destacando las áreas de mayor madurez.
-3.  **Áreas Críticas de Enfoque:** 2 o 3 puntos identificando las áreas más importantes a mejorar.
+Bajo el título "## Análisis y Recomendaciones Generales":
+1.  **Diagnóstico Ejecutivo:** Un párrafo (máx 60 palabras) correlacionando la Puntuación Global con el Sector de la empresa.
+2.  **Tríada de Fortalezas:** Lista 3 puntos fuertes basados en los puntajes más altos y su ventaja competitiva.
+3.  **Tríada de Riesgos:** Lista 3 áreas críticas (puntajes bajos) y el riesgo operativo/seguridad que implican.
 
 **PARTE 2: PRÓXIMOS PASOS PARA AVANZAR**
-Bajo el título "## Próximos Pasos para Avanzar", para CADA UNA de las "Áreas de Mejora" que te he proporcionado en el contexto, genera una subsección que siga ESTRICTAMENTE este formato:
+Bajo el título "## Próximos Pasos para Avanzar", para CADA elemento en "Áreas Específicas", genera una recomendación siguiendo ESTRICTAMENTE este formato (el texto exacto "**Nivel Actual:**" es obligatorio para el sistema):
 
-### [Pregunta]
-*   **Nivel Actual:** [Nombre del Nivel Actual]
-*   **Para avanzar al nivel [Nombre del Siguiente Nivel], la acción prioritaria es:** [Genera aquí UNA SOLA frase de acción. Debe ser la recomendación más impactante y directa para lograr la descripción del nivel objetivo. Sé prescriptivo y claro. Por ejemplo: "Implementar un sistema de inventario centralizado para todos los dispositivos IoT."]
+### [Texto de la Pregunta / Área Evaluada]
+*   **Nivel Actual:** [Estático / Reactivo / Proactivo]
+*   **Para avanzar al nivel [Nombre del Siguiente Nivel], la acción prioritaria es:** [Acción técnica específica y prescriptiva, adaptada a PyME].
+*   **Valor para el Negocio:** [Explica brevemente el ROI, eficiencia o mitigación de riesgo].
 
-Repite este formato para cada área de mejora. No añadas introducciones ni texto extra.
+Repite este formato exacto para cada área de mejora.
+(Recuerda: Basa tus respuestas ESTRICTAMENTE en las evidencias dadas y mantén el enfoque PyME).
 `;
 
   const requestBody = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.4 }
+    model: GROQ_MODEL,
+    messages: [
+      {
+        role: "system",
+        content: "Eres un consultor de élite experto en IoT y el modelo FREEPORT."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    temperature: 0.2,
+    max_tokens: 4096 // 1. AUMENTAMOS EL LÍMITE DE TOKENS
   };
 
   try {
-    const response = await fetch(GEMINI_API_URL, {
+    const response = await fetch(GROQ_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`
+      },
       body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error('Gemini API Error Response:', errorBody);
-      throw new Error(`Gemini API Error: ${response.status}`);
+      console.error('Groq API Error Response:', errorBody);
+      throw new Error(`Groq API Error: ${response.status}`);
     }
 
     const data = await response.json();
-    if (data.candidates && data.candidates.length > 0) {
-      console.log("Análisis completo generado exitosamente.");
-      return data.candidates[0].content.parts[0].text;
+
+    if (data.choices && data.choices.length > 0) {
+      const choice = data.choices[0];
+      let finalContent = choice.message.content;
+
+      // 2. VERIFICACIÓN DE CALIDAD A NIVEL DE PRODUCCIÓN
+      if (choice.finish_reason === "length") {
+        console.warn("Advertencia: La respuesta de la IA fue cortada por el límite de max_tokens.");
+        // Opcional: Podrías añadir una nota al final del texto para que el usuario lo sepa
+        finalContent += "\n\n*[Nota del Sistema: El análisis es tan extenso que ha alcanzado el límite de longitud de visualización]*";
+
+        /* 
+           Nota experta: En sistemas muy avanzados, aquí haríamos un bucle while 
+           enviando el historial anterior + finalContent pidiéndole a la IA "Continúa exactamente donde te quedaste", 
+           pero para tu caso de uso web, poner max_tokens en 4096 o 8192 debería ser más que suficiente.
+        */
+      }
+
+      console.log("Análisis completo generado exitosamente vía Groq.");
+      return finalContent;
     } else {
-      console.warn("Respuesta de Gemini sin contenido válido:", data);
+      console.warn("Respuesta de Groq sin contenido válido:", data);
       return "## Error\nNo se pudo generar el análisis.";
     }
   } catch (error) {
-    console.error('Error llamando a la API de Gemini:', error);
-    return `## Error\nError al contactar al servicio de IA: ${error.message}`;
+    console.error('Error llamando a la API de Groq:', error);
+    return `## Error\nError al contactar al servicio de Groq: ${error.message}`;
   }
 }
+
 
 
 
