@@ -1,6 +1,6 @@
 // script.js
 
-const GROQ_API_KEY = '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'; // GROQ API KEY
+const GROQ_API_KEY = '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'; // GROQ API KEY
 const GROQ_MODEL = 'llama-3.3-70b-versatile'; // SELECTED MODEL
 
 // --- SUPABASE CONFIGURATION ---
