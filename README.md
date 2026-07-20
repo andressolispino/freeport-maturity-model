@@ -1,71 +1,68 @@
-# FREEPORT: Framework de Modelo de Madurez IoT para PYMEs
+# FREEPORT · evaluación de madurez tecnológica IoT
 
-FREEPORT es un marco de trabajo basado en la web diseñado para evaluar y mejorar la madurez tecnológica del Internet de las Cosas (IoT) en Pequeñas y Medianas Empresas (PYMEs), enfocándose particularmente en el contexto latinoamericano. Utiliza el modelo de madurez ATLANTIS, proporcionando una evaluación holística a través de las dimensiones tecnológica, organizacional y humana, basada en investigación establecida.
+Aplicación web estática del proyecto doctoral FREEPORT/ATLANTIS. Permite registrar una empresa, completar los cuestionarios de gerente, ingeniero y técnico, calcular resultados normalizados y generar un informe de mejora.
 
-Esta herramienta ayuda a las PYMEs a comprender sus capacidades actuales de IoT, identificar áreas de mejora y planificar su adopción estratégica de tecnologías IoT.
+## Ejecución local
 
-**[Enlace a la Demo en Vivo]** (Reemplaza con la URL de tu GitHub Pages una vez desplegado, si aplica)
+No requiere compilación. Para evitar las restricciones de los navegadores al abrir archivos directamente, conviene servir la carpeta por HTTP:
 
-## Características
+```powershell
+python -m http.server 8000
+```
 
-*   **Presentación del Proyecto:** Visión general detallada del framework FREEPORT, sus componentes y objetivos.
-*   **Información del Equipo:** Presenta al equipo de investigación detrás del proyecto.
-*   **Registro de Empresa:** Un formulario para registrar detalles de la empresa (nombre, país, actividad, tamaño, figura legal, correos de contacto). Genera un ID único.
-*   **Acceso Basado en Perfil:** Permite que diferentes perfiles de usuario (Gerente, Ingeniero, Técnico) accedan y respondan las partes relevantes del cuestionario usando el ID único de la empresa.
-*   **Cuestionario de Madurez IoT:** Cuestionario completo derivado del modelo ATLANTIS, segmentado por perfil, componente (Gestión de Dispositivos, Conectividad, Nube/Borde, etc.) y dimensión (Tecnológica, Humana, Organizacional).
-*   **Cálculo de Puntuación:** Calcula automáticamente las puntuaciones basadas en las respuestas del usuario para cada componente, dimensión y una puntuación de madurez general (0-100).
-*   **Visualización de Resultados:** Presenta las puntuaciones calculadas usando gráficos interactivos:
-    *   Puntuaciones por Componente (Gráfico de Barras)
-    *   Puntuaciones por Dimensión (Gráfico de Radar)
-    *   Puntuación General (Gráfico de Dona)
-*   **Feedback Generado por IA:** Utiliza la API Google Gemini para proporcionar análisis personalizados y recomendaciones accionables basadas en las puntuaciones y el perfil de la empresa.
-*   **Notificaciones por Email:** Envía correos electrónicos a través de EmailJS para:
-    *   Confirmación de registro de la empresa con el ID único.
-    *   Resumen de resultados, incluyendo puntuaciones y feedback de IA, al completar el proceso.
-*   **Panel de Administrador:** Una sección protegida por contraseña para administradores para:
-    *   Exportar todos los datos de las empresas registradas y sus puntuaciones a un archivo Excel (`.xlsx`).
-    *   Restablecer/eliminar todos los datos almacenados (requiere confirmación).
-*   **Lista de Publicaciones:** Muestra publicaciones académicas relacionadas realizadas por el equipo de investigación.
+Abra `http://localhost:8000/`.
 
-## Cómo Usar FREEPORT (Guía de Usuario)
+Las pruebas automatizadas sí requieren Node.js:
 
-1.  **Registra tu Empresa:**
-    *   Navega a la pestaña "Registrar Empresa".
-    *   Completa los detalles requeridos de la empresa.
-    *   **Crucial:** Proporciona al menos una dirección de correo electrónico válida (preferiblemente para el rol de Gerente) para recibir el ID único de la Empresa. Proporciona correos para otros roles si van a participar.
-    *   Haz clic en "Registrar".
-    *   **Guarda el ID único de la Empresa** que se muestra y se envía por correo electrónico. Lo necesitarás para iniciar sesión.
-2.  **Ingresa con tu Perfil:**
-    *   Ve a la pestaña "Ingresar".
-    *   Introduce el ID único de la Empresa que recibiste.
-    *   Haz clic en "Cargar Progreso".
-    *   Selecciona tu rol (Manager, Engineer o Technician). Solo verás los botones para los roles que tuvieron una dirección de correo registrada.
-3.  **Responde el Cuestionario:**
-    *   Serás dirigido a la pestaña "Modelo de Madurez".
-    *   Responde las preguntas correspondientes a tu perfil. Selecciona la opción que mejor refleje el estado actual de tu empresa.
-    *   Haz clic en "Guardar respuestas de [Tu Perfil]".
-4.  **Calcula la Puntuación:**
-    *   Una vez que *todos* los perfiles participantes (Manager, Engineer, Technician para quienes se registraron correos) hayan guardado sus respuestas, el botón "Calcular Puntuación" se activará.
-    *   Cualquier perfil de usuario puede hacer clic en este botón.
-5.  **Visualiza los Resultados:**
-    *   La aplicación calculará y mostrará las puntuaciones en la sección "Resultados" de la pestaña "Modelo de Madurez".
-    *   Esto incluye gráficos detallados, desgloses de puntuaciones y feedback generado por IA.
-    *   También se enviará un correo electrónico de resumen a las direcciones de correo registradas.
+```powershell
+npm test
+npm run check
+```
 
-## Pila Tecnológica (Stack)
+## Arquitectura conservada
 
-*   **Frontend:** HTML5, CSS3, JavaScript (ES6+)
-*   **Gráficos:** [Chart.js](https://www.chartjs.org/)
-*   **Exportación a Excel:** [SheetJS (xlsx)](https://sheetjs.com/)
-*   **Envío de Email:** [EmailJS](https://www.emailjs.com/)
-*   **Feedback de IA:** [Google Gemini API](https://ai.google.dev/)
-*   **Persistencia de Datos:** [Google Apps Script](https://developers.google.com/apps-script) (actuando como un backend simple conectado a Google Sheets mediante la Fetch API)
-*   **Estilos:** CSS Básico, [Font Awesome](https://fontawesome.com/) (Iconos), [Google Fonts](https://fonts.google.com/) (Roboto)
+- **Supabase:** almacenamiento principal mediante la clave pública `anon`. No se modificaron tablas, columnas ni políticas.
+- **Google Apps Script:** respaldo independiente de empresas y perfiles. La integración existente se conserva.
+- **EmailJS:** correos de registro y resultados.
+- **GitHub Pages:** el proyecto continúa siendo HTML, CSS y JavaScript estáticos; puede publicarse desde la raíz sin proceso de construcción.
+- **Informe con IA:** se genera mediante una llamada directa desde el navegador a Groq, sin modificar Supabase ni Google Apps Script.
 
-## Equipo y Publicaciones
+En la carga normal solo se consulta el identificador de empresa solicitado. La lectura completa de datos queda reservada para la exportación administrativa explícita.
 
-La información sobre el equipo de investigación y las publicaciones académicas relacionadas se puede encontrar directamente en el sitio web, dentro de las pestañas 'Equipo de Trabajo' y 'Publicaciones'.
+## Configuración segura
 
-## Licencia
+[`config.js`](./config.js) contiene únicamente opciones publicables:
 
-Este proyecto está bajo la Licencia MIT - consulta el archivo `LICENSE` para más detalles (Deberías añadir un archivo `LICENSE` a tu repositorio si lo haces público, eligiendo una licencia como MIT).
+```js
+window.FREEPORT_CONFIG = Object.freeze({
+  ENABLE_PUBLIC_ADMIN: false,
+  ADMIN_ACCESS_CODE: ''
+});
+```
+
+Nunca agregue a ese archivo claves `service_role`, contraseñas de Google ni otros secretos de backend. Todo lo que se publica en GitHub Pages puede ser leído por cualquier visitante.
+
+Por decisión del proyecto, la clave de Groq está en `script.js` y por tanto es pública. Se recomienda aplicar límites de uso en Groq, supervisar el consumo y rotarla cuando sea necesario. Si Groq falla, la aplicación muestra el error y no presenta un informe local como si hubiera sido generado por IA.
+
+El acceso administrativo está deshabilitado por defecto. Un código escrito en JavaScript solo oculta la interfaz y **no constituye autenticación segura**. Para datos reales, la exportación administrativa debe trasladarse a un backend autenticado.
+
+La guía para el responsable del backend está en [`docs/SEGURIDAD_BACKEND.md`](./docs/SEGURIDAD_BACKEND.md). El ejemplo de proxy se conserva solo como una alternativa futura y no forma parte del flujo actual.
+
+## Datos esperados
+
+La aplicación conserva las tablas existentes:
+
+- `companies`: identificación, datos descriptivos, correos, siete puntajes por componente, tres puntajes por dimensión, puntaje global y `last_updated`.
+- `profiles`: `company_id`, el JSON `profile_data` y `last_updated`.
+
+Los borradores siguen guardándose dentro de `profile_data`; ahora cada pregunta también tiene un identificador estable, manteniendo compatibilidad con respuestas antiguas basadas en índices.
+
+## Publicación en GitHub Pages
+
+1. Ejecute `npm test` y `npm run check`.
+2. Confirme que la cuenta de Groq tenga límites y alertas de consumo adecuados.
+3. Suba los archivos de la raíz y la carpeta `docs` al repositorio.
+4. Configure GitHub Pages para publicar desde la rama y carpeta correspondientes.
+5. Realice una evaluación de prueba con una empresa nueva y confirme Groq, Supabase, el respaldo de Google y los correos.
+
+No publique capturas, archivos `.env` ni exportaciones que contengan datos de empresas o claves.
