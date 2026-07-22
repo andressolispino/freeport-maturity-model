@@ -25,11 +25,27 @@ npm run check
 - **Google Apps Script:** respaldo independiente de empresas y perfiles. La integración existente se conserva.
 - **EmailJS:** correos de registro y resultados.
 - **GitHub Pages:** el proyecto continúa siendo HTML, CSS y JavaScript estáticos; puede publicarse desde la raíz sin proceso de construcción.
-- **Informe con IA:** se genera mediante una llamada directa desde el navegador a Groq, sin modificar Supabase ni Google Apps Script.
+- **Informe con IA:** se genera mediante una llamada directa desde el navegador a OpenAI con GPT-4o mini, sin modificar Supabase ni Google Apps Script.
 
 En la carga normal solo se consulta el identificador de empresa solicitado. La lectura completa de datos queda reservada para la exportación administrativa explícita.
 
-## Configuración segura
+### Evitar la pausa por inactividad
+
+El robot local de Windows está en [`scripts/supabase-keepalive.ps1`](./scripts/supabase-keepalive.ps1). La tarea programada consulta Supabase los lunes, miércoles y viernes, sin crear empresas, respuestas ni resultados, y vence el 30 de junio de 2027.
+
+## Configurar OpenAI
+
+En [`script.js`](./script.js), reemplace únicamente el marcador de la clave:
+
+```js
+const OPENAI_API_KEY = 'sk-REEMPLAZA_AQUI_TU_CLAVE_OPENAI';
+const OPENAI_MODEL = 'gpt-4o-mini';
+const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+```
+
+No es necesario modificar Google Apps Script, Supabase ni `config.js`. El prompt, el formato y el procesamiento del informe se conservan.
+
+## Configuración pública
 
 [`config.js`](./config.js) contiene únicamente opciones publicables:
 
@@ -40,13 +56,11 @@ window.FREEPORT_CONFIG = Object.freeze({
 });
 ```
 
-Nunca agregue a ese archivo claves `service_role`, contraseñas de Google ni otros secretos de backend. Todo lo que se publica en GitHub Pages puede ser leído por cualquier visitante.
-
-Por decisión del proyecto, la clave de Groq está en `script.js` y por tanto es pública. Se recomienda aplicar límites de uso en Groq, supervisar el consumo y rotarla cuando sea necesario. Si Groq falla, la aplicación muestra el error y no presenta un informe local como si hubiera sido generado por IA.
+Todo lo publicado en GitHub Pages puede ser leído por cualquier visitante. Por decisión del proyecto, la clave de OpenAI se encuentra en `script.js` y por tanto será pública. Use una clave exclusiva para este proyecto, cargue solo el saldo que esté dispuesto a consumir y rótela si detecta uso no reconocido.
 
 El acceso administrativo está deshabilitado por defecto. Un código escrito en JavaScript solo oculta la interfaz y **no constituye autenticación segura**. Para datos reales, la exportación administrativa debe trasladarse a un backend autenticado.
 
-La guía para el responsable del backend está en [`docs/SEGURIDAD_BACKEND.md`](./docs/SEGURIDAD_BACKEND.md). El ejemplo de proxy se conserva solo como una alternativa futura y no forma parte del flujo actual.
+La guía para el responsable del backend está en [`docs/SEGURIDAD_BACKEND.md`](./docs/SEGURIDAD_BACKEND.md). El ejemplo de proxy se conserva únicamente como alternativa futura y no forma parte del flujo actual.
 
 ## Datos esperados
 
@@ -59,10 +73,10 @@ Los borradores siguen guardándose dentro de `profile_data`; ahora cada pregunta
 
 ## Publicación en GitHub Pages
 
-1. Ejecute `npm test` y `npm run check`.
-2. Confirme que la cuenta de Groq tenga límites y alertas de consumo adecuados.
+1. Pegue su clave de OpenAI en el marcador de `script.js`.
+2. Ejecute `npm test` y `npm run check`.
 3. Suba los archivos de la raíz y la carpeta `docs` al repositorio.
 4. Configure GitHub Pages para publicar desde la rama y carpeta correspondientes.
-5. Realice una evaluación de prueba con una empresa nueva y confirme Groq, Supabase, el respaldo de Google y los correos.
+5. Realice una evaluación de prueba con una empresa nueva y confirme OpenAI, Supabase, el respaldo de Google y los correos.
 
-No publique capturas, archivos `.env` ni exportaciones que contengan datos de empresas o claves.
+No publique capturas, archivos `.env` ni exportaciones que contengan datos de empresas o claves adicionales.

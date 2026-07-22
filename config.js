@@ -2,7 +2,7 @@
  * Configuración pública de FREEPORT.
  *
  * Este archivo se publica y cualquier visitante puede leerlo. El proyecto usa
- * Groq directamente desde script.js por decisión expresa de despliegue.
+ * OpenAI directamente desde script.js por decisión expresa de despliegue.
  */
 window.FREEPORT_CONFIG = Object.freeze({
     // El panel administrativo permanece oculto en la versión pública. Las tareas
