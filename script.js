@@ -12,7 +12,8 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // La URL del despliegue es pública, pero no contiene ninguna credencial.
 const OPENAI_MODEL = 'gpt-4o-mini';
 const OPENAI_PROXY_URL = 'https://script.google.com/macros/s/AKfycbxAG7EALAetqG2kh2utmp7H0ZVgtEe5iQ-ixMijY2pifRGI8GuK0jvMy28bJ1-5UTDG/exec';
-const OPENAI_REQUEST_TIMEOUT_MS = 90000;
+const OPENAI_MAX_OUTPUT_TOKENS = 16384;
+const OPENAI_REQUEST_TIMEOUT_MS = 150000;
 
 
 let companyProfiles = {};
@@ -3868,6 +3869,7 @@ REGLAS OBLIGATORIAS:
 4. Adapta cada recomendación a su pregunta, evidencia, componente, sector y tamaño de empresa.
 5. Propón acciones distintas, costo-efectivas, técnicas y verificables para una PyME latinoamericana.
 6. Si el nivel es "Sin información", comienza por levantar una línea base verificable.
+7. Sé conciso: limita cada acción prioritaria a 60 palabras y cada valor para el negocio a 30 palabras.
 
 FORMATO MARKDOWN ESTRICTO:
 
@@ -3881,8 +3883,8 @@ Para CADA brecha, en el mismo orden y sin omitir ninguna, usa exactamente:
 
 ### [Texto exacto de la pregunta]
 * **Nivel Actual:** [nivel actual]
-* **Para avanzar al nivel [siguiente nivel], la acción prioritaria es:** [acción única, técnica y comprobable]
-* **Valor para el Negocio:** [beneficio específico para esa brecha]
+* **Para avanzar al nivel [siguiente nivel], la acción prioritaria es:** [acción única, técnica y comprobable; máximo 60 palabras]
+* **Valor para el Negocio:** [beneficio específico para esa brecha; máximo 30 palabras]
 
 No agregues otro encabezado de nivel ## ni una conclusión fuera de esas dos secciones.
 
@@ -3931,7 +3933,7 @@ async function requestAnalysisFromOpenAI(payload) {
             { role: 'user', content: buildOpenAIAnalysisPrompt(payload) }
           ],
           temperature: 0.2,
-          max_tokens: 8192
+          max_tokens: OPENAI_MAX_OUTPUT_TOKENS
         }
       }),
       signal: controller.signal

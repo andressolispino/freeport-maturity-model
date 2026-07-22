@@ -40,7 +40,14 @@ El frontend contiene únicamente la URL pública del proxy:
 ```js
 const OPENAI_MODEL = 'gpt-4o-mini';
 const OPENAI_PROXY_URL = 'https://script.google.com/macros/s/.../exec';
+const OPENAI_MAX_OUTPUT_TOKENS = 16384;
+const OPENAI_REQUEST_TIMEOUT_MS = 150000;
 ```
+
+El margen de salida y el tiempo de espera permiten completar informes extensos
+con muchas brechas sin aceptar resultados truncados. El frontend conserva la
+validación que rechaza cualquier informe que omita recomendaciones y solicita
+acciones concisas para aprovechar el margen disponible.
 
 La clave privada está guardada como `OPENAI_API_KEY` en Script Properties del proyecto independiente `FREEPORT OpenAI Proxy`. No es necesario modificar el Apps Script de respaldo, Supabase ni `config.js`. El prompt, el modelo, el formato y el procesamiento del informe se conservan.
 
