@@ -45,15 +45,21 @@ const OPENAI_REQUEST_TIMEOUT_MS = 150000;
 ```
 
 El margen de salida y el tiempo de espera permiten completar informes extensos
-con muchas brechas sin aceptar resultados truncados. El frontend conserva la
-validación que rechaza cualquier informe que omita recomendaciones y solicita
-acciones concisas para aprovechar el margen disponible.
+con muchas brechas sin aceptar resultados truncados.
 
 Cuando una evaluación contiene más de 15 brechas, el frontend solicita las
-recomendaciones en bloques y las ensambla en un solo informe. El resultado
-mantiene las mismas secciones y el mismo formato visible para el usuario.
+recomendaciones en bloques. OpenAI devuelve JSON sometido a un esquema estricto;
+el frontend valida la cantidad, el orden y los identificadores estables de las
+preguntas y construye el Markdown de manera determinista. De esta forma, los
+subtítulos o variaciones de formato del modelo no pueden romper el informe.
 
-La clave privada está guardada como `OPENAI_API_KEY` en Script Properties del proyecto independiente `FREEPORT OpenAI Proxy`. No es necesario modificar el Apps Script de respaldo, Supabase ni `config.js`. El prompt, el modelo, el formato y el procesamiento del informe se conservan.
+Los errores temporales de red, límite de uso o servicio se reintentan hasta tres
+veces con espera exponencial y variación aleatoria. Si un bloque sigue fallando,
+la aplicación usa los playbooks locales de FREEPORT para completar únicamente
+ese bloque. El usuario conserva sus puntajes y recibe un informe completo; la
+interfaz indica si se utilizó OpenAI, el respaldo local o ambos.
+
+La clave privada está guardada como `OPENAI_API_KEY` en Script Properties del proyecto independiente `FREEPORT OpenAI Proxy`. No es necesario modificar el Apps Script de respaldo, Supabase ni `config.js`. El proxy existente reenvía el campo `response_format`, por lo que la salida estructurada se activa desde el frontend.
 
 ## Configuración pública
 
