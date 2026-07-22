@@ -3931,7 +3931,7 @@ async function requestAnalysisFromOpenAI(payload) {
             { role: 'user', content: buildOpenAIAnalysisPrompt(payload) }
           ],
           temperature: 0.2,
-          max_tokens: 4096
+          max_tokens: 8192
         }
       }),
       signal: controller.signal
@@ -3944,7 +3944,7 @@ async function requestAnalysisFromOpenAI(payload) {
       throw new Error(proxyResult.error);
     }
     const data = proxyResult?.data;
-    const analysis = data.choices?.[0]?.message?.content;
+    const analysis = data?.choices?.[0]?.message?.content;
     if (typeof analysis !== 'string'
       || !analysis.includes('## Análisis y Recomendaciones Generales')
       || !analysis.includes('## Próximos Pasos para Avanzar')) {
