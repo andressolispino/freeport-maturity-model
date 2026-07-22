@@ -49,6 +49,10 @@ con muchas brechas sin aceptar resultados truncados. El frontend conserva la
 validación que rechaza cualquier informe que omita recomendaciones y solicita
 acciones concisas para aprovechar el margen disponible.
 
+Cuando una evaluación contiene más de 15 brechas, el frontend solicita las
+recomendaciones en bloques y las ensambla en un solo informe. El resultado
+mantiene las mismas secciones y el mismo formato visible para el usuario.
+
 La clave privada está guardada como `OPENAI_API_KEY` en Script Properties del proyecto independiente `FREEPORT OpenAI Proxy`. No es necesario modificar el Apps Script de respaldo, Supabase ni `config.js`. El prompt, el modelo, el formato y el procesamiento del informe se conservan.
 
 ## Configuración pública

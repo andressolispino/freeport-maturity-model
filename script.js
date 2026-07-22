@@ -14,6 +14,7 @@ const OPENAI_MODEL = 'gpt-4o-mini';
 const OPENAI_PROXY_URL = 'https://script.google.com/macros/s/AKfycbxAG7EALAetqG2kh2utmp7H0ZVgtEe5iQ-ixMijY2pifRGI8GuK0jvMy28bJ1-5UTDG/exec';
 const OPENAI_MAX_OUTPUT_TOKENS = 16384;
 const OPENAI_REQUEST_TIMEOUT_MS = 150000;
+const OPENAI_RECOMMENDATION_BATCH_SIZE = 15;
 
 
 let companyProfiles = {};
@@ -3910,6 +3911,35 @@ ${improvementAreas || 'No existen brechas: todos los criterios alcanzaron el niv
 `;
 }
 
+function splitIntoBatches(items, batchSize) {
+  const batches = [];
+  for (let index = 0; index < items.length; index += batchSize) {
+    batches.push(items.slice(index, index + batchSize));
+  }
+  return batches;
+}
+
+function mergeOpenAIAnalysisBatches(analyses) {
+  if (analyses.length === 1) return analyses[0].trim();
+
+  const recommendationsHeading = '## Próximos Pasos para Avanzar';
+  const firstHeadingIndex = analyses[0].indexOf(recommendationsHeading);
+  if (firstHeadingIndex < 0) {
+    throw new Error('No fue posible ensamblar las recomendaciones generadas por OpenAI.');
+  }
+
+  const generalAnalysis = analyses[0].slice(0, firstHeadingIndex).trim();
+  const recommendationSections = analyses.map(analysis => {
+    const headingIndex = analysis.indexOf(recommendationsHeading);
+    if (headingIndex < 0) {
+      throw new Error('OpenAI devolvió un bloque de recomendaciones con formato no válido.');
+    }
+    return analysis.slice(headingIndex + recommendationsHeading.length).trim();
+  });
+
+  return `${generalAnalysis}\n\n${recommendationsHeading}\n${recommendationSections.join('\n\n')}`;
+}
+
 async function requestAnalysisFromOpenAI(payload) {
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), OPENAI_REQUEST_TIMEOUT_MS);
@@ -3979,7 +4009,7 @@ async function generateComprehensiveAnalysis(scores, companyInfo, companyId) {
       componentLabel: componentTranslations[area.component] || area.component
     }));
 
-    const analysis = await requestAnalysisFromOpenAI({
+    const analysisPayload = {
       company: {
         name: companyInfo.companyName,
         activity: companyInfo.mainActivity,
@@ -3989,7 +4019,26 @@ async function generateComprehensiveAnalysis(scores, companyInfo, companyId) {
       maturityLevel: getMaturityLevel(scores.overallScore),
       evidence: collectAssessmentEvidence(companyId),
       improvementAreas
-    });
+    };
+    const improvementAreaBatches = improvementAreas.length
+      ? splitIntoBatches(improvementAreas, OPENAI_RECOMMENDATION_BATCH_SIZE)
+      : [[]];
+    const analysisBatches = [];
+
+    for (const improvementAreaBatch of improvementAreaBatches) {
+      analysisBatches.push(await requestAnalysisFromOpenAI({
+        ...analysisPayload,
+        improvementAreas: improvementAreaBatch
+      }));
+    }
+
+    const analysis = mergeOpenAIAnalysisBatches(analysisBatches);
+    const returnedRecommendations = analysis.match(/^###\s+/gm)?.length || 0;
+    if (returnedRecommendations !== improvementAreas.length) {
+      throw new Error(
+        `El informe ensamblado contiene ${returnedRecommendations} de ${improvementAreas.length} recomendaciones.`
+      );
+    }
     showStatus('Informe personalizado generado correctamente con OpenAI.', 'success', 7000);
     return analysis;
   } catch (error) {
