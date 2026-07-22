@@ -25,7 +25,7 @@ npm run check
 - **Google Apps Script:** respaldo independiente de empresas y perfiles. La integración existente se conserva.
 - **EmailJS:** correos de registro y resultados.
 - **GitHub Pages:** el proyecto continúa siendo HTML, CSS y JavaScript estáticos; puede publicarse desde la raíz sin proceso de construcción.
-- **Informe con IA:** se genera mediante una llamada directa desde el navegador a OpenAI con GPT-4o mini, sin modificar Supabase ni Google Apps Script.
+- **Informe con IA:** se genera con GPT-4o mini mediante un proxy independiente de Google Apps Script. La clave permanece en Script Properties y nunca llega al navegador.
 
 En la carga normal solo se consulta el identificador de empresa solicitado. La lectura completa de datos queda reservada para la exportación administrativa explícita.
 
@@ -35,15 +35,14 @@ El robot local de Windows está en [`scripts/supabase-keepalive.ps1`](./scripts/
 
 ## Configurar OpenAI
 
-En [`script.js`](./script.js), reemplace únicamente el marcador de la clave:
+El frontend contiene únicamente la URL pública del proxy:
 
 ```js
-const OPENAI_API_KEY = 'sk-REEMPLAZA_AQUI_TU_CLAVE_OPENAI';
 const OPENAI_MODEL = 'gpt-4o-mini';
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+const OPENAI_PROXY_URL = 'https://script.google.com/macros/s/.../exec';
 ```
 
-No es necesario modificar Google Apps Script, Supabase ni `config.js`. El prompt, el formato y el procesamiento del informe se conservan.
+La clave privada está guardada como `OPENAI_API_KEY` en Script Properties del proyecto independiente `FREEPORT OpenAI Proxy`. No es necesario modificar el Apps Script de respaldo, Supabase ni `config.js`. El prompt, el modelo, el formato y el procesamiento del informe se conservan.
 
 ## Configuración pública
 
@@ -56,7 +55,7 @@ window.FREEPORT_CONFIG = Object.freeze({
 });
 ```
 
-Todo lo publicado en GitHub Pages puede ser leído por cualquier visitante. Por decisión del proyecto, la clave de OpenAI se encuentra en `script.js` y por tanto será pública. Use una clave exclusiva para este proyecto, cargue solo el saldo que esté dispuesto a consumir y rótela si detecta uso no reconocido.
+Todo lo publicado en GitHub Pages puede ser leído por cualquier visitante. La URL del proxy es publicable, pero la clave de OpenAI nunca debe copiarse en el repositorio, `script.js`, `config.js` ni capturas. Use una clave exclusiva para este proyecto, mantenga límites de gasto y rótela si detecta uso no reconocido.
 
 El acceso administrativo está deshabilitado por defecto. Un código escrito en JavaScript solo oculta la interfaz y **no constituye autenticación segura**. Para datos reales, la exportación administrativa debe trasladarse a un backend autenticado.
 
@@ -73,7 +72,7 @@ Los borradores siguen guardándose dentro de `profile_data`; ahora cada pregunta
 
 ## Publicación en GitHub Pages
 
-1. Pegue su clave de OpenAI en el marcador de `script.js`.
+1. Confirme que `OPENAI_PROXY_URL` apunta al despliegue `/exec` vigente.
 2. Ejecute `npm test` y `npm run check`.
 3. Suba los archivos de la raíz y la carpeta `docs` al repositorio.
 4. Configure GitHub Pages para publicar desde la rama y carpeta correspondientes.

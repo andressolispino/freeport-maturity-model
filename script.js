@@ -8,11 +8,10 @@ const SUPABASE_URL = 'https://vxyktnzqkzejdgtfxexs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4eWt0bnpxa3plamRndGZ4ZXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4OTE0NTksImV4cCI6MjA4MjQ2NzQ1OX0.lQE56q3oelLfLM1v-m8nhh7_VL68XjhWxOejeA9HFuk';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Decisión explícita del proyecto: OpenAI se consume directamente desde esta
-// aplicación estática. La clave será visible para cualquier visitante.
-const OPENAI_API_KEY = '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';
+// El proxy de Apps Script conserva la clave de OpenAI fuera del navegador.
+// La URL del despliegue es pública, pero no contiene ninguna credencial.
 const OPENAI_MODEL = 'gpt-4o-mini';
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+const OPENAI_PROXY_URL = 'https://script.google.com/macros/s/AKfycbxAG7EALAetqG2kh2utmp7H0ZVgtEe5iQ-ixMijY2pifRGI8GuK0jvMy28bJ1-5UTDG/exec';
 const OPENAI_REQUEST_TIMEOUT_MS = 90000;
 
 
@@ -3910,44 +3909,41 @@ ${improvementAreas || 'No existen brechas: todos los criterios alcanzaron el niv
 }
 
 async function requestAnalysisFromOpenAI(payload) {
-  if (!OPENAI_API_KEY.startsWith('sk-') || OPENAI_API_KEY.includes('REEMPLAZA_AQUI')) {
-    throw new Error('La API key de OpenAI no está configurada en script.js.');
-  }
-
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), OPENAI_REQUEST_TIMEOUT_MS);
   try {
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch(OPENAI_PROXY_URL, {
       method: 'POST',
       mode: 'cors',
+      redirect: 'follow',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Content-Type': 'text/plain;charset=utf-8'
       },
       body: JSON.stringify({
-        model: OPENAI_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: 'Eres un consultor de élite experto en IoT industrial y en FREEPORT/ATLANTIS. Fundamenta cada afirmación en la evidencia recibida.'
-          },
-          { role: 'user', content: buildOpenAIAnalysisPrompt(payload) }
-        ],
-        temperature: 0.2,
-        max_tokens: 4096
+        action: 'generate_freeport_analysis',
+        request: {
+          model: OPENAI_MODEL,
+          messages: [
+            {
+              role: 'system',
+              content: 'Eres un consultor de élite experto en IoT industrial y en FREEPORT/ATLANTIS. Fundamenta cada afirmación en la evidencia recibida.'
+            },
+            { role: 'user', content: buildOpenAIAnalysisPrompt(payload) }
+          ],
+          temperature: 0.2,
+          max_tokens: 4096
+        }
       }),
       signal: controller.signal
     });
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error('La API key de OpenAI no es válida o fue revocada.');
-      }
-      if (response.status === 429) {
-        throw new Error('La cuenta de OpenAI no tiene saldo disponible o alcanzó su límite de uso.');
-      }
-      throw new Error(`OpenAI respondió con el estado HTTP ${response.status}.`);
+      throw new Error(`El proxy de OpenAI respondió con el estado HTTP ${response.status}.`);
     }
-    const data = await response.json();
+    const proxyResult = await response.json();
+    if (proxyResult?.error) {
+      throw new Error(proxyResult.error);
+    }
+    const data = proxyResult?.data;
     const analysis = data.choices?.[0]?.message?.content;
     if (typeof analysis !== 'string'
       || !analysis.includes('## Análisis y Recomendaciones Generales')
@@ -3965,7 +3961,7 @@ async function requestAnalysisFromOpenAI(payload) {
     return analysis;
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error('No fue posible conectar con OpenAI. Verifique la conexión y pruebe desde localhost o GitHub Pages.');
+      throw new Error('No fue posible conectar con el proxy seguro de OpenAI. Verifique la conexión e inténtelo nuevamente.');
     }
     throw error;
   } finally {
