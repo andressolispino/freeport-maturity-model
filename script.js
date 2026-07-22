@@ -10,7 +10,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Decisión explícita del proyecto: OpenAI se consume directamente desde esta
 // aplicación estática. La clave será visible para cualquier visitante.
-const OPENAI_API_KEY = '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';
+const OPENAI_API_KEY = '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';
 const OPENAI_MODEL = 'gpt-4o-mini';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_REQUEST_TIMEOUT_MS = 90000;
@@ -3910,6 +3910,10 @@ ${improvementAreas || 'No existen brechas: todos los criterios alcanzaron el niv
 }
 
 async function requestAnalysisFromOpenAI(payload) {
+  if (!OPENAI_API_KEY.startsWith('sk-') || OPENAI_API_KEY.includes('REEMPLAZA_AQUI')) {
+    throw new Error('La API key de OpenAI no está configurada en script.js.');
+  }
+
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), OPENAI_REQUEST_TIMEOUT_MS);
   try {
@@ -3935,6 +3939,12 @@ async function requestAnalysisFromOpenAI(payload) {
       signal: controller.signal
     });
     if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('La API key de OpenAI no es válida o fue revocada.');
+      }
+      if (response.status === 429) {
+        throw new Error('La cuenta de OpenAI no tiene saldo disponible o alcanzó su límite de uso.');
+      }
       throw new Error(`OpenAI respondió con el estado HTTP ${response.status}.`);
     }
     const data = await response.json();
@@ -3953,6 +3963,11 @@ async function requestAnalysisFromOpenAI(payload) {
       );
     }
     return analysis;
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error('No fue posible conectar con OpenAI. Verifique la conexión y pruebe desde localhost o GitHub Pages.');
+    }
+    throw error;
   } finally {
     window.clearTimeout(timeoutId);
   }
