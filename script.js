@@ -8,12 +8,13 @@ const SUPABASE_URL = 'https://vxyktnzqkzejdgtfxexs.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4eWt0bnpxa3plamRndGZ4ZXhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4OTE0NTksImV4cCI6MjA4MjQ2NzQ1OX0.lQE56q3oelLfLM1v-m8nhh7_VL68XjhWxOejeA9HFuk';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Decisión explícita del proyecto: Groq se consume directamente desde esta
+// Decisión explícita del proyecto: OpenRouter se consume directamente desde esta
 // aplicación estática. La clave será visible para cualquier visitante.
-const GROQ_API_KEY = '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';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_REQUEST_TIMEOUT_MS = 90000;
+const OPENROUTER_API_KEY = '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'; // <-- ¡No olvides poner tu clave!
+const OPENROUTER_MODEL = 'meta-llama/llama-3-8b-instruct:free';
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_REQUEST_TIMEOUT_MS = 90000;
+
 
 
 let companyProfiles = {};
@@ -3909,47 +3910,52 @@ ${improvementAreas || 'No existen brechas: todos los criterios alcanzaron el niv
 `;
 }
 
-async function requestAnalysisFromGroq(payload) {
+async function requestAnalysisFromOpenRouter(payload) {
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), GROQ_REQUEST_TIMEOUT_MS);
+  const timeoutId = window.setTimeout(() => controller.abort(), OPENROUTER_REQUEST_TIMEOUT_MS);
   try {
-    const response = await fetch(GROQ_API_URL, {
+    const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
       mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'HTTP-Referer': window.location.href, // Requisito de OpenRouter
+        'X-Title': 'Tesis Doctoral - Modelo Freeport' // Requisito de OpenRouter
       },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model: OPENROUTER_MODEL,
         messages: [
           {
             role: 'system',
             content: 'Eres un consultor de élite experto en IoT industrial y en FREEPORT/ATLANTIS. Fundamenta cada afirmación en la evidencia recibida.'
           },
-          { role: 'user', content: buildGroqAnalysisPrompt(payload) }
+          { role: 'user', content: buildGroqAnalysisPrompt(payload) } // Conservamos el nombre original de tu función constructora del prompt
         ],
         temperature: 0.2,
         max_tokens: 4096
       }),
       signal: controller.signal
     });
+    
     if (!response.ok) {
-      throw new Error(`Groq respondió con el estado HTTP ${response.status}.`);
+      throw new Error(`OpenRouter respondió con el estado HTTP ${response.status}.`);
     }
+    
     const data = await response.json();
     const analysis = data.choices?.[0]?.message?.content;
+    
     if (typeof analysis !== 'string'
       || !analysis.includes('## Análisis y Recomendaciones Generales')
       || !analysis.includes('## Próximos Pasos para Avanzar')) {
-      throw new Error('Groq devolvió un informe incompleto o con formato no válido.');
+      throw new Error('OpenRouter devolvió un informe incompleto o con formato no válido.');
     }
 
     const expectedRecommendations = payload.improvementAreas.length;
     const returnedRecommendations = analysis.match(/^###\s+/gm)?.length || 0;
     if (returnedRecommendations < expectedRecommendations) {
       throw new Error(
-        `Groq devolvió ${returnedRecommendations} de ${expectedRecommendations} recomendaciones.`
+        `OpenRouter devolvió ${returnedRecommendations} de ${expectedRecommendations} recomendaciones.`
       );
     }
     return analysis;
@@ -3966,7 +3972,8 @@ async function generateComprehensiveAnalysis(scores, companyInfo, companyId) {
       componentLabel: componentTranslations[area.component] || area.component
     }));
 
-    const analysis = await requestAnalysisFromGroq({
+    // Llamamos a la nueva función de OpenRouter
+    const analysis = await requestAnalysisFromOpenRouter({
       company: {
         name: companyInfo.companyName,
         activity: companyInfo.mainActivity,
@@ -3977,17 +3984,17 @@ async function generateComprehensiveAnalysis(scores, companyInfo, companyId) {
       evidence: collectAssessmentEvidence(companyId),
       improvementAreas
     });
-    showStatus('Informe personalizado generado correctamente con Groq.', 'success', 7000);
+    
+    showStatus('Informe personalizado generado correctamente con OpenRouter.', 'success', 7000);
     return analysis;
   } catch (error) {
-    console.error('No fue posible generar el informe con Groq:', error);
+    console.error('No fue posible generar el informe con OpenRouter:', error);
     if (error?.name === 'AbortError') {
-      throw new Error('Groq superó el tiempo máximo de respuesta. Inténtelo nuevamente.');
+      throw new Error('OpenRouter superó el tiempo máximo de respuesta. Inténtelo nuevamente.');
     }
-    throw new Error(`No fue posible generar el informe con Groq: ${error.message || 'error desconocido'}`);
+    throw new Error(`No fue posible generar el informe con OpenRouter: ${error.message || 'error desconocido'}`);
   }
 }
-
 
 
 
