@@ -10,7 +10,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Decisión explícita del proyecto: Groq se consume directamente desde esta
 // aplicación estática. La clave será visible para cualquier visitante.
-const GROQ_API_KEY = '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';
+const GROQ_API_KEY = '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';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_REQUEST_TIMEOUT_MS = 90000;
