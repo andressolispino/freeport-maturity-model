@@ -10,7 +10,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Decisión explícita del proyecto: OpenAI se consume directamente desde esta
 // aplicación estática. La clave será visible para cualquier visitante.
-const OPENAI_API_KEY = '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';
+const OPENAI_API_KEY = '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';
 const OPENAI_MODEL = 'gpt-4o-mini';
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_REQUEST_TIMEOUT_MS = 90000;
