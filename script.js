@@ -3919,10 +3919,24 @@ function splitIntoBatches(items, batchSize) {
   return batches;
 }
 
+const OPENAI_RECOMMENDATIONS_HEADING = '## Próximos Pasos para Avanzar';
+
+function countOpenAIRecommendations(analysis) {
+  if (typeof analysis !== 'string') return 0;
+
+  const headingIndex = analysis.indexOf(OPENAI_RECOMMENDATIONS_HEADING);
+  if (headingIndex < 0) return 0;
+
+  const recommendationsSection = analysis.slice(
+    headingIndex + OPENAI_RECOMMENDATIONS_HEADING.length
+  );
+  return recommendationsSection.match(/^###\s+/gm)?.length || 0;
+}
+
 function mergeOpenAIAnalysisBatches(analyses) {
   if (analyses.length === 1) return analyses[0].trim();
 
-  const recommendationsHeading = '## Próximos Pasos para Avanzar';
+  const recommendationsHeading = OPENAI_RECOMMENDATIONS_HEADING;
   const firstHeadingIndex = analyses[0].indexOf(recommendationsHeading);
   if (firstHeadingIndex < 0) {
     throw new Error('No fue posible ensamblar las recomendaciones generadas por OpenAI.');
@@ -3984,8 +3998,8 @@ async function requestAnalysisFromOpenAI(payload) {
     }
 
     const expectedRecommendations = payload.improvementAreas.length;
-    const returnedRecommendations = analysis.match(/^###\s+/gm)?.length || 0;
-    if (returnedRecommendations < expectedRecommendations) {
+    const returnedRecommendations = countOpenAIRecommendations(analysis);
+    if (returnedRecommendations !== expectedRecommendations) {
       throw new Error(
         `OpenAI devolvió ${returnedRecommendations} de ${expectedRecommendations} recomendaciones.`
       );
@@ -4033,7 +4047,7 @@ async function generateComprehensiveAnalysis(scores, companyInfo, companyId) {
     }
 
     const analysis = mergeOpenAIAnalysisBatches(analysisBatches);
-    const returnedRecommendations = analysis.match(/^###\s+/gm)?.length || 0;
+    const returnedRecommendations = countOpenAIRecommendations(analysis);
     if (returnedRecommendations !== improvementAreas.length) {
       throw new Error(
         `El informe ensamblado contiene ${returnedRecommendations} de ${improvementAreas.length} recomendaciones.`
